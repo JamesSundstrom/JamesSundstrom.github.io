@@ -118,6 +118,9 @@
         function appendNumber(num) {
             lastUsedOp = null;
             lastUsedNumber = null;
+            if (document.getElementById('display').value === '0') {
+                document.getElementById('display').value = ''
+            }
             if (startNewNumber) {
                 startNewNumber = false;
                 document.getElementById('display').value = `${num}`;
