@@ -63,7 +63,7 @@
 </head>
 <body>
     <div class="calculator">
-        <input type="text" id="display" class="display" value="0" disabled>
+        <input type="text" id="display" class="display" value="" disabled>
         <div class="buttons">
             <button class="button clear" onclick="reset()">C</button>
             <button class="button clear" onclick="CE()">CE</button>
@@ -161,7 +161,7 @@
             op = null;
             lastUsedOp = null;
             lastUsedNumber = null;
-            document.getElementById('display').value = '0';
+            document.getElementById('display').value = '';
         }
         
         function error() {
@@ -225,7 +225,7 @@
         function CE() {
             if (startNewNumber) reset();
             else { 
-                document.getElementById('display').value = '0';
+                document.getElementById('display').value = '';
                 startNewNumber = true
             }
         }
