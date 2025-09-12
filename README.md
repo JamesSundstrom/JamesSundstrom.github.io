@@ -1,2 +1,2 @@
-# JamesSundstrom.github.io
+# Calculator
 A simple four-function calculator
