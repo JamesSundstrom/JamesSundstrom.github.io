@@ -147,7 +147,7 @@
             lastUsedOp = null;
             lastUsedNumber = null;
             display = document.getElementById('display').value;
-            if (startNewNumber || display === '') display = '0';
+            if (display === '') display = '0';
             if (display[0] === '-') {
                 document.getElementById('display').value = display.slice(1);
             }
