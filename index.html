@@ -121,6 +121,9 @@
             if (document.getElementById('display').value === '0') {
                 document.getElementById('display').value = ''
             }
+            if (document.getElementById('display').value === '-0') {
+                document.getElementById('display').value = '-'
+            }
             if (startNewNumber) {
                 startNewNumber = false;
                 document.getElementById('display').value = `${num}`;
