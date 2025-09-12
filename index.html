@@ -162,12 +162,14 @@
         function togglePM() {
             lastUsedOp = null;
             lastUsedNumber = null;
-            let display = document.getElementById('display').value;
-            if (display === '') return;
-            if (display[0] === '-') {
-                document.getElementById('display').value = display.slice(1);
+            if (!startNewNumber) {
+                let display = document.getElementById('display').value;
+                if (display === '') return;
+                if (display[0] === '-') {
+                    document.getElementById('display').value = display.slice(1);
+                }
+                else document.getElementById('display').value = '-' + display;
             }
-            else document.getElementById('display').value = '-' + display;
         }
         
         function reset() {
