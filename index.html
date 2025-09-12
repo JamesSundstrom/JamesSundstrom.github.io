@@ -146,13 +146,13 @@
         function togglePM() {
             lastUsedOp = null;
             lastUsedNumber = null;
-            startNewNumber = false;
-            let display = document.getElementById('display').value;
-            if (display === '') display = '0'
+            display = document.getElementById('display').value;
+            if (startNewNumber || display === '') display = '0';
             if (display[0] === '-') {
                 document.getElementById('display').value = display.slice(1);
             }
             else document.getElementById('display').value = '-' + display;
+            startNewNumber = false;
         }
         
         function reset() {
