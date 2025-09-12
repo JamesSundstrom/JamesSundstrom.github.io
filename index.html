@@ -1,0 +1,246 @@
+<html>
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f2f2f2;
+            margin: 0;
+        }
+        .calculator {
+            width: 300px;
+            background-color: #fff;
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        .display {
+            width: 100%;
+            height: 50px;
+            text-align: right;
+            font-size: 1.5rem;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: none;
+            background-color: #ffeb3b;
+            border-radius: 8px;
+            color: #333;
+        }
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        .button {
+            background-color: #03a9f4;
+            border: none;
+            font-size: 1.5rem;
+            padding: 20px;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: background-color 0.3s, transform 0.2s;
+            color: white;
+        }
+        .button:hover {
+            background-color: #0288d1;
+            transform: scale(1.1);
+        }
+        .button:active {
+            transform: scale(0.95);
+        }
+        .button.clear {
+            background-color: #ff5722;
+        }
+        .button.clear:hover {
+            background-color: #e64a19;
+        }
+        .button.equal {
+            background-color: #8bc34a;
+        }
+        .button.equal:hover {
+            background-color: #689f38;
+        }
+        .button.operator {
+            background-color: #ff9800;
+        }
+        .button.operator:hover {
+            background-color: #f57c00;
+        }
+        .button.span-two-rows {
+            grid-row: span 2; 
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <input type="text" id="display" class="display" disabled>
+        <div class="buttons">
+            <button class="button clear" onclick="C()">C</button>
+            <button class="button clear" onclick="CE()">CE</button>
+            <button class="button operator" onclick="togglePM()">+/-</button>
+            <button class="button operator" onclick="appendOperation('/')">/</button>
+
+            <button class="button" onclick="appendNumber('7')">7</button>
+            <button class="button" onclick="appendNumber('8')">8</button>
+            <button class="button" onclick="appendNumber('9')">9</button>
+            <button class="button operator" onclick="appendOperation('*')">*</button>
+
+            <button class="button" onclick="appendNumber('4')">4</button>
+            <button class="button" onclick="appendNumber('5')">5</button>
+            <button class="button" onclick="appendNumber('6')">6</button>
+            <button class="button operator" onclick="appendOperation('-')">-</button>
+
+            <button class="button" onclick="appendNumber('1')">1</button>
+            <button class="button" onclick="appendNumber('2')">2</button>
+            <button class="button" onclick="appendNumber('3')">3</button>
+            <button class="button operator span-two-rows" onclick="appendOperation('+')">+</button>
+            
+            <button class="button" onclick="appendNumber('0')">0</button>
+            <button class="button" onclick="appendDecimal()">.</button>
+            <button class="button equal" onclick="calculate()">=</button>
+        </div>
+    </div>
+
+    <script>
+        let maxDigits = 8;
+        let minVal = 5 * 10 ** (-maxDigits);
+        let maxVal = 10 ** maxDigits - 0.5;
+        let startNewNumber = true;
+        let prevNumber = null;
+        let op = null;
+        let lastUsedOp = null;
+        let lastUsedNumber = null;
+        
+
+        function appendNumber(num) {
+            lastUsedOp = null;
+            lastUsedNumber = null;
+            if (startNewNumber) {
+                startNewNumber = false;
+                document.getElementById('display').value = `${num}`;
+                if (op === null) prevNumber = null;
+                return;
+            }
+            const digitCount = (document.getElementById('display').value.match(/\d/g) || []).length;
+            if (digitCount === maxDigits) return;
+            document.getElementById('display').value += `${num}`;
+        }
+
+        function appendOperation(operation) {
+            if (!startNewNumber) {
+                newNumber = parseFloat(document.getElementById('display').value);
+                if (op !== null) evaluate(prevNumber, op, newNumber);
+                else prevNumber = newNumber;
+                startNewNumber = true;
+            }
+            lastUsedOp = null;
+            lastUsedNumber = null;
+            op = operation;
+        }
+        
+        function appendDecimal() {
+            lastUsedOp = null;
+            lastUsedNumber = null;
+            let display = document.getElementById('display').value;
+            if ((!startNewNumber) && (display.indexOf('.') > -1)) return;
+            if (startNewNumber) {
+                document.getElementById('display').value = "0."
+                startNewNumber = false
+            }
+            else document.getElementById('display').value += '.';
+        }
+        
+        function togglePM() {
+            lastUsedOp = null;
+            lastUsedNumber = null;
+            let display = document.getElementById('display').value;
+            if (display === '') return;
+            if (display[0] === '-') {
+                document.getElementById('display').value = display.slice(1);
+            }
+            else document.getElementById('display').value = '-' + display;
+        }
+        
+        function reset() {
+            startNewNumber = true;
+            prevNumber = null;
+            op = null;
+            lastUsedOp = null;
+            lastUsedNumber = null;
+            document.getElementById('display').value = '';
+        }
+        
+        function error() {
+            reset();
+            document.getElementById('display').value = 'Error';
+        }
+        
+        function evaluate(a, op, b) {
+            if (op === '/' && b == 0) {
+                error();
+                return;
+            }
+            switch (op) {
+                case '+':
+                    val = a + b;
+                    break;
+                case '-':
+                    val = a - b;
+                    break;
+                case '*':
+                    val = a * b;
+                    break;
+                case '/':
+                    val = a / b;
+                    break;
+            }
+            let aval = Math.abs(val);
+            if (!(val == 0 || (minVal < aval && aval < maxVal))) {
+                error();
+                return;
+            }
+            let digits = 1;
+            while (aval >= 10) {
+                digits += 1;
+                aval /= 10;
+            }
+            let newDisplay = val.toFixed(maxDigits - digits);
+            if (newDisplay.indexOf('.') > -1) {
+              while (newDisplay.slice(-1) === '0') newDisplay = newDisplay.slice(0, -1);
+              if  (newDisplay.slice(-1) === '.') newDisplay = newDisplay.slice(0, -1);
+            }
+            lastUsedOp = op;
+            lastUsedNumber = b;
+            op = null;
+            startNewNumber = true;
+            prevNumber = val;
+            document.getElementById('display').value = newDisplay;
+        }
+        
+        function calculate() {
+            if (startNewNumber) {
+                if (lastUsedOp !== null) {
+                    evaluate(prevNumber, lastUsedOp, lastUsedNumber);
+                }
+                return;
+            }
+            newNumber = parseFloat(document.getElementById('display').value);
+            if (op !== null) evaluate(prevNumber, op, newNumber);
+        }
+
+        function C() {
+            document.getElementById('display').value = '';
+            reset()
+        }
+        
+        function CE() {
+            if (startNewNumber) C();
+            else document.getElementById('display').value = '';
+        }
+        
+    </script>
+</body>
+</html>
