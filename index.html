@@ -144,7 +144,7 @@
             }
             lastUsedOp = null;
             lastUsedNumber = null;
-            op = operation;
+            if (prevNumber != null) op = operation;
         }
         
         function appendDecimal() {
