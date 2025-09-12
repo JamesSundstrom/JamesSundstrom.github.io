@@ -173,12 +173,12 @@
             document.getElementById('display').value = 'Error';
         }
         
-        function evaluate(a, op, b) {
-            if (op === '/' && b == 0) {
+        function evaluate(a, operation, b) {
+            if (operation === '/' && b == 0) {
                 error();
                 return;
             }
-            switch (op) {
+            switch (operation) {
                 case '+':
                     val = a + b;
                     break;
@@ -205,14 +205,14 @@
             let newDisplay = val.toFixed(maxDigits - digits);
             if (newDisplay.indexOf('.') > -1) {
               while (newDisplay.slice(-1) === '0') newDisplay = newDisplay.slice(0, -1);
-              if  (newDisplay.slice(-1) === '.') newDisplay = newDisplay.slice(0, -1);
+              if (newDisplay.slice(-1) === '.') newDisplay = newDisplay.slice(0, -1);
             }
-            lastUsedOp = op;
+            lastUsedOp = operation;
             lastUsedNumber = b;
             op = null;
             startNewNumber = true;
             prevNumber = val;
-            document.getElementById('display').value = newDisplay;
+            document.getElementById('display').value = newDisplay
         }
         
         function calculate() {
@@ -233,7 +233,10 @@
         
         function CE() {
             if (startNewNumber) C();
-            else document.getElementById('display').value = '';
+            else { 
+                document.getElementById('display').value = '';
+                startNewNumber = true
+            }
         }
         
     </script>
