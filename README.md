@@ -1,6 +1,14 @@
-# Programs for Math 4370
+# Computer Science teaching
 
-This site hosts programs that were created for Math 4370, in Fall 2025. 
+This site hosts websites that were created for my advanced computer science courses (Math 4370 in Fall 2025 and Math 4300 in Fall 2026). 
+
+# Math 4300
+
+Under construction. Lecture notes will be published here as they are written.
+
+# Math 4370
+
+I created two interactive websites for Math 4370:
 
 ## Calculator
 A simple four-function calculator
