@@ -1,0 +1,152 @@
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Lecture 01: Introduction to C++</title>
+        <link rel="stylesheet" href="../style.css">
+    </head>
+    <body>
+        <div class="top-bar"><a href="../mth4300.html">🏠 Back to Math 4300 homepage</a>
+        </div>
+        <div class="content">
+            <h1>Lecture 01: Introduction to C++</h1>
+
+            <h2>Getting Started</h2>
+            <p>
+                If you haven't already read my <a href="../Getting_Started.pdf" target="_blank">Getting Started</a> document and followed the instructions there, you should 
+                do that when you get the chance. For now, you can get through this lecture without having completed all the tasks there.
+            </p>
+
+            <h2>Hello, World</h2>
+
+            The below is the Hello World program that was used as the example program in Getting Started.
+
+            <code-box data-codeId="HelloWorld"><pre>#include &lt;iostream&gt;
+int main() {
+    std::cout << "Hello, world!" << std::endl;
+    return 0;
+}</pre></code-box>
+
+            <p>
+                We'll use it as our first example as we start to discuss how C++ works. Note that you can copy this code (and
+                any other code appearing in these notes) by clicking the button on the right.
+            </p>
+            
+            <h2>The C++ Compiler</h2>
+
+            <p>
+                As you've already seen if you read through Getting Started, C++ is a compiled language, which means that a 
+                program called a <i>compiler</i> needs to convert the human-readable <i>source code</i> into instructions
+                that the computer can execute. We'll be able to say more about this process later, once you know more about
+                C++. 
+            </p>
+            <p>
+                For now, there's only one detail you need to know: the source is first handled by a <i>preprocessor</i>, 
+                which does not know any C++ syntax, but simply performs text replacements indicated by <i>preprocessor 
+                directives</i>, which are lines that start with #. In the Hello World example, the preprocessor directive
+                "#include &lt;iostream&gt;" tells the preprocessor to replace this line with the contents of the iostream
+                file, which contains code for input and output.
+            </p>
+
+            <h2>Statements</h2>
+
+            <p>
+                A single instruction in C++ is called a <i>statement</i>. Every statement is required to end with a semicolon.
+                Note that preprocessor directives are not considered statements, so "#include &lt;iostream&gt;" must not end
+                with a semicolon.
+            </p>
+
+            <h2>Whitespace and Braces</h2>
+
+            <p>
+                Unlike Python, C++ is not a whitespace-sensitive language. This is one reason why statements need to end in 
+                semicolons: C++ doesn't treat newlines differently than spaces, so we need some other way of indicating
+                the end of a statement. Another consequence is that we need a different way to create blocks of code 
+                consisting of several statements; Python does this with indentation, which doesn't work in C++. Instead,
+                C++ uses curly braces to create blocks of code. In the Hello World example above, the function main()
+                consists of several statements. We tell C++ which statements are part of main() by enclosing them in braces.
+            </p>
+
+            <p>
+                There are several popular formatting styles for braces. My preferred style is to put the opening brace on
+                the same line as the code that necessitated it, but some style guides call for the brace to be put on instruction
+                own line. (I don't care what you choose, as long as you're consistent.) In most popular styles, the closing brace 
+                goes on its own line, indented to the same level as the line that opened the braces. The code inside the braces 
+                is indented. 
+            </p>
+
+            <h2>Comments</h2>
+
+            <p>
+                C++ provides two ways to write comments in your code. A single-line comment can be started with //; everything
+                on that line after the // is ignored. A multi-line comment starts with /* and ends with */. In either case,
+                the entire comment is replaced by a single whitespace character before preprocessing.
+            </p>
+
+            <code-box data-codeId="Comments"><pre>#include &lt;iostream&gt;
+/* This is a very boring program which exists
+   only to illustrate comments in C++. */
+int main() {
+    std::cout << "This will print" << std::endl; // This is a comment
+    // std::cout << "This won't print because this whole line is a comment" << std::endl;
+    return 0;
+}</pre></code-box>
+
+        <h2>main()</h2>
+
+        <p>
+            When a C++ program is launched, it automatically executes the code in the main() function. The 
+            declaration "int main()" says that the main function must return an integer. This serves as a 
+            status code for the operating system; 0 indicates success, and anything else indicates failure.
+            Different types of failures can return different non-zero numbers, to help with troubleshooting.
+        </p>
+
+        <p>
+            As you can see above, main() usually ends with "return 0;". Strictly speaking, this isn't necessary --
+            the compiler will automatically insert a "return 0;" at the end of main() if you don't write it. (This 
+            only happens with main(). Any other function that returns a value must return a value explicitly.)
+            Nonetheless, many style guides suggest that you write the "return 0;" anyway.
+        </p>
+
+        <h2>Variable Declaration and Initialization</h2>
+
+        <p>
+            In C++, all variables must be explicitly declared before they can be used. For example, the below code 
+            is incorrect:
+        </p>
+
+        <wrong-code-box data-codeId="UndeclaredVariable"><pre>#include &lt;iostream&gt;
+int main() {
+    a = "Hello, world!";
+    std::cout << a << std::endl;
+    return 0;
+}</pre></wrong-code-box>
+
+        <p>
+            If you run it, you will see: "error: 'a' was not declared in this scope".
+        </p>
+
+        <p>
+            This is because C++ requires you to <i>declare</i> the variable by telling C++ the type of the
+            variable. (Actually, that's not quite true, as we'll see below.) We can correct the above code 
+            by telling C++ that the variable is a string:
+        </p>
+
+        <code-box data-codeId="UndeclaredVariableFixed"><pre>#include &lt;iostream&gt;
+int main() {
+    std::string a = "Hello, world!";
+    std::cout << a << std::endl;
+    return 0;
+}</pre></code-box>
+
+        <p>
+            Aside: The "std" in "std::string" and "std::cout" stands for "standard"; this code is provided as part
+            of the C++ standard library. To get access to the string type, you can use "#include &lt;string>". We 
+            didn't need to do so explicitly above, because iostream already includes string.
+        </p>
+
+
+        </div> <!-- /.content -->
+        <script type="text/javascript" src="codeblock.js"></script>
+    </body>
+</html>

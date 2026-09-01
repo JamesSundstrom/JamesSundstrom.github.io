@@ -1,0 +1,59 @@
+.top-bar {
+    border: 2px solid #333333; /* Creates the box outline */
+    background-color: lightblue; /* Adds a background color */
+    width: 90%;              /* Sets a fixed box width */
+    margin-top: 5px;
+    margin-bottom: 5px;
+    margin-left: 4%;
+    margin-right: 6%;
+    position: fixed;
+    top: 0;
+    padding: 0px;
+    box-sizing: border-box;
+}
+
+body {
+  background-color: lightblue;
+}
+
+.content {
+  background-color: lightblue;
+  margin-top: 40px;
+  margin-bottom: 100px;
+  margin-right: 6%;
+  margin-left: 4%;
+}
+
+.copyButtonDiv {
+    padding-top: 10px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: anchor-center;
+}
+
+.code {
+    width: 100%;
+}
+
+.codeBox {
+  background-color: #1e1e1e;
+  color: #ffffff;
+  padding: 0px 15px;
+  border-radius: 5px;
+  overflow-x: auto; /* Adds a horizontal scrollbar for long lines of code */
+  display: flex;
+}
+
+.wrongCodeBox {
+  background-color: darkred;
+  color: #ffffff;
+  padding: 0px 15px;
+  border-radius: 5px;
+  overflow-x: auto; /* Adds a horizontal scrollbar for long lines of code */
+  display: flex;
+}
+
+code {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 18px;
+}
