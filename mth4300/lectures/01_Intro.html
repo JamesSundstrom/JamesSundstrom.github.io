@@ -290,9 +290,34 @@ int main() {
     return 0;
 }</pre></wrong-code-box>
 
+        <h2>Casting</h2>
+
         <p>
-            We'll see later how you could explicitly ask C++ to round 4.8 down to an int, if necessary.
+            Converting between different types is called <i>casting</i>. As we just saw above, implicit casting is 
+            generally considered undesirable. In order to cast a value to a target type explicitly, use 
+            "static_cast&lt;TargetType>(value)"; for example:
         </p>
+
+        <code-box data-codeId="static_cast"><pre>#include &lt;iostream&gt;
+int main() {
+    double pi{3.14};
+    int three = static_cast&lt;int&gt;(pi);
+    std::cout << three << std::endl; // Prints "3"
+    return 0;
+}</pre></code-box>
+
+        <p>
+            C++ also supports C-style casts, by putting the target type in parentheses before the value to be cast.
+            But static_cast is preferred in modern C++.
+        </p>
+
+        <wrong-code-box data-codeId="CstyleCast"><pre>#include &lt;iostream&gt;
+int main() {
+    double pi{3.14};
+    int three = (int) pi;
+    std::cout << three << std::endl; // Prints "3"
+    return 0;
+}</pre></wrong-code-box>
 
         </div> <!-- /.content -->
         <script type="text/javascript" src="codeblock.js"></script>

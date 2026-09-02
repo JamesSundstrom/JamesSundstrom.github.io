@@ -2,7 +2,7 @@ class CodeBox extends HTMLElement {
   connectedCallback() {
     console.log(this.dataset);
     const codeId = this.dataset.codeid;
-    const code = this.innerText.replace("<", "&lt;");
+    const code = this.innerText.replaceAll("<", "&lt;");
     this.innerHTML = `
                   <div class="codeBox">
                     <div class="code">
@@ -21,7 +21,7 @@ customElements.define('code-box', CodeBox);
 class WrongCodeBox extends HTMLElement {
   connectedCallback() {
     const codeId = this.dataset.codeid;
-    const code = this.innerText.replace("<", "&lt;");
+    const code = this.innerText.replaceAll("<", "&lt;");
     this.innerHTML = `
                   <div class="wrongCodeBox">
                     <div class="code">
