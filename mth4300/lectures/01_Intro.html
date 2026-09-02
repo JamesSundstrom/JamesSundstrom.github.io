@@ -145,6 +145,154 @@ int main() {
             didn't need to do so explicitly above, because iostream already includes string.
         </p>
 
+        <p>
+            When we write a statement like "int a = 5;", that actually tells C++ to do two separate things: first
+            set aside memory to store an int, and then store the value 5 in that memory. In fact, C++ allows us to
+            perform those two operations separately; we can set aside memory by declaring the variable without 
+            <i,initializing</i> the variable by assigning a value:
+        </p>
+
+        <code-box data-codeId="InitializeThenDeclare"><pre>#include &lt;iostream&gt;
+int main() {
+    int a;
+    a = 42;
+    std::cout << a << std::endl;
+    return 0;
+}</pre></code-box>
+
+        <p> 
+            Do not try to access the value of an uninitialized variable! That results in undefined behavior. Depending on
+            the compiler, this may cause the program to crash, to use a garbage value (i.e., whatever was already in 
+            memory when that section of memory was claimed by the variable), or to use a default value (such as 0 for 
+            an int). For example, with the compiler on my computer, the code below prints 0: 
+        </p>
+
+        <wrong-code-box data-codeId="Uninitialized"><pre>#include &lt;iostream&gt;
+int main() {
+    int a;
+    std::cout << a << std::endl;
+    return 0;
+}</pre></wrong-code-box>
+
+        <p> 
+            Note also that you can declare several variables (of the same type) at once, and you may initialize some 
+            (or all) of them simultaneously. For example, the below is valid code (which prints "15"):
+        </p>
+
+        <code-box data-codeId="MultipleDeclaration"><pre>#include &lt;iostream&gt;
+int main() {
+    int a, b;
+    int c = 3, d, e = 5;
+    a = 1;
+    b = 2;
+    d = 4;
+    std::cout << a+b+c+d+e << std::endl;
+    return 0;
+}</pre></code-box>
+
+        <p>
+            Modern C++ provides another option for declaration: the <i>auto</i> keyword. Instead of writing the type
+            in the declaration, you can write "auto" instead, and the compiler will automatically determine the 
+            type of the variable based on the value that you use to initialize it. (Of course, that means that auto 
+            is only an option if you declare and initialize simultaneously.) For example, in the below code, the 
+            compiler can determine automatically that n should be an int:
+        </p>
+
+        <code-box data-codeId="auto"><pre>#include &lt;iostream&gt;
+int main() {
+    auto a = 42;
+    std::cout << a << std::endl;
+    return 0;
+}</pre></code-box>
+
+        <p>
+            Using "auto" provides some advantages:
+        </p>
+        <ul>
+            <li>
+                Some types have complicated names that can unpleasant (or even impossible) to write out. 
+                Letting auto determine the type for you makes code easier to write and read.
+            </li>
+            <li>
+                It avoids implicit conversions. If you write a declaration where the initialization value on the right 
+                doesn't have the type declared on the left, C++ will try to automatically convert to the type you 
+                wrote. Thus, if you write the wrong type, the program may perform a conversion which leads to 
+                unexpected behavior, rather than crashing and revealing your mistake.
+            </li>
+            <li>
+                Using auto makes it easier to later change the types used in your program. For example, if you write 
+                a program using ints, but later realize that you need to work with numbers larger than the maximum 
+                int, you'll need to update every declaration that mentions "int". If you used auto, you won't need to 
+                make as many changes.
+            </li>
+        </ul>
+        <p>
+            But it also has some disadvantages:
+        </p>
+        <ul>
+            <li>
+                Sometimes, it can make code harder to read, because the reader can't tell at a glance what the types 
+                of variables are. (This can be mitigated if your IDE provides type information.)
+            </li>
+            <li>
+                It can make code harder to debug. An explicit type declaration means that the compiler notices 
+                immediately if a variable is initialized with a type that the programmer didn't expect, whereas 
+                auto allows the mistake to happen. The program may still fail to compile if the unexpected type 
+                causes a problem later, but then the error message will point to that later code rather than the 
+                actual mistake.
+            </li>
+        </ul>
+
+        <p>
+            Modern C++ style is to prefer using auto, unless you have a reason to declare a type explicitly. But 
+            for most in-class examples and test problems in this course, I'll generally avoid auto, so that it's 
+            easier for you to quickly see what's going on when you read a new example/problem.
+        </p>
+
+        <h2>Brace Initialization</h2>
+
+        <p> 
+            Modern C++ provides another way to initialize variables, by putting the desired value inside curly 
+            braces instead of using an equals sign:
+        </p>
+
+        <code-box data-codeId="BraceInitialization1"><pre>#include &lt;iostream&gt;
+int main() {
+    double pi{3.14}; // Does the same thing as "double pi = 3.14;"
+    std::cout << pi << std::endl;
+    return 0;
+}</pre></code-box>
+
+        <p> 
+            This is now considered the preferred way to initialize variables. One reason is that it prevents
+            <i>narrowing conversions</i>, in which data is lost when one type is converted to another. For example,
+            what do you think the below code will print?
+        </p>
+
+        <code-box data-codeId="BraceInitialization2"><pre>#include &lt;iostream&gt;
+int main() {
+    int x = 4.8; 
+    std::cout << x << std::endl;
+    return 0;
+}</pre></code-box>
+
+        <p>
+            This prints 4, because C++ rounds down when trying to store a non-integer value in an int. But that can 
+            be confusing, so we probably don't want such rounding to happen unless the code explicitly says it should. 
+            If we use brace initialization, we won't get this silent rounding behavior. In fact, the below code doesn't 
+            compile:
+        </p>
+
+        <wrong-code-box data-codeId="BraceInitialization3"><pre>#include &lt;iostream&gt;
+int main() {
+    int x{4.8}; 
+    std::cout << x << std::endl;
+    return 0;
+}</pre></wrong-code-box>
+
+        <p>
+            We'll see later how you could explicitly ask C++ to round 4.8 down to an int, if necessary.
+        </p>
 
         </div> <!-- /.content -->
         <script type="text/javascript" src="codeblock.js"></script>
