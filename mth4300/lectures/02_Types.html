@@ -378,16 +378,108 @@ int main() {
             exactly real numbers are stored (which will also explain where the name "float" came from.)
         </p>
         
+        <h2>std::string</h2>
 
-            <!-- Code box (or wrong-code-box for wrong code)
+        <p>
+            We've already seen that the type for strings in C++ is std::string, and that you can define a 
+            string literal by writing it inside double quotes. When you use std::string, you should put 
+            "#include &lt;string&gt;" at the top of your file. (We saw before that this may not be strictly
+            necessary, because there's a good chance that you have an "#include &lt;iostream&gt;" that imports 
+            string for you, but it's still good practice to import string yourself so you're not relying on the 
+            details of a file you don't control.)
+        </p>
+        
+        <p>
+            If you have a string s, the following is a list of things you might want to do with it. All of the 
+            examples in parentheses assume that s is "ABCDEFG".
+        </p>
 
-            <code-box data-codeId="HelloWorld"><pre>#include &lt;iostream&gt;
+        <ul>
+            <li> 
+                s.length() or s.size(): The number of characters in the string. (In the example above, 7.)
+            </li>
+            <li>
+                s[i]: The i<sup>th</sup> indexed character in the string. (E.g., s[3] is 'D'.)
+            </li>
+            <li>
+                s.substr(pos, count): The substring starting at index pos of length count, or going until the 
+                end of the string, if count would take us past the end. (E.g., s.substr(3, 2) is "DE" and 
+                s.substr(4, 4) is "EFG".)
+            </li>
+            <li>
+                s.find(t): The index where t starts as a substring of s, or the special value std::string::npos 
+                if t can't be found. (E.g., s.find("CDEF") returns 2 and s.find("BCE") returns std::string::npos.)
+            </li>
+        </ul>
+
+        <p> 
+            Perhaps surprisingly, std::string does not provide a good way to convert a string to all uppercase 
+            or lowercase; you need to iterate through each character of the string yourself. Since we haven't 
+            covered how to do that yet, we won't worry about it for now.
+        </p>
+
+        <h2>Namespace std</h2>
+
+        <p> 
+            You may find it tedious that we need to write the prefix "std::" in front of so many things. C++ gives 
+            you a way around that: you can write "using namespace std;" to tell the compiler to check whether the 
+            names that you reference exist in the std namespace (i.e., whether they would refer to something if they 
+            had the "std::" in front).
+        </p>
+
+        <p>
+            Aside: The :: is called the <i>scope resolution operator</i> because it tells the compiler which scope to 
+            look in to find the definition of whatever name comes after it.
+        </p>
+
+        <p>
+            Note that "using namespace std" follows scoping rules similar to variables. If you put it at the beginning 
+            of your file (immediately after any #include's), then it will apply throughout the file. If you put it inside 
+            a particular function, then it will only apply to code within that function. Here's an example:
+        </p>
+
+        <code-box data-codeId="namespaceStd"><pre>#include &lt;iostream>
+#include &lt;string>
+
+using namespace std;
+
 int main() {
-    std::cout << "Hello, world!" << std::endl;
+    string name;
+    cout << "Enter your name: ";
+    cin >> name;
+    cout << "Hello, " << name << "!" << endl;
     return 0;
 }</pre></code-box>
 
- -->
+        <p>
+            A side challenge, unrelated to namespaces: How could you make this code better?
+        </p>
+        
+        <p>
+            The advantage of opening a namespace is obvious: it saves some typing, which can also make your code easier 
+            to read. The downside is subtle, but serious. The std namespace contains a lot of stuff! When you open it, 
+            suddenly your compiler considers all of those names to exist, which can lead to name collisions if you try 
+            to give a variable the same name as something in the standard library. Even if you don't have any name 
+            collisions today, somebody might add something new to the standard library which has the same name as one 
+            of your variables, retroactively breaking your code! For this reason, it is generally recommended that you 
+            avoid opening namespaces unnecessarily. 
+        </p>
+
+        <p>
+            When we start doing practice problems on LeetCode, you'll see that LeetCode opens the std namespace to save 
+            you some typing. (However, you won't see "using namespace std" explicitly; it's in the behind-the-scenes code.)
+        </p>
+
+        <h2>C-style strings</h2>
+
+        <p>
+            The C language does not have a string data type; instead, it stores a string as an array (i.e., 
+            list) of individual characters. Since C++ is based on C, there is old C++ code that handles strings in 
+            this way. If you become a professional C++ programmer, you may someday need to edit some ancient code, 
+            and then you'll need to work with C-style strings. When writing new code, you should always use the 
+            std::string type, which is safer and easier to use.
+        </p>
+
 
         </div> <!-- /.content -->
         <script type="text/javascript" src="codeblock.js"></script>
