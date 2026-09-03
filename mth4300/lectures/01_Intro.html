@@ -133,6 +133,7 @@ int main() {
         </p>
 
         <code-box data-codeId="UndeclaredVariableFixed"><pre>#include &lt;iostream&gt;
+#include &lt;string&gt;
 int main() {
     std::string a = "Hello, world!";
     std::cout << a << std::endl;
@@ -141,8 +142,10 @@ int main() {
 
         <p>
             Aside: The "std" in "std::string" and "std::cout" stands for "standard"; this code is provided as part
-            of the C++ standard library. To get access to the string type, you can use "#include &lt;string>". We 
-            didn't need to do so explicitly above, because iostream already includes string.
+            of the C++ standard library. To get access to the string type, we "#include &lt;string>". (You 
+            would probably get away with it if you left out "#include &lt;string&gt;", because iostream needs access 
+            to string, so importing iostream already imports string. But it's not guaranteed that that will always 
+            work (and it may confuse your IDE), so it's better to explicitly import string to be safe.
         </p>
 
         <p>
@@ -308,7 +311,8 @@ int main() {
 
         <p>
             C++ also supports C-style casts, by putting the target type in parentheses before the value to be cast.
-            But static_cast is preferred in modern C++.
+            But static_cast is preferred in modern C++; it makes your intent clearer and allows the compiler to
+            catch mistakes.
         </p>
 
         <wrong-code-box data-codeId="CstyleCast"><pre>#include &lt;iostream&gt;

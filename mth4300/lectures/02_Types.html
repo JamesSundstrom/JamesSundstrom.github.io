@@ -1,0 +1,351 @@
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Lecture 02: I/O and Types</title>
+        <link rel="stylesheet" href="../style.css">
+    </head>
+    <body>
+        <div class="top-bar"><a href="../mth4300.html">🏠 Back to Math 4300 homepage</a>
+        </div>
+        <div class="content">
+            <h1>Lecture 02: I/O and Types</h1>
+
+            <h2>Output</h2>
+
+            <p>
+                You've already seen how to make your program print output using std::cout and the << operator. There's 
+                a little technicality about << that's not obvious. When your program uses <<, the output doesn't necessarily 
+                print immediately. Instead, it can be stored in the <i>output buffer</i>, which stores the data you want 
+                to output to send to the output device later. The idea behind this is that it can be time-consuming to 
+                write data directly to the output device, so we don't want to do this more often than necessary. Instead,
+                we save the data and only write it when necessary:
+            </p>
+            <ul>
+                <li>When the buffer becomes full, so that we can't store any more data</li>
+                <li>When the program specifically calls for the buffer to be flushed</li>
+                <li>When the program ends</li>
+                <li>When reading input from std::cin, to ensure that prompts are printed before asking for input.</li>
+            </ul>
+                
+            <p>
+                Note that "std::cout << x" actually does two things: it prints out x, and then it returns std::cout. 
+                This allows us to chain multiple <<'s together; each << gives back std::cout again so that the next 
+                << can use it also:
+            </p>
+
+            <code-box data-codeId="coutExample1"><pre>#include &lt;iostream&gt;
+int main() {
+    int a{4}, b{2};
+    std::cout << a << b << std::endl; // Prints "42"
+    return 0;
+}</pre></code-box>
+
+            <p>
+                As you can see if you run the above code, using << does not automatically add any whitespace after printing. 
+                Thus the above code prints "42", with no space between the 4 and the 2. If we want a space between consecutive
+                outputs, we must print it explicitly:
+            </p>
+
+            <code-box data-codeId="coutExample2"><pre>#include &lt;iostream&gt;
+int main() {
+    int a{4}, b{2};
+    std::cout << a << ' ' << b << std::endl; // Prints "4 2"
+    return 0;
+}</pre></code-box>
+
+            <p>
+                Similarly, if we want a newline, we have to print that explicitly, too. You've already seen one way to do that,
+                using std::endl. Alternatively, you can output a newline character '\n' instead. The difference between these is 
+                that std::endl flushes the buffer. This means that you shouldn't use std::endl if you want to create a newline,
+                but don't need the output buffer to be flushed immediately.
+            </p>
+            <p>
+                You can flush the buffer without writing a newline by outputting std::flush or by calling std::cout.flush().
+            </p>
+
+            <h2>Input</h2>
+
+            <p>
+                Just as the data in a variable x can be written to standard output via "std::cout << x", we can get input 
+                stored in a variable x using "std::cin >> x". As with output, we can chain these together to get multiple 
+                inputs:
+            </p>
+
+            <code-box data-codeId="cinExample"><pre>#include &lt;iostream&gt;
+int main() {
+    int a, b;
+    std::cout << "Enter two integers:" << std::endl;
+    std::cin >> a >> b;
+    std::cout << "Their sum is " << a + b << std::endl;
+    return 0;
+}</pre></code-box>
+
+            <p>
+                When we use >> to get input, C++ automatically converts it from a string to the appropriate type, 
+                if possible. In the above example, whatever the user typed in is converted to an int because the 
+                variable we're trying to store it in is an int. (What if the input can't be converted to the 
+                appropriate type, e.g., the user types letters when we expected an int? Of course, C++ does provide 
+                a way to recover, but we won't worry about it for now.)
+            </p>
+
+            <p>
+                When we use <<, data is read from standard input until we reach the first whitespace character. 
+                Thus, if the user wants to ask the above program to add 4 and 3, the user can either type 
+                "4" Enter "3" Enter or "4 3" Enter. In either case, everything before the first whitespace is read 
+                into the variable a, and then everything before the second whitespace is read into the variable b.
+            </p>
+
+            <p> 
+                If you need to read in an entire line, including spaces, you can use std::getline:
+            </p>
+
+            <code-box data-codeId="movie"><pre>#include &lt;iostream&gt;
+#include &lt;string&gt;
+int main() {
+    std::string movie;
+    std::cout << "What's your favorite movie?" << std::endl;
+    std::getline(std::cin, movie);
+    std::cout << "I agree! " << movie << " is a great movie!" << std::endl;
+    return 0;
+}</pre></code-box>
+
+        <h2>Exercise</h2>
+
+        <p>
+            Write a program which asks the user to enter the x- and y-coordinates of two points, and prints the distance 
+            between the points.
+        </p>
+        <p>Hints:</p>
+        <ul>
+            <li>You can import std::sqrt from the cmath library.</li>
+            <li>You can use <i>double</i> (which we'll discuss below) as the type for a variable that represents a real number.</li>
+        </ul>
+        
+        <h2>Types</h2>
+
+        <p>
+            Next, we'll look at some of the most important types in C++. In order to fully understand them, we'll need to know
+            a little bit about binary. 
+        </p>
+
+        <h2>
+            Binary
+        </h2>
+
+        <p>
+            As you probably already know, computers store data in binary (i.e., as 0's and 1's). Each 0 or 1 is called a
+            <i>bit</i>, and a group of eight bits is called a <i>byte</i>. A byte is the smallest addressable unit of memory 
+            in C++; you can't store a variable in half a byte, or 1.5 bytes, etc.
+        </p>
+
+        <p>
+            If you have <i>n</i> bits available to store a positive integer, what's the largest integer you can store?
+            (Whenever I say "integer," I'm referring to the mathematical concept; I'll always call the type "int" instead.) 
+            Obviously, the largest integer is 11...11, where all <i>n</i> bits contain 1's. Therefore, the largest integer 
+            we can store is
+        </p>
+
+        <p style="text-align: center;">
+            2<sup>0</sup> + 2<sup>1</sup> + ... + 2<sup><i>n</i>-1</sup> = 2<sup><i>n</i></sup> - 1.
+        </p>
+
+        <p>
+            However, when we store an integer, we usually want to allow for negative values also. The first bit is
+            therefore reserved as a sign bit, which indicates whether the number is positive or negative, but not in 
+            the way you might think. Even though 00000010 represents 2, 10000010 does not represent -2.
+            In fact, it represents -126. This way of representing negative numbers is called <i>two's complement</i>,
+            and it's designed so that the computer can do arithmetic with positive or negative numbers without needing
+            special handling for negative numbers. 
+        </p>
+
+        <p>
+            For example, 11111111 represents -1, because if we add 1 to 11111111, we get 100000000; but the 1 overflows 
+            out of the allocated memory, so the computer stores 00000000. Since 11111111 + 00000001 = 00000000, it must 
+            be the case that 11111111 represents -1.
+        </p>
+
+        <p>
+            Now suppose we have <i>k</i> bytes allocated to store an integer. We know that <i>k</i> bytes is 8<i>k</i> 
+            bits, but the first bit is reserved as a sign bit, so we only have 8<i>k</i> - 1 bits available to store a 
+            positive number. Therefore the largest positive number we can store is 2<sup>8<i>k</i>-1</sup>-1. The largest 
+            negative number that we can store is -2<sup>8<i>k</i>-1</sup>. (If you know how two's complement works, you can 
+            check this directly. Alternatively, you could predict this answer by noticing that there are 2<sup>8<i>k</i></sup> 
+            possible values that can be stored by <i>k</i> bytes, and the interval [-2<sup>8<i>k</i>-1</sup>, 
+            2<sup>8<i>k</i>-1</sup>-1] contains 2<sup>8<i>k</i></sup> integers.)
+        </p>
+
+        <h2>int</h2>
+
+        <p>
+            There are several types in C++ that can be used to store integers, but probably the most commonly-used one is int. 
+            The C++ standard says that the compiler is required to allocate at least two bytes to store an int, but most compilers
+            allocate 4 bytes. If you want to know how many bytes your compiler uses, run the below code:
+        </p>
+
+        <code-box data-codeId="sizeofint"><pre>#include &lt;iostream&gt;
+int main() {
+    std::cout << sizeof(int) << std::endl;
+    return 0;
+}</pre></code-box>
+
+        <p>
+            This code will almost certainly print 4. If it doesn't, let me know! I'd be curious to know how you ended up with 
+            a compiler that doesn't allocate 4 bytes for an int.
+        </p>
+
+        <p>
+            Assuming that an int is 4 bytes, what range of values can be stored in an int? According to the formula we found 
+            above, that range is [-2<sup>31</sup>, 2<sup>31</sup>-1] = [-2,147,483,648, 2,147,483,647]. If you don't feel like doing 
+            the math, you can ask C++ to tell you the limits:
+        </p>
+
+        <code-box data-codeId="limits"><pre>#include &lt;iostream&gt;
+#include &lt;limits&gt;
+int main() {
+    int min{std::numeric_limits&lt;int>::min()}, max{std::numeric_limits&lt;int>::max()};
+    std::cout << "[" << min << ", " << max << "]" << std::endl;
+    return 0;
+}</pre></code-box>
+
+        <p>
+            What happens if you try to store a value outside of this range in an int variable? You'll instead get the value in 
+            [-2<sup>31</sup>, 2<sup>31</sup>-1] which is congruent to the correct value modulo 2<sup>32</sup>; in other words,
+            the compiler will simply ignore any bits that overflow the allocated memory, as mentioned in the 11111111+1 example.
+            If you have a positive number that's only slightly too big, it'll overflow to a negative number, which might make it 
+            easy to diagnose the bug: if your program prints a negative number in a situation where it's mathematically impossible 
+            to get a negative number, there's a good chance that the reason is overflow. On the other hand, if you overflow by too 
+            much, the number might come around to be positive again, making the bug less obvious.
+        </p>
+
+        <p>
+            For most real-world applications, you'll never need to deal with numbers larger than 2,147,483,647, which can make 
+            it easy to forget that there's an int limit on the rare occasions when you are using huge numbers. Any time you're 
+            working with big integers, make sure you take a moment to check whether those numbers will fit inside an int (or 
+            just use a bigger type to be safe). For example, the below program prints the wrong answer for 13 factorial. The code 
+            is correct, except that an int isn't big enough to hold the number we want:
+        </p>
+
+        <code-box data-codeId="factorial"><pre>#include &lt;iostream&gt;
+int factorial(int n) {
+    return n <= 0 ? 1 : n * factorial(n-1);
+}
+int main() {
+    std::cout << factorial(13) << std::endl;
+    return 0;
+}</pre></code-box>
+
+        <h2>long long</h2>
+
+        <p>
+            What if you need to work with numbers too large to fit in an int? There's a larger data type for storing
+            integers, which is called <i>long long</i>. (There's also a <i>long</i> type, but you shouldn't use it.)
+            The C++ standard guarantees that it will be at least 8 bytes; most compilers make it exactly 8. Assuming 
+            that long long is 8 bytes, this means that the range of numbers that it can store is
+        </p>
+        <p style="text-align: center;">
+            [-2<sup>63</sup>, 2<sup>63</sup>-1] = [-9,223,372,036,854,775,808, 9,223,372,036,854,775,807].
+        </p>
+
+        <p>
+            For most practical purposes, you'll never need numbers larger than that.
+        </p>
+
+        <p>
+            We can use long long to make a slightly better factorial program. Now it works for 0 <= n <= 20, but even 
+            long long isn't big enough for 21!:
+        </p>
+
+        <code-box data-codeId="factorialLong"><pre>#include &lt;iostream>
+long long factorial(long long n) {
+    return n &lt;= 0 ? 1 : n * factorial(n-1);
+}
+int main() {
+    long long n;
+    std::cout << "Enter n: ";
+    std::cin >> n;
+    std::cout << factorial(n) << std::endl;
+    return 0;
+}</pre></code-box>
+
+        <h2>unsigned</h2>
+
+        <p>
+            In many applications, you know that you'll never need negative numbers. In that case, you might not want to waste 
+            a bit on a sign bit. C++ lets you do this; if you write <i>unsigned</i> before the name of a type that is typically 
+            signed, you get the same amount of memory, but the first bit is available to store larger positive numbers rather 
+            than being a sign bit. For example, an unsigned int can hold any integer from 0 to 2<sup>32</sup> - 1; an unsigned 
+            long long can hold any integer from 0 to 2<sup>64</sup>-1. 
+        </p>
+
+        <p>
+            If you try to store a negative number in an unsigned type, you will get a garbage value similar to what happens if 
+            you try to store a value that is too large. For example, the below program prints 4294967295, because that is the 
+            maximum unsigned int minus one:
+        </p>
+
+        <code-box data-codeId="unsigned"><pre>#include &lt;iostream>
+int main() {
+    unsigned int n{3}, m{4};
+    std::cout << n - m << std::endl; // Prints 4294967295
+    return 0;
+}</pre></code-box>        
+
+        <h2>char</h2>
+
+        <p>
+            The type <i>char</i> is intended to store a single character. You can initialize it by typing the character 
+            in single quotes. (Note that unlike Python, single and double quotes are not interchangeable in C++. Single 
+            quotes are used for characters, while double quotes are used for strings.)
+        </p>
+
+        <code-box data-codeId="Hi"><pre>#include &lt;iostream>
+#include &lt;string>
+int main() {
+    std::string s{"Hello"};
+    char x{s[0]}, y{'i'};
+    std::cout << x << y << std::endl; // Prints "Hi"
+    return 0;
+}</pre></code-box>
+
+        <p>
+            Similar to Python, you can use escape sequences to write character literals with characters that are 
+            inconvenient to type normally, such as '\n' (newline), '\t' (tab), '\\' backslash, '\'' (single quote).
+        </p>
+
+        <p> 
+            A char stores exactly one byte. As far as the compiler is concerned, a char is just a numeric value, 
+            which can be converted to/from a character as needed using the ASCII encoding. This means that we 
+            can initialize a character as a number. (We can even do math with characters, if we really want to.
+            However, the result will be an int, not another char.) For example, the ASCII value of the newline 
+            character is 10, so the below program prints "true":
+        </p>
+
+        <code-box data-codeId="charEquality"><pre>#include &lt;iostream>
+int main() {
+    std::cout << std::boolalpha; // Print bools as text
+    char x{'\n'}, y{10};
+    std::cout << (x == y) << std::endl; // Prints true
+    return 0;
+}</pre></code-box>
+
+        <p>
+            The C++ standard does not state whether a char is signed or unsigned. 
+        </p>
+        
+
+
+            <!-- Code box (or wrong-code-box for wrong code)
+
+            <code-box data-codeId="HelloWorld"><pre>#include &lt;iostream&gt;
+int main() {
+    std::cout << "Hello, world!" << std::endl;
+    return 0;
+}</pre></code-box>
+
+ -->
+
+        </div> <!-- /.content -->
+        <script type="text/javascript" src="codeblock.js"></script>
+    </body>
+</html>
