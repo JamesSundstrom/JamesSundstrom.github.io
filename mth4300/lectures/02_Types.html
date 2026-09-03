@@ -316,9 +316,8 @@ int main() {
         <p> 
             A char stores exactly one byte. As far as the compiler is concerned, a char is just a numeric value, 
             which can be converted to/from a character as needed using the ASCII encoding. This means that we 
-            can initialize a character as a number. (We can even do math with characters, if we really want to.
-            However, the result will be an int, not another char, which can result in some unexpected behavior.) 
-            For example, the ASCII value of the newline character is 10, so the below program prints "true":
+            can initialize a character as a number. For example, the ASCII value of the newline character is 10, 
+            so the below program prints "true":
         </p>
 
         <code-box data-codeId="charEquality"><pre>#include &lt;iostream>
@@ -326,6 +325,22 @@ int main() {
     std::cout << std::boolalpha; // Print bools as text
     char x{'\n'}, y{10};
     std::cout << (x == y) << std::endl; // Prints true
+    return 0;
+}</pre></code-box>
+
+        <p>
+            We can even do math with characters. (For example, we could Caesar shift characters by adding the size 
+            of the shift, except that we need to be careful to make the end of the alphabet wrap around.) However, 
+            the result will be an int, not another char, which can result in some unexpected behavior. if you don't 
+            cast back to a char:
+        </p>
+
+        <code-box data-codeId="charArithmetic"><pre>#include &lt;iostream>
+int main() {
+    char x = 'a';
+    char y = x + 1;
+    std::cout << y << std::endl; // Prints 'b'
+    std::cout << x+1 << std::endl; // Prints 98
     return 0;
 }</pre></code-box>
 
