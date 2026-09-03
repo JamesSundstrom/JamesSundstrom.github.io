@@ -317,8 +317,8 @@ int main() {
             A char stores exactly one byte. As far as the compiler is concerned, a char is just a numeric value, 
             which can be converted to/from a character as needed using the ASCII encoding. This means that we 
             can initialize a character as a number. (We can even do math with characters, if we really want to.
-            However, the result will be an int, not another char.) For example, the ASCII value of the newline 
-            character is 10, so the below program prints "true":
+            However, the result will be an int, not another char, which can result in some unexpected behavior.) 
+            For example, the ASCII value of the newline character is 10, so the below program prints "true":
         </p>
 
         <code-box data-codeId="charEquality"><pre>#include &lt;iostream>
@@ -330,10 +330,39 @@ int main() {
 }</pre></code-box>
 
         <p>
-            The C++ standard does not state whether a char is signed or unsigned. 
+            The C++ standard does not state whether a char is signed or unsigned. If that matters to you, you can 
+            declare a variable "signed char" or "unsigned char" explicitly.
+        </p>
+
+        <h2>Exercise</h2>
+
+        What range of values can be stored in a signed char? An unsigned char?
+        
+        <h2>bool</h2>
+
+        <p>
+            The C++ data type for booleans is called <i>bool</i>. The C++  boolean literals are <i>true</i> and 
+            <i>false</i>. (Note that these are not capitalized, unlike the boolean literals in Python.)            
+            In theory, a bool could be stored in a single bit, but since C++ doesn't let us assign a single bit 
+            to a variable, a bool is one byte. A value of 0 is treated as false, and anything else is treated as 
+            true.
+        </p>
+
+        <p>
+            If you try to print a bool, the default behavior is to print 0 for false and 1 for true. We saw above 
+            that you can make C++ print "true" or "false" instead using "std::cout << std::boolalpha;".
+        </p>
+
+        <h2>float/double</h2>
+
+        <p> 
+            There are two types that you can use to store real numbers: <i>float</i> and <i>double</i>; double 
+            provides more memory, and therefore more precision, so you should generally use double unless you 
+            need to save memory or time. A float provides 6-7 significant decimal digits of accuracy, whereas a double 
+            provides 15-16 significant decimal digits. Later in the course, we'll go into more detail about how 
+            exactly real numbers are stored (which will also explain where the name "float" came from.)
         </p>
         
-
 
             <!-- Code box (or wrong-code-box for wrong code)
 

@@ -282,8 +282,8 @@ int main() {
         <p>
             This prints 4, because C++ rounds down when trying to store a non-integer value in an int. But that can 
             be confusing, so we probably don't want such rounding to happen unless the code explicitly says it should. 
-            If we use brace initialization, we won't get this silent rounding behavior. In fact, the below code doesn't 
-            compile:
+            If we use brace initialization, we won't get this silent rounding behavior; the code won't compile, or the 
+            compiler will give us a warning. For example, the below code doesn't compile:
         </p>
 
         <wrong-code-box data-codeId="BraceInitialization3"><pre>#include &lt;iostream&gt;
