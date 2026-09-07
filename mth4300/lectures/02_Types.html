@@ -14,24 +14,24 @@
             <h2>Output</h2>
 
             <p>
-                You've already seen how to make your program print output using std::cout and the << operator. There's 
-                a little technicality about << that's not obvious. When your program uses <<, the output doesn't necessarily 
-                print immediately. Instead, it can be stored in the <i>output buffer</i>, which stores the data you want 
-                to output to send to the output device later. The idea behind this is that it can be time-consuming to 
-                write data directly to the output device, so we don't want to do this more often than necessary. Instead,
-                we save the data and only write it when necessary:
+                You've already seen how to make your program print output using <code>std::cout</code> and the <code><<</code> 
+                operator. There's a little technicality about <code><<</code> that's not obvious. When your program uses 
+                <code><<</code>, the output doesn't necessarily print immediately. Instead, it can be stored in the <i>output 
+                buffer</i>, which stores the data you want to output to send to the output device later. The idea behind this 
+                is that it can be time-consuming to write data directly to the output device, so we don't want to do this more 
+                often than necessary. Instead, we save the data and only write it when necessary:
             </p>
             <ul>
                 <li>When the buffer becomes full, so that we can't store any more data</li>
                 <li>When the program specifically calls for the buffer to be flushed</li>
                 <li>When the program ends</li>
-                <li>When reading input from std::cin, to ensure that prompts are printed before asking for input.</li>
+                <li>When reading input from <code>std::cin</code>, to ensure that prompts are printed before asking for input.</li>
             </ul>
                 
             <p>
-                Note that "std::cout << x" actually does two things: it prints out x, and then it returns std::cout. 
-                This allows us to chain multiple <<'s together; each << gives back std::cout again so that the next 
-                << can use it also:
+                Note that <code>std::cout << x</code> actually does two things: it prints out <code>x</code>, and then it returns 
+                <code>std::cout</code>. This allows us to chain multiple <code><<</code>'s together; each <code><<</code> gives 
+                back <code>std::cout</code> again so that the next <code><<</code> can use it also:
             </p>
 
             <code-box data-codeId="coutExample1"><pre>#include &lt;iostream&gt;
@@ -42,9 +42,9 @@ int main() {
 }</pre></code-box>
 
             <p>
-                As you can see if you run the above code, using << does not automatically add any whitespace after printing. 
-                Thus the above code prints "42", with no space between the 4 and the 2. If we want a space between consecutive
-                outputs, we must print it explicitly:
+                As you can see if you run the above code, using <code><<</code> does not automatically add any whitespace after 
+                printing. Thus the above code prints "42", with no space between the 4 and the 2. If we want a space between
+                consecutive outputs, we must print it explicitly:
             </p>
 
             <code-box data-codeId="coutExample2"><pre>#include &lt;iostream&gt;
@@ -56,9 +56,9 @@ int main() {
 
             <p>
                 Similarly, if we want a newline, we have to print that explicitly, too. You've already seen one way to do that,
-                using std::endl. Alternatively, you can output a newline character '\n' instead. The difference between these is 
-                that std::endl flushes the buffer. This means that you shouldn't use std::endl if you want to create a newline,
-                but don't need the output buffer to be flushed immediately.
+                using <code>std::endl</code>. Alternatively, you can output a newline character <code>'\n'</code> instead. 
+                The difference between these is that <code>std::endl</code> flushes the buffer. This means that you shouldn't 
+                use <code>std::endl</code> if you want to create a newline, but don't need the output buffer to be flushed immediately.
             </p>
             <p>
                 You can flush the buffer without writing a newline by outputting std::flush or by calling std::cout.flush().
@@ -67,9 +67,9 @@ int main() {
             <h2>Input</h2>
 
             <p>
-                Just as the data in a variable x can be written to standard output via "std::cout << x", we can get input 
-                stored in a variable x using "std::cin >> x". As with output, we can chain these together to get multiple 
-                inputs:
+                Just as the data in a variable <code>x</code> can be written to standard output via <code>std::cout << x</code>, 
+                we can get input stored in a variable <code>x</code> using <code>std::cin >> x</code>. As with output, we can 
+                chain these together to get multiple inputs:
             </p>
 
             <code-box data-codeId="cinExample"><pre>#include &lt;iostream&gt;
@@ -82,7 +82,7 @@ int main() {
 }</pre></code-box>
 
             <p>
-                When we use >> to get input, C++ automatically converts it from a string to the appropriate type, 
+                When we use <code>>></code> to get input, C++ automatically converts it from a string to the appropriate type, 
                 if possible. In the above example, whatever the user typed in is converted to an int because the 
                 variable we're trying to store it in is an int. (What if the input can't be converted to the 
                 appropriate type, e.g., the user types letters when we expected an int? Of course, C++ does provide 
@@ -90,7 +90,7 @@ int main() {
             </p>
 
             <p>
-                When we use <<, data is read from standard input until we reach the first whitespace character. 
+                When we use <code><<</code>, data is read from standard input until we reach the first whitespace character. 
                 Thus, if the user wants to ask the above program to add 4 and 3, the user can either type 
                 "4" Enter "3" Enter or "4 3" Enter. In either case, everything before the first whitespace is read 
                 into the variable a, and then everything before the second whitespace is read into the variable b.
@@ -110,6 +110,13 @@ int main() {
     return 0;
 }</pre></code-box>
 
+        <p>
+            Warning: If you use <code>std::cin >></code> before <code>std::getline</code>, the <code>>></code> will 
+            leave a newline in the buffer, and then <code>getline</code> will encounter that newline immediately 
+            and return an empty string. You can use <code>std::cin.ignore()</code> before <code>getline</code> to 
+            clear the newline.
+        </p>
+
         <h2>Exercise</h2>
 
         <p>
@@ -118,7 +125,7 @@ int main() {
         </p>
         <p>Hints:</p>
         <ul>
-            <li>You can import std::sqrt from the cmath library.</li>
+            <li>You can import <code>std::sqrt</code> from the <code>cmath</code> library.</li>
             <li>You can use <i>double</i> (which we'll discuss below) as the type for a variable that represents a real number.</li>
         </ul>
         
@@ -310,7 +317,8 @@ int main() {
 
         <p>
             Similar to Python, you can use escape sequences to write character literals with characters that are 
-            inconvenient to type normally, such as '\n' (newline), '\t' (tab), '\\' backslash, '\'' (single quote).
+            inconvenient to type normally, such as <code>'\n'</code> (newline), <code>'\t'</code> (tab), 
+            <code>'\\'</code> backslash, <code>'\''</code> (single quote).
         </p>
 
         <p> 
@@ -331,7 +339,7 @@ int main() {
         <p>
             We can even do math with characters. (For example, we could Caesar shift characters by adding the size 
             of the shift, except that we need to be careful to make the end of the alphabet wrap around.) However, 
-            the result will be an int, not another char, which can result in some unexpected behavior. if you don't 
+            the result will be an int, not another char, which can result in some unexpected behavior, if you don't 
             cast back to a char:
         </p>
 
@@ -356,7 +364,7 @@ int main() {
         <h2>bool</h2>
 
         <p>
-            The C++ data type for booleans is called <i>bool</i>. The C++  boolean literals are <i>true</i> and 
+            The C++ data type for booleans is called <i>bool</i>. The C++ boolean literals are <i>true</i> and 
             <i>false</i>. (Note that these are not capitalized, unlike the boolean literals in Python.)            
             In theory, a bool could be stored in a single bit, but since C++ doesn't let us assign a single bit 
             to a variable, a bool is one byte. A value of 0 is treated as false, and anything else is treated as 
@@ -365,7 +373,7 @@ int main() {
 
         <p>
             If you try to print a bool, the default behavior is to print 0 for false and 1 for true. We saw above 
-            that you can make C++ print "true" or "false" instead using "std::cout << std::boolalpha;".
+            that you can make C++ print "true" or "false" instead using <code>std::cout << std::boolalpha;</code>.
         </p>
 
         <h2>float/double</h2>
@@ -381,39 +389,40 @@ int main() {
         <h2>std::string</h2>
 
         <p>
-            We've already seen that the type for strings in C++ is std::string, and that you can define a 
-            string literal by writing it inside double quotes. When you use std::string, you should put 
-            "#include &lt;string&gt;" at the top of your file. (We saw before that this may not be strictly
-            necessary, because there's a good chance that you have an "#include &lt;iostream&gt;" that imports 
-            string for you, but it's still good practice to import string yourself so you're not relying on the 
-            details of a file you don't control.)
+            We've already seen that the type for strings in C++ is <code>std::string</code>, and that you can define a 
+            string literal by writing it inside double quotes. When you use <code>std::string</code>, you should put 
+            <code>#include &lt;string&gt;</code> at the top of your file. (We saw before that this may not be strictly
+            necessary, because there's a good chance that you have an <code>#include &lt;iostream&gt;</code> that imports 
+            <code>string</code> for you, but it's still good practice to import <code>string</code> yourself so you're 
+            not relying on the details of a file you don't control.)
         </p>
         
         <p>
-            If you have a string s, the following is a list of things you might want to do with it. All of the 
-            examples in parentheses assume that s is "ABCDEFG".
+            If you have a string <code>s</code>, the following is a list of things you might want to do with it. All of the 
+            examples in parentheses assume that <code>s</code> is <code>"ABCDEFG"</code>.
         </p>
 
         <ul>
             <li> 
-                s.length() or s.size(): The number of characters in the string. (In the example above, 7.)
+                <code>s.length()</code> or <code>s.size()</code>: The number of characters in the string. (In the example above, 7.)
             </li>
             <li>
-                s[i]: The i<sup>th</sup> indexed character in the string. (E.g., s[3] is 'D'.)
+                <code>s[i]</code>: The i<sup>th</sup> indexed character in the string. (E.g., <code>s[3]</code> is <code>'D'</code>.)
             </li>
             <li>
-                s.substr(pos, count): The substring starting at index pos of length count, or going until the 
-                end of the string, if count would take us past the end. (E.g., s.substr(3, 2) is "DE" and 
-                s.substr(4, 4) is "EFG".)
+                <code>s.substr(pos, count)</code>: The substring starting at index <code>pos</code> of length <code>count</code>, 
+                or going until the end of the string, if <code>count</code> would take us past the end. (E.g., 
+                <code>s.substr(3, 2)</code> is <code>"DE"</code> and <code>s.substr(4, 4)</code> is <code>EFG"</code>.)
             </li>
             <li>
-                s.find(t): The index where t starts as a substring of s, or the special value std::string::npos 
-                if t can't be found. (E.g., s.find("CDEF") returns 2 and s.find("BCE") returns std::string::npos.)
+                <code>s.find(t)</code>: The index where <code>t</code> starts as a substring of <code>s</code>, or the special value 
+                <code>std::string::npos</code> if <code>t</code> can't be found. (E.g., <code>s.find("CDEF")</code> returns 2 and 
+                <code>s.find("BCE")</code> returns <code>std::string::npos</code>.)
             </li>
         </ul>
 
         <p> 
-            Perhaps surprisingly, std::string does not provide a good way to convert a string to all uppercase 
+            Perhaps surprisingly, <code>std::string</code> does not provide a good way to convert a string to all uppercase 
             or lowercase; you need to iterate through each character of the string yourself. Since we haven't 
             covered how to do that yet, we won't worry about it for now.
         </p>
@@ -421,20 +430,20 @@ int main() {
         <h2>Namespace std</h2>
 
         <p> 
-            You may find it tedious that we need to write the prefix "std::" in front of so many things. C++ gives 
-            you a way around that: you can write "using namespace std;" to tell the compiler to check whether the 
-            names that you reference exist in the std namespace (i.e., whether they would refer to something if they 
-            had the "std::" in front).
+            You may find it tedious that we need to write the prefix <code>std::</code> in front of so many things. C++ gives 
+            you a way around that: you can write "<code>using namespace std;</code>" to tell the compiler to check whether the 
+            names that you reference exist in the <code>std</code> namespace (i.e., whether they would refer to something if they 
+            had the <code>std::</code> in front).
         </p>
 
         <p>
-            Aside: The :: is called the <i>scope resolution operator</i> because it tells the compiler which scope to 
+            Aside: The <code>::</code> is called the <i>scope resolution operator</i> because it tells the compiler which scope to 
             look in to find the definition of whatever name comes after it.
         </p>
 
         <p>
-            Note that "using namespace std" follows scoping rules similar to variables. If you put it at the beginning 
-            of your file (immediately after any #include's), then it will apply throughout the file. If you put it inside 
+            Note that "<code>using namespace std</code>" follows scoping rules similar to variables. If you put it at the beginning 
+            of your file (immediately after any <code>#include</code>'s), then it will apply throughout the file. If you put it inside 
             a particular function, then it will only apply to code within that function. Here's an example:
         </p>
 
@@ -467,7 +476,8 @@ int main() {
 
         <p>
             When we start doing practice problems on LeetCode, you'll see that LeetCode opens the std namespace to save 
-            you some typing. (However, you won't see "using namespace std" explicitly; it's in the behind-the-scenes code.)
+            you some typing. (However, you won't see <code>using namespace std</code> explicitly; it's in the 
+            behind-the-scenes code.)
         </p>
 
         <h2>C-style strings</h2>
@@ -477,10 +487,29 @@ int main() {
             list) of individual characters. Since C++ is based on C, there is old C++ code that handles strings in 
             this way. If you become a professional C++ programmer, you may someday need to edit some ancient code, 
             and then you'll need to work with C-style strings. When writing new code, you should always use the 
-            std::string type, which is safer and easier to use.
+            <code>std::string</code> type, which is safer and easier to use.
+        </p>
+
+        <h2>std::vector</h2>
+
+        <p>
+            The standard C++ type for storing a list is <code>std::vector</code>. C++ also has C-style arrays, which were 
+            mentioned in the previous section. But as with strings, <code>std::vector</code> is the preferred, modern way 
+            to make a list. We'll probably talk about C-style arrays later, in case you encounter code that uses them or 
+            you ever need to code in C, but for practical C++ coding we can stick with vectors. (There's also a type 
+            <code>std::array</code>, but properly explaining the difference between <code>std::vector</code> and 
+            <code>std::array</code> involves some technicalities that we haven't covered yet.)
+        </p>
+
+        <p>
+            Unlike Python, which let you put whatever you wanted into a list, even if different list elements had different 
+            types, <code>std::vector</code> requires that every entry in the list have the same type. You tell C++ what that 
+            type will be by putting the type name between <code>&lt;</code> and <code>&gt;</code>, after <code>std::vector</code>. 
+            For example, a vector of ints would have type <code>std::vector&lt;int&gt;</code>.
         </p>
 
 
+        
         </div> <!-- /.content -->
         <script type="text/javascript" src="codeblock.js"></script>
     </body>
