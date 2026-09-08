@@ -1,0 +1,243 @@
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Lecture 03: Control Flow</title>
+        <link rel="stylesheet" href="../style.css">
+    </head>
+    <body>
+        <div class="top-bar"><a href="../mth4300.html">🏠 Back to Math 4300 homepage</a>
+        </div>
+        <div class="content">
+            <h1>Lecture 03: Control Flow</h1>
+
+            <h2>Control Flow</h2>
+
+            <p>
+                "<i>Control flow</i>" refers to the order in which statements are executed inside your program. It can be 
+                affected by things like conditionals and loops. Fortunately, most of these things are very similar in C++ 
+                and Python, so most of what we're about to talk about will seem familiar to you.
+            </p>
+
+            <h2><code>if</code></h2>
+
+            <p>
+                As in Python, conditionals in C++ are introduced by <code>if</code>. As we've seen, C++ uses braces rather 
+                than colon/indentation to determine blocks of code, so you'll indicate the block of code to be executed if the 
+                condition is true using braces. (Technically, it's not necessary to use braces if there's only one statement 
+                to be executed, but "always use braces" is a popular style anyway.) The other difference is that C++ requires 
+                the condition to be written inside parentheses.
+            </p>
+
+            <p>
+                Here's a very simple example:
+            </p>
+
+            <code-box data-codeId="rottenTomatoes0"><pre>#include &lt;iostream&gt;
+int main() {
+    double rating;
+    std::cout << "Enter the Rotten Tomatoes score: ";
+    std::cin >> rating;
+    if (rating >= 60) {
+        std::cout << "Fresh!" << std::endl;
+    }
+    return 0;
+}
+</pre></code-box>
+
+            <h2><code>else</code></h2>
+
+            <p>
+                Of course, we sometimes want our program to do one thing when a condition is true, and another when a 
+                condition is false. We can put an <code>else</code> block after an <code>if</code> to indicate this:
+            </p>
+
+            <code-box data-codeId="rottenTomatoes1"><pre>#include &lt;iostream&gt;
+int main() {
+    double rating;
+    std::cout << "Enter the Rotten Tomatoes score: ";
+    std::cin >> rating;
+    if (rating >= 60) {
+        std::cout << "Fresh!" << std::endl;
+    } else {
+        std::cout << "Rotten!" << std::endl;
+    }
+    return 0;
+}
+</pre></code-box>
+
+        <h2><code>else if</code></h2>
+
+        <p>
+            C++'s <code>else if</code> is the equivalent of Python's <code language="Python">elif</code>. You can use it when 
+            your code has more than two branches and you only want to select one. Naturally, you can still put an <code>else</code> 
+            at the end.
+        </p>
+
+        <code-box data-codeId="grade"><pre>#include &lt;iostream&gt;
+int main() {
+    double average;
+    std::cout << "Enter your course average: ";
+    std::cin >> average;
+    if (average < 60) {
+        std::cout << "F" << std::endl;
+    } else if (average < 70) {
+        std::cout << "D" << std::endl;
+    } else if (average < 80) {
+        std::cout << "C" << std::endl;
+    } else if (average < 90) {
+        std::cout << "B" << std::endl;
+    } else {
+        std::cout << "A" << std::endl;
+    }
+    return 0;
+}
+</pre></code-box>
+
+        <h2>switch</h2>
+
+        <p>
+            Sometimes we want our code to branch based on the value of a specific variable, e.g., if x=0 we go down 
+            one branch, if x=1 we go down another branch, and so on. We could handle this with a long
+            <code>else if</code> chain, but C++ gives us another option: the <code>switch</code> statement:
+        </p>
+
+        <code-box data-codeId="switch"><pre>#include &lt;iostream&gt;
+int main() {
+    int players;
+    std::cout << "Enter number of players: ";
+    std::cin >> players;
+    switch (players) {
+        case 0:
+            std::cout << "Two computer players will play against each other." << std::endl;
+            break;
+        case 1:
+            std::cout << "You will play against the computer." << std::endl;
+            break;
+        case 2:
+            std::cout << "You will play against another person." << std::endl;
+            break;
+        default:
+            std::cout << "Invalid input." << std::endl;
+            break;
+    }
+    return 0;
+}
+</pre></code-box>
+
+        <p>
+            Some things to be careful with:
+        </p>
+        <ul>
+            <li>
+                The value that you switch on must be an integral type (int, char, long, etc.), or something that 
+                the compiler can automatically convert to an integral type. You cannot switch on strings or doubles.
+            </li>
+            <li>
+                The value after <code>case</code> must be a constant expression that the compiler can evaluate at 
+                compile time; it cannot depend on a variable.
+            </li>
+            <li>
+                By default, after we find the matching case, we execute not just the statements within that case, but 
+                also all the following cases. (This is referred to as <i>falling through</i>.) This may sometimes be 
+                desirable, if you want several cases to execute the same code, but usually it isn't. Put a 
+                <code>break</code> at the end of each case to tell the program to break out of the switch statement 
+                and not run the other cases' code.
+            </li>
+            <li>
+                You can include a <code>default</code> block at the end, with code to be run if the input doesn't match any 
+                of the cases. This is optional, but generally good practice.
+            </li>
+        </ul>
+
+        <h2><code>for</code> loops</h2>
+
+        <p>
+            As in Python, you can use a <code>for</code> loop to iterate. The most basic <code>for</code> loop is when you want to iterate 
+            over a specific range, similar to Python's <code language="Python">for i in range(5):</code>. You can set up a 
+            <code>for</code> loop in C++ by writing <code>for</code>, followed by three statements separated by semicolons (see below), 
+            and then the code that you want to iterate inside braces. The three statements that you write are:
+        </p>
+
+        <ul>
+            <li>Initialization: Initialize the counter</li>
+            <li>Condition: The condition to continue looping</li>
+            <li>Update: How to advance to the next iteration, after running the code inside the loop</li>
+        </ul>
+
+        <p>
+            The most common case looks like this:
+        </p>
+
+        <code-box data-codeId="basicForLoop"><pre>#include &lt;iostream&gt;
+int main() {
+    for (int i = 0; i < 5; ++i) {
+        std::cout << i << " ";
+    }
+    std::cout << std::endl;
+    return 0;
+}</pre></code-box>
+
+        <p>
+            This code says that <code>i</code> should be initialized to zero, then after each iteration <code>i</code> should 
+            be incremented, continuing while <code>i < 5</code>. Therefore we will get iterations for i=0,1,2,3,4, so this 
+            code prints "0 1 2 3 4".
+        </p>
+
+        <p> 
+            There's no rule that says that the loop variable needs to be incremented by 1 every time. For example, we could write 
+            code that prints all the powers of 2 less than 1000, by doubling <code>i</code> every iteration:
+        </p>
+
+        <code-box data-codeId="lessBasicForLoop"><pre>#include &lt;iostream&gt;
+int main() {
+    for (int i = 1; i < 1000; i *= 2) {
+        std::cout << i << " ";
+    }
+    std::cout << std::endl;
+    return 0;
+}</pre></code-box>
+
+        <p> 
+            There's also no rule that says all three statements inside the parentheses are necessary. For example, if we want 
+            to use a variable that's already been initialized, we can skip initialization:
+        </p>
+
+        <code-box data-codeId="countdown"><pre>#include &lt;iostream&gt;
+int main() {
+    int i;
+    std::cout << "Enter a positive integer: ";
+    std::cin >> i;
+    for (; i >= 0; --i) {
+        std::cout << i << " ";
+    }
+    std::cout << std::endl;
+    return 0;
+}</pre></code-box>
+
+        <p>
+            The other two are less commonly skipped, but they can be skipped if you don't need them. (Though if you do find 
+            yourself skipping them, your code might be easier to read with a <code>while</code> loop instead.) You can even skip 
+            all three to create an infinite loop. (Again, <code>while (true)</code> might be considered a clearer way to create at 
+            infinite loop, but some old code uses <code>for (;;)</code> to create an infinite loop because this was preferable with 
+            old compilers). For example:
+        </p>
+
+        <code-box data-codeId="magicWord"><pre>#include &lt;iostream&gt;
+int main() {
+    for (;;) {
+        std::string s;
+        std::cout << "What's the magic word? ";
+        std::cin >> s;
+        if (s == "please") {
+            break;
+        }
+        std::cout << "Wrong!" << std::endl;
+    }
+    return 0;
+}</pre></code-box>
+
+        </div> <!-- /.content -->
+        <script type="text/javascript" src="codeblock.js"></script>
+    </body>
+</html>
