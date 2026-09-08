@@ -485,7 +485,7 @@ int main() {
         <p>
             The C language does not have a string data type; instead, it stores a string as an array (i.e., 
             list) of individual characters. Since C++ is based on C, there is old C++ code that handles strings in 
-            this way. If you become a professional C++ programmer, you may someday need to edit some ancient code, 
+            this way. If you become a professional C++ programmer, you may someday need to edit some of that code, 
             and then you'll need to work with C-style strings. When writing new code, you should always use the 
             <code>std::string</code> type, which is safer and easier to use.
         </p>
@@ -508,8 +508,132 @@ int main() {
             For example, a vector of ints would have type <code>std::vector&lt;int&gt;</code>.
         </p>
 
+        <p> 
+            The below code illustrates several ways that a vector can be initialized:
+        </p>
 
-        
+        <code-box data-codeId="initializeVector"><pre>#include &lt;iostream>
+#include &lt;vector>            
+int main() {
+    std::vector&lt;int> a = {3, 1, 4}; // Initializes the vector [3, 1, 4]
+    std::vector&lt;double> b(2);       // Creates a vector of 2 doubles 
+    b[0] = 1; b[1] = 6.25;          // Initialize b
+    std::vector&lt;int> c(5, 2);       // Initializes the vector [2, 2, 2, 2, 2]
+    std::cout << a[0] << '\n';      // Prints 3
+    std::cout << b[1] << '\n';      // Prints 6.25
+    std::cout << c[4] << std::endl; // Prints 2 
+    return 0;
+}</pre></code-box>
+
+        <p>
+            If you have a vector <code>v</code>, the following is a list of things you might want to do with it. All of the 
+            examples in parentheses assume that <code>v</code> is ['A', 'B', 'C'].
+        </p>
+
+        <ul>
+            <li> 
+                <code>v.size()</code>: The number of elements in the vector. (In the example above, 3.)
+            </li>
+            <li> 
+                <code>v[i]</code>: The vector element at index <code>i</code>. Note that if <code>i</code> is outside the 
+                range [0, v.size()), the behavior is undefined. (In the example, <code>v[1]</code> is <code>'B'</code>.)
+            </li>
+            <li> 
+                <code>v.at(i)</code>: The same as <code>v[i]</code>, except that when <code>i</code> is out of bounds, the 
+                program will terminate with an error message instead of behaving unpredictably. Using the <code>at()</code>
+                method is slower, since it checks whether the index is in range. Thus <code>v.at(i)</code> is preferred when 
+                you're not sure whether <code>i</code> is in range, and <code>v[i]</code> is preferred when you're sure 
+                <code>i</code> is in range.
+            </li>
+            <li> 
+                <code>v.push_back(x)</code>: Adds <code>x</code> to the end of the vector. In the example, after calling  
+                <code>v.push_back('D')</code>, <code>v</code> will be ['A', 'B', 'C', 'D'].
+            </li>
+            <li> 
+                <code>v.pop_back()</code>: Removes the last entry of the vector. In the example, after calling  
+                <code>v.pop_back()</code>, <code>v</code> will be ['A', 'B'].
+            </li>
+        </ul>
+
+        <p>
+            Note that you can't print a vector directly: you need to loop through the vector and print each 
+            element individually.
+        </p>
+
+        <h2>Operations</h2>
+
+        <p>
+            Arithmetic operations in C++ will mostly be familiar to you from Python: you have access to +, -, *, /, and 
+            % (for remainder, only applicable to integer-valued types). A few differences: 
+        </p>
+        <ul>
+            <li>
+                In C++, when the division operator is used with two integer-value types, it performs integer-valued 
+                division (i.e., ignoring the remainder). If you want to perform real-number division, cast one or 
+                both of the numbers involved to a double first.
+            </li>
+            <li>
+                C++ does not have ** for exponentiation. You can instead use <code>std::pow</code> along with 
+                <code>#include &lt;cmath></code>.
+            </li>
+            <li>
+                The sign of <code>a % b</code> is determined by the sign of <code>a</code>, not the sign of 
+                <code>b</code>. For example, <code>-15 % 7</code> returns -1, not 6.
+            </li>
+            <li>
+                With integer-valued division, <code>a / b</code> always rounds toward 0, e.g., <code>9 / 5</code> 
+                returns 1 and <code>-9 / 5</code> returns -1. Note that, along with the convention for % above, this 
+                ensures that a == b * (a / b) + (a % b).
+            </li>
+        </ul>
+
+        <p>
+            C++ also provides two increment and decrement operators: writing <code>i++</code> increases <code>i</code> by one 
+            and returns the original value of <code>i</code>, while <code>++i</code> increases <code>i</code> by one and 
+            returns the new value. The same applies to <code>i--</code> and <code>--i</code>, which decrement <code>i</code> by 
+            one. 
+        </p>
+
+        <p>
+            It is generally preferred to use <code>++i</code> rather than <code>i++</code> unless you actually need the original 
+            value of <code>i</code>, because <code>i++</code> tells the program to keep track of both the original value and 
+            the new value. (For built-in types like int, the compiler will probably be able to automatically optimize away this 
+            inefficiency if you're not actually using the old value, so that it doesn't matter which one you use. But when you're 
+            working with user-defined types, the compiler won't know that it can do this, so using <code>++i</code> when possible 
+            is a good habit.)
+        </p>
+
+        <p>
+            The comparison operators ==, !=, &lt;, >, &lt;=, >= all work exactly as you expect from Python. (One weird exception: 
+            don't use them to compare string literals, unless you've explicitly made at least one of those string literals a 
+            <code>std::string</code> object. Otherwise, the compiler will treat them as C-style strings, which don't compare the 
+            way you expect.)
+        </p>
+
+        <p>
+            You can use +=, -=, *=, /=, %= to modify variables, as in Python.
+        </p>
+
+        <p>
+            The boolean operators in C++ are <code>&&</code> (and), <code>||</code> (or), and <code>!</code> (not, written 
+            as a prefix). Like Python, C++ uses short-circuit evaluation, which means that it reads and/or expressions from 
+            left-to-right and stops evaluating as soon as the result is known. For example, if it's evaluating an expression 
+            of the form <code>A && B</code> and <code>A</code> evaluates to <code>false</code>, the entire expression returns 
+            <code>false</code> immediately without evaluating <code>B</code>. This can be useful if the first condition is a 
+            necessary safety check before evaluating the second condition. For example, the below program won't crash, even if 
+            the user enters 0:
+        </p>
+
+        <code-box data-codeId="shortCircuit"><pre>#include &lt;iostream>
+int main() {
+    std::cout << std::boolalpha;
+    double x;
+    std::cout << "Enter a number: ";
+    std::cin >> x;
+    std::cout << (x != 0 && 1 / x > 5) << std::endl;
+    return 0;
+}</pre></code-box>
+
         </div> <!-- /.content -->
         <script type="text/javascript" src="codeblock.js"></script>
     </body>
