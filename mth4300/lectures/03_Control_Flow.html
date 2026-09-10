@@ -237,6 +237,176 @@ int main() {
     return 0;
 }</pre></code-box>
 
+        <h2><code>while</code> loops</h2>
+
+        <p>
+            You can also use <code>while</code> loops in C++, very similarly to how they're used in Python. The syntax 
+            is basically the same as for an <code>if</code> statement: put the condition in parentheses. For example, 
+            the following program adds up all of the Fibonacci numbers less than a given limit:
+        </p>
+
+        <code-box data-codeId="fibonacciSum"><pre>#include &lt;iostream&gt;
+int main() {
+    int max;
+    std::cout << "Enter a positive integer: ";
+    std::cin >> max;
+    int oldValue{0}, newValue{1}, total{0};
+    while (newValue &lt;= max) {
+        total += newValue;
+        int temp{oldValue + newValue};
+        oldValue = newValue;
+        newValue = temp;
+    }
+    std::cout << "The sum of the Fibonacci numbers <= " << max << 
+        " is " << total << "." << std::endl;
+    return 0;
+}</pre></code-box>
+
+        <p>
+            You can see why this would be difficult to do with a typical <code>for</code> loop: we don't know in 
+            advance how many terms we're going to be adding up. (You could do some math to calculate in advance how 
+            many terms we'll be adding up, but you might not know how to do the math; even if you know how to do it, 
+            it would make your program more complicated, and therefore make it harder to be confident your program is 
+            correct. Alternatively, you could do a <code>for</code> loop with <code>newValue &lt;= max</code> as the 
+            condition, but that would probaby be considered a little strange. A <code>while</code> is the most natural 
+            choice.) 
+        </p>
+
+        <p>
+            As mentioned before, you can also make an infinite loop using <code>while (true)</code>; nowadays, this is 
+            probably the most popular way to do it. 
+        </p>
+
+        <p> 
+            C++ offers one convenience that Python doesn't: the <code>do</code>-<code>while</code> loop. This is the same 
+            as a <code>while</code> loop, except that the condition is checked after executing the code in the block, rather 
+            than before; this guarantees that the code will execute at least once. For example, we could write a very simple 
+            guessing game. Notice that we don't want to check whether the guess is correct until after the player has 
+            made a guess, so we can't put the check before the first iteration:
+        </p>
+
+        <code-box data-codeId="guessingGame"><pre>#include &lt;iostream&gt;
+int main() {
+    int ANSWER{42};
+    int guess;
+    std::cout << "I'm thinking of an integer. Try to guess it!\n";
+    do {
+        std::cout << "Your guess: ";
+        std::cin >> guess;
+        if (guess < ANSWER) {
+            std::cout << "Too low!\n";
+        } else if (guess > ANSWER) {
+            std::cout << "Too high!\n";
+        }
+    } while (guess != ANSWER);
+    std::cout << "Congratulations! That's right!";
+    return 0;
+}</pre></code-box>
+
+        <p>
+            Note the syntax. In particular, note that you must have a semicolon after the condition.
+        </p>
+
+        <h2><code>break</code> and <code>continue</code></h2>
+
+        <p>
+            Two more control-flow keywords that will probably be familiar are <code>break</code> and <code>continue</code>.
+        </p>
+
+        <p>
+            The keyword <code>break</code> tells C++ to immediately end execution of the loop it's inside. (If it's inside a 
+            nested loop, it only terminates the innermost loop.) This can be useful if you want to check a condition for 
+            exiting the loop in the middle of your code block, rather than at the beginning or end. For example, we can 
+            rewrite the guessing game to use an infinite loop and <code>break</code>:
+        </p>
+
+        <code-box data-codeId="guessingGame2"><pre>#include &lt;iostream&gt;
+int main() {
+    int ANSWER{42};
+    int guess;
+    std::cout << "I'm thinking of an integer. Try to guess it!\n";
+    while (true) {
+        std::cout << "Your guess: ";
+        std::cin >> guess;
+        if (guess == ANSWER) {
+            break;
+        } else if (guess < ANSWER) {
+            std::cout << "Too low!\n";
+        } else {
+            std::cout << "Too high!\n";
+        }
+    }
+    std::cout << "Congratulations! That's right!";
+    return 0;
+}</pre></code-box>
+
+        <p>
+            As we've seen before, <code>break</code> can also be used to prevent fall-through in <code>switch</code> 
+            statements.
+        </p>
+
+        <p>
+            The keyword <code>continue</code> tells C++ to continue looping without running the rest of the code in the 
+            current iteration. When using <code>while</code> or <code>do</code>-<code>while</code>, <code>continue</code> 
+            skips to the next check of the condition. When using <code>for</code>, <code>continue</code> skips to the 
+            next update (the part that's typically <code>++i</code>).
+        </p>
+
+        <p>
+            For example, the below example shows code that adds up positive integers not divisible by 7. We could also have 
+            done this with an <code>if</code> statement, but that might be undesirable for more complicated code: an extra 
+            <code>if</code> means an extra level of indentation, which can make your code harder to read. With
+            <code>continue</code>, you can end the iteration immediately when you now longer want it to do anything else, and 
+            the rest of your code remains at the usual indentation level.
+        </p>
+
+        <code-box data-codeId="ndSevenSum"><pre>#include &lt;iostream&gt;
+int main() {
+    int max, total{0};
+    std::cout << "Enter a positive integer: ";
+    std::cin >> max;
+    for (int i = 1; i &lt;= max; ++i) {
+        if (i % 7 == 0) {
+            continue;
+        }
+        total += i;
+    }
+    std::cout << "The sum of the positive integers <= " << max << 
+        " that aren't divisible by 7 is " << total << "." << std::endl;
+    return 0;
+}</pre></code-box>
+
+        <h2>LeetCode Exercises</h2>
+
+        <p>Easy:</p>
+        <ul>
+            <li>
+                <a href="https://leetcode.com/problems/add-digits/" target="_blank">
+                    258. Add Digits
+                </a> 
+                Try solving this two different ways: Once with a loop, and once without a loop. (Solving it 
+                without a loop may require some math knowledge.)
+            </li>
+            <li>
+                <a href="https://leetcode.com/problems/longest-common-prefix/" target="_blank">
+                    14. Longest Common Prefix
+                </a>
+            </li>
+        </ul>
+        <p>Medium:</p>
+        <ul>
+            <li>
+                <a href="https://leetcode.com/problems/longest-substring-without-repeating-characters/" target="_blank">
+                    3. Longest Substring Without Repeating Characters
+                </a>
+            </li>
+            <li>
+                <a href="https://leetcode.com/problems/nth-digit/" target="_blank">
+                    400. Nth Digit
+                </a> 
+            </li>
+        </ul>
+
         </div> <!-- /.content -->
         <script type="text/javascript" src="codeblock.js"></script>
     </body>

@@ -288,7 +288,7 @@ int main() {
         <p>
             If you try to store a negative number in an unsigned type, you will get a garbage value similar to what happens if 
             you try to store a value that is too large. For example, the below program prints 4294967295, because that is the 
-            maximum unsigned int minus one:
+            maximum unsigned int:
         </p>
 
         <code-box data-codeId="unsigned"><pre>#include &lt;iostream>
@@ -411,8 +411,8 @@ int main() {
             </li>
             <li>
                 <code>s.substr(pos, count)</code>: The substring starting at index <code>pos</code> of length <code>count</code>, 
-                or going until the end of the string, if <code>count</code> would take us past the end. (E.g., 
-                <code>s.substr(3, 2)</code> is <code>"DE"</code> and <code>s.substr(4, 4)</code> is <code>EFG"</code>.)
+                or going until the end of the string, if <code>count</code> is omitted or would take us past the end. (E.g., 
+                <code>s.substr(3, 2)</code> is <code>"DE"</code> and <code>s.substr(4, 4)</code> is <code>"EFG"</code>.)
             </li>
             <li>
                 <code>s.find(t)</code>: The index where <code>t</code> starts as a substring of <code>s</code>, or the special value 
