@@ -11,13 +11,327 @@
         <div class="content">
             <h1>Lecture 04: Functions</h1>
 
+            <p> 
+                Before we start talking about functions, there are a couple more concepts that will be necessary to 
+                fully understand functions.
+            </p>
+
+            <h2><code>const</code></h2>
+
+            <p>
+                C++ allows you to declare a variable constant using the <code>const</code> keyword. This tells the 
+                compiler (and anyone reading your code) that the value of the variable will never be changed. This 
+                helps the compiler catch bugs, in case anyone ever tries to modify a variable that wasn't supposed 
+                to be modified, and helps your code to be self-documenting, by immediately expressing your intention 
+                that the variable be constant to anyone reading your code.
+            </p>
+
+            <p>
+                For example, the below code will not compile:
+            </p>
+
+            <wrong-code-box data-codeId="violateConst"><pre>#include &lt;iostream&gt;
+int main() {
+    const double PI{3.141592653589793};
+    PI = 1.618;
+    return 0;
+}</pre></wrong-code-box>
+
+            <p>
+                Naturally, a variable declared constant must be initialized at the same time that it's declared; we 
+                won't be able to change its value later, so we have to give it a value now. That doesn't mean that 
+                we need to know the value in advance; the initialized value can be a value that's calculated at 
+                runtime, it just can't be changed after it's calculated.
+            </p>
+
+            <h2>References</h2>
+
+            <p>
+                C++ lets you define a <i>reference</i>, which is an alias for an existing memory location. This can be 
+                a typographic convenience, if a certain memory location is difficult to refer to: if a piece of data is 
+                stored in a container in a container in a container, the formula to refer to it may be complicated, 
+                so it may be convenient to create a simple reference that refers to it. 
+            </p>
+
+            <p>
+                References will also be very useful when we want to talk about functions. Often, you want to provide 
+                a reference to a variable as an argument, rather than copying the value of the variable (especially 
+                if the variable contains a lot of data, and copying it would be needlessly time-consuming.)
+            </p>
+
+            <p>
+                References are declared by putting an <code>&</code> after the type name and before the variable. 
+                Since a reference points to an existing memory location, changing the reference or changing the 
+                memory location using its original both do the exact same thing, i.e., changing one changes the 
+                other:
+            </p>
+
+            <code-box data-codeId="referenceExplanation"><pre>#include &lt;iostream&gt;
+int main() {
+    int x{5};
+    int &r = x;
+    r = 1729;
+    std::cout << x << ' ' << r << "\n"; // Prints 1729 1729
+    x = 42;
+    std::cout << x << ' ' << r << std::endl; // Prints 42 42
+    return 0;
+}</pre></code-box>
+
+            <p>
+                A reference must be initialized when it is declared. This is an error:
+            </p>
+
+            <wrong-code-box data-codeId="uninitializedReference"><pre>#include &lt;iostream&gt;
+int main() {
+    int x{42};
+    int &y;
+    y = x;
+    return 0;
+}</pre></wrong-code-box>
+
+            <p>
+                Once a reference has been initialized, it cannot be made to refer to a different 
+                memory location (<i>reseated</i>). For example, the following code does not make 
+                <code>r</code> a reference to <code>y</code>; it edits <code>x</code> to store the 
+                same value as <code>y</code>:
+            </p>
+
+            <code-box data-codeId="notReseatedReference"><pre>#include &lt;iostream&gt;
+int main() {
+    int x{42}, y{1};
+    int &r = x;
+    r = y;
+    std::cout << r << ' ' << x << ' ' << y << std::endl; // Prints 1 1 1
+    return 0;
+}</pre></code-box>
+
+            <p>
+                The whole point of a reference is to refer to a specific piece of memory. Therefore, it 
+                doesn't make any sense to create a reference to a value that's not permanently stored in 
+                memory. For example, the following code does not compile:
+            </p>
+
+            <wrong-code-box data-codeId="referenceToRvalue"><pre>#include &lt;iostream&gt;
+int main() {
+    int &r = 42; // Error
+    std::cout << r << std::endl; 
+    return 0;
+}</pre></wrong-code-box>
+
+            <p>
+                It doesn't matter where you put the <code>&</code>, as long as it's between the type and 
+                the variable being defined. For example, the below code compiles, and <code>r1</code>, 
+                <code>r2</code>, and <code>r3</code> are all references. Can you predict what it will 
+                print before you run it?
+            </p>
+
+            <code-box data-codeId="ampersandExample"><pre>#include &lt;iostream&gt;
+int main() {
+    int x{9};
+    int& r1 = x;
+    int & r2 = x; 
+    int &r3 = x;
+    r1 = 5;
+    std::cout << x << ' ' << r1 << ' ' << r2 << ' ' << r3 << std::endl; 
+    return 0;
+}</pre></code-box>
+
+            <p>
+                The middle version (with the <code>&</code> floating by itself) is rarely used, and would not 
+                be considered good style. The other two are both acceptable, though the <code>int&</code> 
+                version would probably be most popular. This version looks like a normal declaration, where 
+                we interpret "<code>int&</code>" as the type "reference to int."
+            </p>
+
+            <p>
+                However, there's one situation where the "<code>int&</code>" version is confusing. What do you think 
+                the following code prints?
+            </p>
+
+            <code-box data-codeId="multipleReferenceDeclarationWrong"><pre>#include &lt;iostream&gt;
+int main() {
+    int x{1}, y{2};
+    int& r1 = x, r2 = y;
+    r1 = 8;
+    r2 = 9;
+    std::cout << x << ' ' << r1 << '\n';
+    std::cout << y << ' ' << r2 << std::endl; 
+    return 0;
+}</pre></code-box>
+
+            <p>
+                The first line of output is "8 8", as you probably guessed. The second line of output is "2 9",
+                which you may not have expected. What happened is that <code>r2</code> did \textbf{not} get 
+                declared as a reference, but as a regular variable. It gets initialized to the value stored in 
+                <code>y</code>, but since it is its own variable, when we later modify <code>r2</code>, that 
+                doesn't modify <code>y</code>. If you want <code>r2</code> to also be a reference, it needs its 
+                own ampersand:
+            </p>
+
+            <code-box data-codeId="multipleReferenceDeclarationRight"><pre>#include &lt;iostream&gt;
+int main() {
+    int x{1}, y{2};
+    int &r1 = x, &r2 = y;
+    r1 = 8;
+    r2 = 9;
+    std::cout << x << ' ' << r1 << '\n';      // Prints 8 8
+    std::cout << y << ' ' << r2 << std::endl; // Prints 9 9
+    return 0;
+}</pre></code-box>
+
+            <p>
+                It is often considered best style for each reference to be declared on its 
+                own line, to dodge this issue entirely.
+            </p>
+
+        <h2><code>const</code> references</h2>
+
+            <p>
+                You can also declare a variable to be a <code>const</code> reference. You might wonder what this means -- 
+                I already told you that references can't be reseated, so aren't they all constant? Since we don't need  
+                the <code>const</code> keyword to prevent a reference from being reseated, C++ uses it to mean something 
+                else. Declaring a reference as <code>const</code> means that the reference cannot be used to modify the 
+                memory it points to. For example, the following code does not compile:
+            </p>
+
+        <wrong-code-box data-codeId="constRefError"><pre>int main() {
+    int x{5};
+    const int &r = x;
+    r = 1729; // Error
+    return 0;
+}</pre></wrong-code-box>
+
+            <p>
+                In particular, if a variable is declared as <code>const</code>, then any reference to that variable 
+                must also be declared as const -- you can't circumvent the <code>const</code> by making a nonconstant 
+                reference and using that reference to modify the constant variable. C++ enforces this by preventing 
+                you from even creating a nonconstant reference to a constant variable. The following code does not compile:
+            </p>
+
+        <wrong-code-box data-codeId="constRefError2"><pre>int main() {
+    const int x{5};
+    int &r = x;
+    return 0;
+}</pre></wrong-code-box>
+
+            <p>
+                However, you can go in the other direction; you can create a constant reference to a nonconstant variable, 
+                because that can't be used to break any rules. Declaring the reference constant promises only that this 
+                reference won't be used to modify the memory it refers to; you can still modify the memory by modifying 
+                the original variable. In particular, the value referred to be a <code>const</code> reference is not 
+                necessarily constant!
+            </p>
+
+        <code-box data-codeId="validConstReference"><pre>#include &lt;iostream&gt;
+int main() {
+    int x{1};
+    const int &r = x;
+    x = 8;
+    std::cout << r << ' ' << x << std::endl; // Prints 8 8
+    return 0;
+}</pre></code-box>
+
+            <p>
+                If we write the exact same code, but try to use <code>r</code> to change the value in memory, it's 
+                an error:
+            </p>
+
+        <wrong-code-box data-codeId="invalidConstReference"><pre>#include &lt;iostream&gt;
+int main() {
+    int x{1};
+    const int &r = x;
+    r = 8; // Error
+    std::cout << r << ' ' << x << std::endl;
+    return 0;
+}</pre></wrong-code-box>
+
+
             <h2>Basics of Functions</h2>
 
+                <p>
+                    We've already seen a little bit about how to define a function in C++, since we need to have 
+                    a <code>main()</code> function if we want our program to run. We learned from that example that 
+                    a C++ function needs to declare what type it's going to return, by writing the return type before 
+                    the name of the function. For example, if we wanted to define a function that takes no arguments 
+                    and always returns pi, we would declare that our function returns a <code>double</code>:
+                </p>
 
+            <code-box data-codeId="pi"><pre>#include &lt;iostream&gt;
 
-            <code-box data-codeId="firstExample"><pre>#include &lt;iostream&gt;
+double pi() {
+    return 3.1415926535897932;
+}
 
-</pre></code-box>
+int main() {
+    std::cout << pi() << " = 180 degrees\n";
+    std::cout << 2 * pi() << " = 360 degrees" << std::endl;
+    return 0;
+}</pre></code-box>
+
+                <p>
+                    (Of course, this is oversimpified to focus on the point of the lesson; In a real program it would be 
+                    very silly to define pi as a function rather than a constant variable.)
+                </p>
+
+                <p>
+                    When declaring your function, after the type and the name of the function, you put all of the 
+                    arguments to the function in parentheses. (More about the syntax for that later.) With 
+                    <code>main()</code> and our silly <code>pi()</code> example, there are no arguments, but we still 
+                    need the parentheses to make clear that this is a function. Similarly, when we want to execute the 
+                    function, we need to include the parentheses even if there are no arguments; the parentheses tell 
+                    C++ that we want to execute the function, not just refer to the function by name.
+                </p>
+
+                <p>
+                    For example, the below code asks C++ to print the function <code>pi</code> itself, rather than 
+                    the value returned by calling the function. This is a strange thing to ask -- what does it even 
+                    mean to print a function? The behavior may depend on your compiler. On my computer, running this 
+                    code prints "1", which is probably not what you intend if you write something like this.
+                </p>
+
+                <wrong-code-box data-codeId="wrongFunctionCall"><pre>#include &lt;iostream&gt;
+
+double pi() {
+    return 3.1415926535897932;
+}
+
+int main() {
+    std::cout << pi << std::endl;
+    return 0;
+}
+</pre></wrong-code-box>
+
+        <h2>
+            <code>void</code>
+        </h2>
+
+            <p>
+                I mentioned above that every function has to declare its return type. What about functions that 
+                don't return anything? They can be declared as <code>void</code>:
+            </p>
+
+            <code-box data-codeId="helloFunction"><pre>#include &lt;iostream&gt;
+#include &lt;string>
+
+void hello(std::string name) {
+    std::cout << "Hello, " << name << "!" << std::endl;
+}
+
+int main() {
+    std::string name;
+    std::cout << "What's your name? ";
+    std::getline(std::cin, name);
+    hello(name);
+    return 0;
+}</pre></code-box>
+
+            <p>
+                The whole point of a <code>void</code> function is that it doesn't return anything, so unlike other 
+                functions, it's not required to have a <code>return</code> statement. However, it is legal to have a 
+                <code>return</code> statement, with nothing following <code>return</code> (except the semicolon, of 
+                course). This can be useful if you want to return from your function before reaching the end of the 
+                code, similar to a <code>break</code> in a loop.
+            </p>
 
 
         </div> <!-- /.content -->
