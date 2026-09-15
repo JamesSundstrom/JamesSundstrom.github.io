@@ -514,7 +514,235 @@ int main() {
                 If you call a function by passing referenes to its arguments, that is "call by reference."
             </p>
 
+        <h2>Exercise</h2>
 
+            <ol>
+                <li>
+                    Define a function <code>removeVowelsFromWord(word)</code> that accepts as argument a string <code>word</code>
+                    and returns the string consisting of <code>word</code> with its vowels (A, E, I, O, U) removed. Your function 
+                    should not unnecessarily copy <code>word</code>, nor should it be able to modify the contents of <code>word</code>.
+                </li>
+                <li>
+                    Using your previous answer, define a <code>void</code> function <code>removeVowels(words)</code> which accepts 
+                    as argument a <code>std::vector&lt;std::string></code> called <code>words</code> and removes all the vowels from 
+                    the words in the vector.
+                </li>
+            </ol>
+
+        <h2>Recursion</h2>
+
+            <p>
+                As in Python, a C++ function can be defined recursively, i.e., by calling itself. You should already know that 
+                a recursive function must have a <i>base case</i> (an argument for which the function can be executed without 
+                calling itself) to avoid going into an infinite loop. 
+                
+            </p>
+
+            <p>
+                For example, suppose you are interested in the sequence defined by a<sub>0</sub> = 0 and 
+                a<sub>n+1</sub> = 3*a<sub>n</sub> + 2. The starting value a<sub>0</sub> = 0 provides a base case, and then the 
+                recurrence relation lets us calculate a<sub>n</sub> for larger values of n. We can calculate a<sub>n</sub> based on 
+                a<sub>n-1</sub>, which we can calculate based on a<sub>n-2</sub>, and so on until we reach the known value of a<sub>0</sub>. 
+                Here's a function to calculate it:
+            </p>
+
+            <code-box data-codeId="an"><pre>#include &lt;iostream&gt;
+
+int a(int n) {
+    if (n &lt;= 0) {
+        return 0;
+    }
+    return 3 * a(n-1) + 2;
+}
+
+int main() {
+    int n;
+    std::cout << "Enter n: ";
+    std::cin >> n;
+    std::cout << "a_n = " << a(n) << std::endl;
+    return 0;
+}</pre></code-box>
+
+            <p>
+                Aside: We could write this more compactly using the C++ conditional operator, which has the form 
+                <code>condition ? expression_if_true : expression_if_false</code>. This can be used as a more compact 
+                alternative to <code>if</code>-<code>else</code>, if you simply want to get one of two values depending 
+                on a condition.
+            </p>
+
+<code-box data-codeId="anwithternaryoperator"><pre>#include &lt;iostream&gt;
+
+int a(int n) {
+    return n &lt;= 0 ? 0 : 3 * a(n-1) + 2;
+}
+
+int main() {
+    int n;
+    std::cout << "Enter n: ";
+    std::cin >> n;
+    std::cout << "a_n = " << a(n) << std::endl;
+    return 0;
+}</pre></code-box>
+
+            <p>
+                This is probably the type of recursion you're most familiar with: we define a function <code>a(n)</code> 
+                whose domain is the nonnegative integers by defining 
+                <code>a(0)</code> and then recursively defining <code>a(n)</code> in terms of <code>a</code> of smaller 
+                values. Each step, we look at smaller and smaller values of the input, and it must inevitably reach 0, so 
+                we know that we will reach the base case and terminate.
+            </p>
+
+            <p>
+                You've probably also used recursion in similar circumstances. For example, if you're defining a function <code>f</code> whose 
+                argument is a string, you may be able to define it recursively by defining <code>f("")</code> and giving a recursion relation 
+                that relates <code>f(s)</code> to <code>f</code> of some shorter string (e.g., a substring of <code>s</code>). In this case, 
+                <code>s.size()</code> is the non-negative integer which keeps on decreasing, and must eventually reach 0 (the base case).
+            </p>
+
+            <p>
+                But you can also define recursive functions in more complicated ways. For example, the Euclidean algorithm is an efficient 
+                recursive algorithm for calculating the greatest common divisor (gcd) of two integers. The naive way to calculate the gcd of 
+                two integers is to find all the divisors of both integers, and then comparing the lists to find the greatest divisor that they 
+                have in common. This is wildly inefficient: finding all the divisors of an integer is equivalent to finding the prime factorization 
+                of that integer, which is a famously difficult problem. (In fact, much of modern encryption is based on the assumption that large 
+                numbers cannot be factored efficiently.) The Euclidean algorithm provides a much more efficient way of calculating the gcd, taking 
+                advantage of the fact that gcd(a, b) = gcd(b, a % b). (Can you prove that this algorithm always terminates?)
+            </p>
+
+            <code-box data-codeId="gcd"><pre>#include &lt;iostream&gt;
+#include &lt;cmath> // Provides the absolute value function
+
+int gcd(int a, int b) {
+    return b == 0 ? std::abs(a) : gcd(b, a % b);
+}
+
+int main() {
+    std::cout << gcd(1242, 60) << std::endl; // Prints 6
+    return 0;
+}</pre></code-box>
+
+            <p>
+                Note that anything that can be done with recursion can also be done with loops. In fact, loops may be 
+                technically preferable, because recursion can use up a lot of memory: if you want to use our function from 
+                earlier to calculate a(500), the computer needs to remember "I'm calculating a(500), which requires 
+                me to calculate a(499), which requires me to calculate a(498), which ..." until it gets to a(0). If we had 
+                coded this with a loop, the memory demand would be lower.
+            </p>
+                
+            <p>
+                Nonetheless, we often prefer recursion because it's easier for humans to reason about; for example, our definitinon 
+                of <code>a(n)</code> above was a one-liner that basically just said exactly what the mathemtical definition said; 
+                it took almost no thought to write. You could also write the definition using a <code>for</code> loop instead of 
+                recursion, but that would probably take a little more effort. Do you iterate through the loop n-1 times or n times? 
+                You might have to stop and think about that.
+            </p>
+
+            <p>
+                If you're not worried about the memory demands of recursion (for example, because you know that your 
+                function will only be called in situations that require only a few levels of recursion), then using a recursive 
+                function can be a great idea. In general, we should strive to make our programs as easy for humans to understand as 
+                possible, until a potentially-confusing optimization actually becomes necessary. Recursion is often the easiest way 
+                to define a function.
+            </p>
+
+        <h2>Recursion Exercise</h2>
+
+        <p>
+            Consider the sequence a<sub>n</sub> of real numbers defined by a<sub>0</sub> = 1 and a<sub>n+1</sub> = 1 + 1/a<sub>n</sub>.
+            Define a function <code>a(n)</code> that calculates this sequence. Use it to estimate the limit of a<sub>n</sub> as n goes 
+            to infinity.
+        </p>
+
+        <p>
+            If you finish before your classmates, write a different version of a<sub>n</sub>, so that you have one version of the code 
+            using recursion and one using a loop. Which one do you prefer?
+        </p>
+
+        <h2>Forward declaration</h2>
+
+            <p>
+                In C++, a function must always be declared before any code that calls it. For example, the below is illegal:
+            </p>
+
+            <wrong-code-box data-codeId="printanWrong"><pre>#include &lt;iostream&gt;
+
+void print_an(int n) {
+    std::cout << a(n) << '\n';
+}
+
+int a(int n) {
+    return n &lt;= 0 ? 0 : 3 * a(n-1) + 2;
+}
+
+int main() {
+    int n;
+    std::cout << "Enter n: ";
+    print_an(n);
+    return 0;
+}</pre></wrong-code-box>
+
+            <p>
+                We can fix this by swapping the order in which we declare the two functions, so that <code>a(n)</code> is 
+                defined before <code>print_an()</code> tries to use it.
+            </p>
+
+            <p>
+                However, we can't work around the issue that easily in the case of <i>mutual recursion</i>, in which two 
+                functions both call each other. If <code>f</code> calls <code>g</code> and <code>g</code> calls <code>f</code>, 
+                then whichever one we define first will come before the definition of the other, which seems like it violates the 
+                rule above.
+            </p>
+
+            <p>
+                But actually, I only said that a function needs to be declared before it's used, not that it needs to be defined. 
+                Much like variables, functions can be declared in C++ without defining them. This is called <i>forward declaration</i>. 
+                The following example of mutual recursion illustrates its use. (The example itself is extremely silly: this is a 
+                ridiculous way to determine whether a number is even or odd. But mutual recursion doesn't become genuinely
+                helpful until you start getting into much more complicated situations, which would be too messy for the sake of an  
+                introductory example.)
+            </p>
+
+            <code-box data-codeId="mutualrecursion"><pre>#include &lt;iostream&gt;
+
+bool isOdd(unsigned int n); // Forward declaration so isEven can use isOdd
+
+bool isEven(unsigned int n) {
+    return n == 0 ? true : isOdd(n - 1);
+}
+
+bool isOdd(unsigned int n) {
+    return n == 0 ? false : isEven(n - 1);
+}
+
+int main() {
+    std::cout << std::boolalpha; // Print bools as text
+    std::cout << isEven(123) << std::endl; // Prints false
+    return 0;
+}</pre></code-box>
+
+        <h2>LeetCode Exercises</h2>
+
+        <p>Easy:</p>
+
+        <ul>
+            <li><a href="https://leetcode.com/problems/length-of-last-word/" target="_blank">
+                    58. Length of Last Word
+                </a>
+            </li>
+            <li><a href="https://leetcode.com/problems/roman-to-integer/" target="_blank">
+                    13. Roman to Integer
+                </a>
+            </li>
+        </ul>
+
+        <p>Medium:</p>
+
+        <ul>
+            <li><a href="https://leetcode.com/problems/roman-to-integer/" target="_blank">
+                    17. Letter Combinations of a Phone Number
+                </a>
+            </li>
+        </ul>
 
         </div> <!-- /.content -->
         <script type="text/javascript" src="codeblock.js"></script>
