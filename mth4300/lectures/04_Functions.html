@@ -225,7 +225,7 @@ int main() {
         <code-box data-codeId="validConstReference"><pre>#include &lt;iostream&gt;
 int main() {
     int x{1};
-    const int &r = x;
+    const int& r = x;
     x = 8;
     std::cout << r << ' ' << x << std::endl; // Prints 8 8
     return 0;
@@ -239,12 +239,126 @@ int main() {
         <wrong-code-box data-codeId="invalidConstReference"><pre>#include &lt;iostream&gt;
 int main() {
     int x{1};
-    const int &r = x;
+    const int& r = x;
     r = 8; // Error
     std::cout << r << ' ' << x << std::endl;
     return 0;
 }</pre></wrong-code-box>
 
+            <h2>Range-based loops</h2>
+
+            <p>
+                Before we talk about functions, we'll first see one more thing that we can do with references. Recall that in Python, you 
+                could loop over a list of numbers using <code language="Python">for num in nums:</code>. C++ provides a similar syntax:
+            </p>
+
+            <code-box data-codeId="rangeBasedLoop0"><pre>#include &lt;iostream&gt;
+#include &lt;vector>
+
+int main() {
+    std::vector&lt;int> nums{1, 1, 2, 3, 5, 8};
+
+    for (int num : nums) {
+        std::cout << num << '\n';
+    }
+}</pre></code-box>
+
+                <p>
+                    The syntax <code>for (int num : nums)</code> acts exactly like that Python code; it creates a variable 
+                    <code>nums</code>, and then loops, copying each entry of <code>nums</code> into <code>num</code> in turn.
+                </p>
+
+                <p>
+                    There's one potential drawback with this syntax, however. What if we didn't want to copy each entry in 
+                    the vector? In the above example, the copying wasn't a problem, because ints are small, so copying them 
+                    doesn't waste much time or memory. But what if we had a vector filled with data that we don't want to 
+                    copy unnecessarily? Instead of copying the data itself, we can have the loop produce a reference to 
+                    the existing data instead:
+                </p>
+
+            <code-box data-codeId="rangeBasedLoop1"><pre>#include &lt;iostream&gt;
+#include &lt;vector>
+#include &lt;string>
+
+int main() {
+    std::vector&lt;std::string> presidents{"Washington", "Adams", "Jefferson", "Madison"};
+
+    for (std::string& president : presidents) {
+        std::cout << president << '\n';
+    }
+}</pre></code-box>
+
+                <p>
+                    Another potential benefit of using references to the original data is that we can modify the original data. Without 
+                    references, we would have been modifying the copy created by the loop rather than modifying the permanent data.
+                </p>
+
+                <code-box data-codeId="rangeBasedLoop2"><pre>#include &lt;iostream&gt;
+#include &lt;vector>
+
+int main() {
+    std::vector&lt;double> distances{2.5, 1.8, 3.1}; // in miles
+
+    // convert distances to km
+    for (double& d : distances) {
+        d *= 1.60934;
+    }
+
+    // Confirm that the data is changed:
+    for (double& d : distances) {
+        std::cout << d << '\n';
+    }
+}</pre></code-box>
+
+                <p>
+                    On the other hand, you may not want your loop to be able to modify the original data. In that case, you can 
+                    use a <code>const</code> reference to communicate this intention, and ensure that the data isn't accidentally 
+                    modified:
+                </p>
+
+                <wrong-code-box data-codeId="rangeBasedLoop3"><pre>#include &lt;iostream&gt;
+#include &lt;vector>
+#include &lt;string>
+
+int main() {
+    std::vector&lt;std::string> presidents{"Washington", "Adams", "Jefferson", "Madison"};
+
+    for (const std::string& president : presidents) {
+        if (president.size() > 8) {
+            president = president.substr(0, 5) + "..."; // Illegal; tries to modify const reference
+        } 
+        std::cout << president << '\n';
+    }
+}</pre></wrong-code-box>
+
+                <p>
+                    If you remove the <code>const</code> above, then the code compiles, and modifies the contents of the 
+                    vector. If you want to modify the contents of the vector, that's fine! If not, you should keep the 
+                    <code>const</code> to avoid accidents. This pattern of using a const reference in a range-based loop 
+                    is very common, since it provides the speed of references and the safety of const. 
+                </p>
+
+                <p>
+                    Also, this is a good place to use the <code>auto</code> keyword. The compiler can figure out the type 
+                    of the loop variable, because it knows what type is stored in the vector you're iterating over. Thus,
+                    <code>const auto&</code> is the standard pattern in range-based for loops.
+                </p>
+
+                <code-box data-codeId="rangeBasedLoop4"><pre>#include &lt;iostream&gt;
+#include &lt;vector>
+#include &lt;string>
+
+int main() {
+    std::vector&lt;std::string> presidents{"Washington", "Adams", "Jefferson", "Madison"};
+
+    for (const auto& president : presidents) {
+        if (president.size() > 8) {
+            std::cout << president.substr(0, 5) + "...\n";
+        } else {
+            std::cout << president << '\n';
+        }
+    }
+}</pre></code-box>
 
             <h2>Basics of Functions</h2>
 
@@ -332,6 +446,74 @@ int main() {
                 course). This can be useful if you want to return from your function before reaching the end of the 
                 code, similar to a <code>break</code> in a loop.
             </p>
+
+        <h2>
+            Function arguments
+        </h2>
+
+            <p>
+                Of course, when we declare a function, we can also allow that function to take arguments. Declare the arguments 
+                inside the function's parentheses. As usual, when we declare the arguments, we also need to declare their types:
+            </p>
+
+            <code-box data-codeId="echo"><pre>#include &lt;iostream&gt;
+#include &lt;string>
+
+void echo(std::string word, int num) {
+    for (int i = 0; i < num; ++i) {
+        std::cout << word;
+    }
+    std::cout << std::endl;
+}
+
+int main() {
+    echo("Hello", 5);
+    return 0;
+}</pre></code-box>
+
+            <p>
+                As with range-based loops, the default behavior when a value is passed as an argument to a function is 
+                to create a copy of that value; if we want to avoid the overhead of copying, we can instead pass a 
+                reference. You can also pass a reference if you want your function to be able to modify the variable. 
+                Of course, you can also pass a const reference if you do not want your function to be able to modify the 
+                original variable. Once again, using <code>const</code> references is the standard way to get the 
+                efficiency of references and the safety of <code>const</code>.
+            </p>
+
+            <p>
+                But here's an example where you want your function to modify its argument: a function which converts a 
+                string to all-lowercase (leaving any non-letters alone):
+            </p>
+
+            <code-box data-codeId="lower"><pre>#include &lt;iostream&gt;
+#include &lt;string>
+
+void lower(std::string& s) {
+    for (int i = 0; i < s.size(); ++i) {
+        char c = s[i];
+        if ('A' &lt;= c && c &lt;= 'Z') {
+            s[i] = static_cast&lt;char>(c - 'A' + 'a');
+        }
+    }
+}
+
+int main() {
+    std::string s{"This String Is Capitalized"};
+    lower(s);
+    std::cout << s << std::endl;
+    return 0;
+}</pre></code-box>
+
+            <p>
+                Note that if you remove the ampersand, then the <code>lower()</code> function does nothing; it makes changes 
+                to its temporary copy of the string, which is forgotten as soon as the function returns.
+            </p>
+
+            <p>
+                If you call a function by passing in copies of its arguments, that is "call by value" (or "pass by value"). 
+                If you call a function by passing referenes to its arguments, that is "call by reference."
+            </p>
+
 
 
         </div> <!-- /.content -->
