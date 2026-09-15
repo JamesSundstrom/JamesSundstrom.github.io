@@ -514,9 +514,32 @@ int main() {
                 If you call a function by passing referenes to its arguments, that is "call by reference."
             </p>
 
-        <h2>Exercise</h2>
+        <h2>Exercises</h2>
 
             <ol>
+                <li>
+                    What does the below code print? Try to figure it out without running the code.
+                        <code-box data-codeId="referenceExercise"><pre>#include &lt;iostream&gt;
+#include <iostream>
+
+int triple(int n) {
+    n *= 3;
+    return n;
+}
+
+int quadruple(int& n) {
+    n *= 4;
+    return n;
+}
+
+int main() {
+    int a{5}, b{6}, c, d;
+    c = triple(a);
+    d = quadruple(b);
+    std::cout << a << " " << b << " " << c << " " << d << std::endl; 
+    return 0;
+}</pre></code-box>
+                </li>
                 <li>
                     Define a function <code>removeVowelsFromWord(word)</code> that accepts as argument a string <code>word</code>
                     and returns the string consisting of <code>word</code> with its vowels (A, E, I, O, U) removed. Your function 
