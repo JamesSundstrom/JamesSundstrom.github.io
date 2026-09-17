@@ -551,13 +551,66 @@ int main() {
                 </li>
             </ol>
 
+        <h2>Default arguments</h2>
+
+        <p>
+            You can provide <i>default arguments</i> for your functions in C++, very similar to how you did that in Python. When you 
+            declare an argument, you can follow it with an equals sign, and then your desired default value. In other words, it's the 
+            usual syntax to assign a value to a variable. When somebody calls your function, if they provide a value for the variable, 
+            that value is used; otherwise, the default value is used. For example, we can modify our <code>hello</code> function from 
+            earlier, so that it refers to the user as "user" if a name is not provided:
+        </p>
+
+        <code-box data-codeId="helloFunctionWithDefault"><pre>#include &lt;iostream&gt;
+#include &lt;string>
+
+void hello(std::string name = "user") {
+    std::cout << "Hello, " << name << "!" << std::endl;
+}
+
+int main() {
+    hello("James"); // prints "Hello, James!"
+    hello();        // prints "Hello, user!"
+    return 0;
+}</pre></code-box>
+
+        <p>
+            When a function with default arguments is called, C++ fills in the provided arguments from left to right. After that, 
+            any remaining arguments use their default values.
+        </p>
+
+        <code-box data-codeId="leftToRight"><pre>#include &lt;iostream&gt;
+
+int f(int x, int y = 3, int z = 2) {
+    return x * y + z;
+}
+
+int main() {
+    std::cout << f(5) << std::endl; // Equivalent to f(5, 3, 2)
+    std::cout << f(1, 7) << std::endl; // Equivalent to f(1, 7, 2)
+    return 0;
+}</pre></code-box>
+
+        <p>
+            You may choose to provide default values for none, some, or all of the arguments to a function. As a result of the left-to-right 
+            rule, all arguments without default values must appear before all arguments with default values. (Why wouldn't it make sense 
+            to do otherwise?)
+        </p>
+
+        <wrong-code-box data-codeId="leftToRightViolated"><pre>#include &lt;iostream&gt;
+
+int f(int x = 1, int y, int z = 2) { // Will not compile
+    return x * y + z;
+}
+
+</pre></wrong-code-box>
+
         <h2>Recursion</h2>
 
             <p>
                 As in Python, a C++ function can be defined recursively, i.e., by calling itself. You should already know that 
                 a recursive function must have a <i>base case</i> (an argument for which the function can be executed without 
                 calling itself) to avoid going into an infinite loop. 
-                
             </p>
 
             <p>
@@ -618,7 +671,8 @@ int main() {
                 You've probably also used recursion in similar circumstances. For example, if you're defining a function <code>f</code> whose 
                 argument is a string, you may be able to define it recursively by defining <code>f("")</code> and giving a recursion relation 
                 that relates <code>f(s)</code> to <code>f</code> of some shorter string (e.g., a substring of <code>s</code>). In this case, 
-                <code>s.size()</code> is the non-negative integer which keeps on decreasing, and must eventually reach 0 (the base case).
+                <code>s.size()</code> is the non-negative integer which keeps on decreasing, and must eventually reach 0 (the base case). You 
+                can do the same thing with vectors.
             </p>
 
             <p>
@@ -648,12 +702,21 @@ int main() {
                 technically preferable, because recursion can use up a lot of memory: if you want to use our function from 
                 earlier to calculate a(500), the computer needs to remember "I'm calculating a(500), which requires 
                 me to calculate a(499), which requires me to calculate a(498), which ..." until it gets to a(0). If we had 
-                coded this with a loop, the memory demand would be lower.
+                coded this with a loop, the memory demand would be lower. 
+            </p>
+
+            <p>
+                Side note: Ihe memory available to keep track of all these recursive calls is <b>not</b> the full memory available 
+                to your program. The recursive calls are tracked in a smaller section of memory called the <i>stack</i>, which we'll 
+                talk more about later. Therefore the program can't keep track of as many levels of recursion as you might expect; 
+                typically you can go a few thousand levels deep. Once you fill up all the stack memory, you get a situation called 
+                <i>stack overflow</i>. (You can ask the compiler to provide extra stack memory, but if you 
+                find yourself needing to do that, it's typically a band-aid solution to poorly-designed code.)
             </p>
                 
             <p>
-                Nonetheless, we often prefer recursion because it's easier for humans to reason about; for example, our definitinon 
-                of <code>a(n)</code> above was a one-liner that basically just said exactly what the mathemtical definition said; 
+                Despite this issue, we often prefer recursion because it's easier for humans to reason about; for example, our definitinon 
+                of <code>a(n)</code> above was a one-liner that basically just said exactly what the mathematical definition said; 
                 it took almost no thought to write. You could also write the definition using a <code>for</code> loop instead of 
                 recursion, but that would probably take a little more effort. Do you iterate through the loop n-1 times or n times? 
                 You might have to stop and think about that.
@@ -667,6 +730,10 @@ int main() {
                 to define a function.
             </p>
 
+            <p> 
+                There's another solution to this memory issue, which we'll discuss in the section after the following exercises.
+            </p>
+
         <h2>Recursion Exercise</h2>
 
         <p>
@@ -678,6 +745,105 @@ int main() {
         <p>
             If you finish before your classmates, write a different version of a<sub>n</sub>, so that you have one version of the code 
             using recursion and one using a loop. Which one do you prefer?
+        </p>
+
+        <!--- Comment out discussion of tail-call optimization; more complicated than needed. Replace with simpler section below.
+        <h2>Tail Call Optimization</h2>
+
+        <p>
+            There's a trick that you can use so that, in some cases, you can get effectively unlimited recursion depth without worrying 
+            about running out of memory on the stack: <i>tail call optimization</i>. This applies if you're writing a function 
+            <code>f</code>, and the last line of the function is in the form <code>return f(...)</code>: the last line (i.e., tail) of 
+            the function is to call that same function. In this case, your recursive function essentially has the form of a fairly simple 
+            loop. Most modern compilers will (at least if you ask them to optimize aggressively) automatically optimize the code so that 
+            it's in this loop form instead of in recursive form, so that the recursion depth isn't an issue. 
+        </p>
+
+        <p>
+            For example, suppose we write a function to calculate the <i>n</i><sup>th</sup> triangular number, defined by 
+            <i>T</i><sub><i>n</i></sub> = 1 + 2 + ... + <i>n</i>:
+        </p>
+
+        <code-box data-codeId="triangularBasic"><pre>#include &lt;iostream&gt;
+
+int t(int n) {
+    if (n == 0) {
+        return 0;
+    }
+    return n + t(n - 1); // Not tail-recursive
+}
+
+int main() {
+    std::cout << t(9000) << std::endl;
+    return 0;
+}</pre></code-box>
+
+        // If I re-instate this section, I need to add more content here. -->
+
+        <h2>Optimization</h2>
+
+        <p>
+            Anything that can be done with recursion can, in theory, be done with a loop. We mentioned above that one solution if 
+            your recursion depth is large enough to cause stack overflow is to rework the code to use a loop instead of recursion. 
+            But there's sometimes another solution: just use recursion, and let the compiler fix it for you!
+        </p>
+
+        <p>
+            When you compile your code, many compilers will automatically <i>optimize</i> the code for you, to make it run more 
+            efficiently. If a recursive function has a particularly simple form, and the compiler is configured to optimize 
+            aggressively, then the compiler may be able to figure out how to turn the recursion into a loop for you! However, 
+            this behavior is not guaranteed by the C++ standard, so to be safe, you shouldn't rely on it; some compilers might 
+            not do the optimization for you.
+        </p>
+
+        <p>
+            For example, consider the below function which computes the <i>n</i><sup>th</sup> triangular number, defined by 
+            <i>T</i><sub><i>n</i></sub> = 1 + 2 + ... + <i>n</i>:
+        </p>
+
+        <code-box data-codeId="triangularRecursive"><pre>#include &lt;iostream&gt;
+
+int t(int n) {
+    if (n == 0) {
+        return 0;
+    }
+    return n + t(n - 1); 
+}
+
+int main() {
+    std::cout << t(9000) << std::endl;
+    return 0;
+}</pre></code-box>
+
+        <p>
+            Save this in a file triangular.cpp, and try compiling it using the terminal command
+        </p>
+
+        <code-box data-codeId="compileO1"><pre>g++ -o triangular -O1 triangular.cpp</pre></code-box>
+
+        <p>
+            When you go to run the program, it probably won't work. Now compile it again, using:
+        </p>
+
+        <code-box data-codeId="compileO2"><pre>g++ -o triangular -O2 triangular.cpp</pre></code-box>
+
+        <p> 
+            This time, it probably worked! What happened?
+        </p>
+
+        <p> 
+            The <code>-O</code> option tells the compiler how aggressively to optimiize. You can use <code>-O1</code>,
+            <code>-O2</code>, and <code>-O3</code>, with higher numbers corresponding to more aggressive optimization. 
+            (There are other options also, but we won't worry about them.) When we compiled using the option <code>-O1</code>,
+            the compiler didn't optimize away the recursion, and we got a stack overflow when we ran the program. 
+        </p>
+
+        <p>
+            If you want to take advantage of this sort of compiler optimization, you may want to look up the term  
+            <i>tail-recursive</i>; a tail-recursive function is easiest to turn into a loop, so that gives you the 
+            highest chance that the compiler will do it for you. But it generally takes some extra work to put a function into 
+            tail-recursive form, at which point you might as well just rewrite it using a loop so that you don't need to count 
+            on the compiler to provide an optimization that isn't promised by the C++ standard.
         </p>
 
         <h2>Forward declaration</h2>
@@ -741,6 +907,52 @@ int main() {
     std::cout << isEven(123) << std::endl; // Prints false
     return 0;
 }</pre></code-box>
+
+        <p>
+            There are other reasons why you might want to declare a function without defining it, but we won't worry about them for now.
+        </p>
+
+        <p>
+            One potentially confusing thing about forward declaration: if you want to give a forward declaration of a function with 
+            default arguments, you need to give the default arguments in the forward declaration and <b>not</b> in the actual definition.
+            The following code is wrong:
+        </p>
+
+        <wrong-code-box data-codeId="helloFunctionWithDefaultAndForwardDeclarationWrong"><pre>#include &lt;iostream&gt;
+#include &lt;string>
+
+void hello(std::string name = "user");
+
+int main() {
+    hello("James"); // prints "Hello, James!"
+    hello();        // prints "Hello, user!"
+    return 0;
+}
+
+void hello(std::string name = "user") {
+    std::cout << "Hello, " << name << "!" << std::endl;
+}
+</pre></wrong-code-box>
+
+        <p>
+            If we remove the second mention of the default argument, then the code works as expected:
+        </p>
+
+        <code-box data-codeId="helloFunctionWithDefaultAndForwardDeclaration"><pre>#include &lt;iostream&gt;
+#include &lt;string>
+
+void hello(std::string name = "user");
+
+int main() {
+    hello("James"); // prints "Hello, James!"
+    hello();        // prints "Hello, user!"
+    return 0;
+}
+
+void hello(std::string name) {
+    std::cout << "Hello, " << name << "!" << std::endl;
+}
+</pre></code-box>
 
         <h2>LeetCode Exercises</h2>
 
