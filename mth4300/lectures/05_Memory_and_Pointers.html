@@ -1,0 +1,143 @@
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Lecture 05: Memory and Pointers</title>
+        <link rel="stylesheet" href="../style.css">
+    </head>
+    <body>
+        <div class="top-bar"><a href="../mth4300.html">🏠 Back to Math 4300 homepage</a>
+        </div>
+        <div class="content">
+            <h1>Lecture 05: Memory and Pointers</h1>
+
+            <p>
+                Unlike Python, C++ sometimes requires you to think about the specifics of how data is stored in 
+                the program's memory.
+            </p>
+
+            <h2>Memory</h2>
+
+            <p>
+               A C++ program has two different sections of its memory, the <i>stack</i> and the <i>heap</i>, which serve 
+               different purposes and need to be handled in different ways. It's important to understand the differences 
+               between them.
+            </p>
+
+            <h2>The stack</h2>
+
+            <p>
+                The stack is where local variables (variables that live inside a function, such as <code>main()</code>) exist. 
+                The compiler knows what variables are needed and how much memory is needed to store each one, so it knows exactly 
+                how much space to allocate on the stack. When a function is finished running, its local variables are no longer 
+                needed, and they can be removed from the stack.
+            </p>
+
+            <p>
+                Indeed, that property explains why this section of memory is called the stack. In computer science, a 
+                <i>stack</i> is a <i>last-in-first-out</i> (<i>LIFO</i>) data structure, meaning that the last data put 
+                onto the stack is the first data removed. This is just like a real stack: if you make a stack of boxes in 
+                the real world, and then want to read its data, you had better remove the top (last-added) box first.
+            </p>
+
+            <p>
+                A LIFO order is exactly what we want when we're calling functions. Suppose your code calls a function 
+                <code>f</code>, which calls a function <code>g</code>, which calls a function <code>h</code>. When <code>f</code>
+                gets called, its local variables are put on the stack. (The allocated memory for <code>f</code> is called its 
+                <i>stack frame</i>,) Then <code>f</code> calls <code>g</code>, so the stack frame for <code>g</code> is added to the 
+                stack. Then <code>g</code> calls <code>h</code>, so the stack frame for <code>h</code> is added to the 
+                stack. Finally, <code>h</code> finishes running, so its stack frame can be removed from the top of the stack, freeing 
+                that memory in case it's needed later by some other function. This returns control to <code>g</code>, which can finish 
+                running and remove its stack frame. Then this returns control to <code>f</code>, which can finish running and remove its 
+                stack frame. Note that this is LIFO, as promised: the last function called (<code>h</code>) was the first to have its 
+                stack frame removed.
+            </p>
+
+            <p>
+                Each variable has an address that tells the computer the exact memory location where it can be found. By convention, this 
+                address is given in hexadecimal (base 16, where 'a' is the digit 10, 'b' is the digit 11, and so on). C++ lets you, the 
+                programmer, access this memory address using the <i>address-of</i> operator <code>&</code>. If you place the <code>&</code> before 
+                a variable, C++ gives you the address of that variable. (Perhaps appropriately, this looks a lot like the syntax used to declare a 
+                reference.) 
+               
+            <p>
+                Naturally, it doesn't make any sense to take the address of something that doesn't have a permanent address, e.g., trying to 
+                take the address of a literal value in your code is an error:
+            </p>
+
+            <wrong-code-box data-codeId="addressOfLiteral"><pre>#include &lt;iostream&gt;
+
+int main() {
+    std::cout << &42;
+    return 0;
+}</pre></wrong-code-box>
+
+            <p>
+                Here's an example using the address-of operator properly:
+            </p>
+
+            <code-box data-codeId="addressOfOperatorDemonstration"><pre>#include &lt;iostream&gt;
+
+int main() {
+    int x{5}, y{-6};
+    long long z{3};
+    int w{42};
+    std::cout << &x << '\n' << &y << '\n' << &z << '\n' << &w << std::endl;
+    return 0;
+}</pre></code-box>
+
+            <p>I just ran this code, and it printed the following:</p>
+
+            <p><code><pre>0x91c13ff6ac
+0x91c13ff6a8
+0x91c13ff6a0
+0x91c13ff69c</pre></code></p>
+
+            <p>
+                If you run the code yourself, you will (almost certainly) get different output, but following a similar pattern. In fact, you will 
+                almost certainly get different output every time you run this program, even if you run it repeatedly on the same computer. This is 
+                because the program is not assigned the same section of your computer's memory every time it runs, so naturally the variables will 
+                have different addresses each time.
+            </p>
+
+            <p>
+                The "0x" at the beginning of each address is a standard convention in computer science which indicates that the number is in 
+                hexadecimal. Then the number gives the address of the byte where the variable starts. (As mentioned previously, bytes are the 
+                smallest addressable units of memory, so we don't get an address for an individual bit.) In the above example, the variable 
+                <code>x</code> starts at the address <code>0x91c13ff6ac</code>. With my compiler (as with almost all modern C++ compilers), an 
+                <code>int</code> occupies four bits, so this means that <code>x</code> is stored in bits <code>0x91c13ff6ac</code>, 
+                <code>0x91c13ff6ad</code>, <code>0x91c13ff6ae</code>, and <code>0x91c13ff6af</code>.
+            </p>
+
+            <p>
+                After declaring <code>x</code>, we next declared <code>y</code>. Since <code>y</code> is also an int, it also needed 4 bytes of 
+                memory, so it started at <code>0x91c13ff6a8</code>, which is <code>0x91c13ff6ac</code> - 4; this leaves it exactly the 4 bytes 
+                that it needs (<code>0x91c13ff6a8</code>, <code>0x91c13ff6a9</code>, <code>0x91c13ff6aa</code>, and <code>0x91c13ff6ab</code>), 
+                so no space is wasted. (For technical reasons, the compiler will sometimes optimize by leaving a little space, but that's not important to us.)
+            </p>
+            
+            <p>
+                After that, <code>z</code> is a <code>long long</code>, so it needs 8 bytes: <code>0x91c13ff6a8</code> - 8 = <code>0x91c13ff6a0</code>, so 
+                <code>z</code> starts at address <code>0x91c13ff6a0</code>. Finally, <code>w</code> needs 4 bytes, and <code>0x91c13ff6a0</code> - 4 = 
+                <code>0x91c13ff69c</code>, so that's the address of <code>w</code>.
+            </p>
+
+            <h2>The heap</h2>
+
+            <p>
+                The other section of memory available to a C++ program is called the <i>heap</i>. When possible, we prefer to use the stack, because it is 
+                faster to use and generally safer (for reasons we'll discuss later). However, sometimes you need to use the heap. We'll worry about that later.
+            </p>
+
+            <!--- Finish this later.
+            <p>
+                You may need to use the heap if you're creating an object that you want to outlive the function that created it. Remember that any variables 
+                allocated by a function on the stack are removed once the function goes out of scope. If your function is supposed to create and return a 
+                new object, it would be silly for that object to be erased when the function returns. 
+            </p>
+            -->
+
+        </div> <!-- /.content -->
+        <script type="text/javascript" src="codeblock.js"></script>
+    </body>
+</html>
