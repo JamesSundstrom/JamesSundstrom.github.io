@@ -54,7 +54,7 @@
             </p>
 
             <p>
-                Each variable has an address that tells the computer the exact memory location where it can be found. By convention, this 
+                Each variable has an <i>address</i> that tells the computer the exact memory location where it can be found. By convention, this 
                 address is given in hexadecimal (base 16, where 'a' is the digit 10, 'b' is the digit 11, and so on). C++ lets you, the 
                 programmer, access this memory address using the <i>address-of</i> operator <code>&</code>. If you place the <code>&</code> before 
                 a variable, C++ gives you the address of that variable. (Perhaps appropriately, this looks a lot like the syntax used to declare a 
@@ -126,16 +126,193 @@ int main() {
 
             <p>
                 The other section of memory available to a C++ program is called the <i>heap</i>. When possible, we prefer to use the stack, because it is 
-                faster to use and generally safer (for reasons we'll discuss later). However, sometimes you need to use the heap. We'll worry about that later.
+                faster to use and generally safer (for reasons we'll discuss later). However, sometimes you need to use the heap.
             </p>
 
-            <!--- Finish this later.
             <p>
-                You may need to use the heap if you're creating an object that you want to outlive the function that created it. Remember that any variables 
-                allocated by a function on the stack are removed once the function goes out of scope. If your function is supposed to create and return a 
-                new object, it would be silly for that object to be erased when the function returns. 
+                For example, you may need to use the heap if you're creating an object that you want to outlive the function that created it. Remember that 
+                any variables allocated by a function on the stack are removed once the function goes out of scope. If your function is supposed to create 
+                and return a new object, it would be silly for that object to be erased when the function returns. We haven't had to worry about this yet, 
+                but we'll need to worry about that later, such as when we start defining our own classes.
             </p>
-            -->
+
+            <h2>Pointers</h2>
+
+            <p>
+                A <i>pointer</i> is a variable that stores the address of some data. In some ways, it's similar to a reference. But in other ways, it's 
+                very different, and understanding the difference is crucial. One difference is that the pointer is actually its own box in memory. It's 
+                not just another name that we can use to refer to an existing memory address; when we declare a pointer, we're setting aside a new piece 
+                of memory, which will store the address of another object. 
+            </p>
+
+            <p>
+                The declaration for a pointer looks very similar to the declaration for a reference, except that we use <code>*</code> instead of 
+                <code>&</code>. However, the initialization is different; we initialized a reference to an <code>int</code> by putting the name of 
+                the <code>int</code> on the right-hand side. The declaration and initialization of the reference don't take up any additional 
+                memory; they only tell the compiler to recognize a new name for an existing block of memory. With a pointer, the declaration sets 
+                aside a new piece of memory to store an address, and then the initialization needs to provide the address that will be stored there. 
+                Therefore the right-hand side of the assignment needs to be an address, which we can get using the address-of operator <code>&</code>:
+            </p>
+
+            <code-box data-codeId="basicPointerDeclaration"><pre>#include &lt;iostream&gt;
+
+int main() {
+    int x = 42;
+    int* p = &x;
+    std::cout << p << std::endl; // Prints the address of x (0x...)
+    return 0;
+}</pre></code-box>
+
+            <p>
+                There are two blocks of memory in play here: the block of memory set aside for <code>p</code>, which is being used to store an address, 
+                and the block of memory set aside for <code>x</code>, which is the memory whose address is stored in <code>p</code>. When we print 
+                <code>p</code>, it acts just like any other non-reference variable: it prints the contents of <code>p</code>'s memory, i.e., an address. 
+                But what if that wasn't the behavior you wanted? What if we wanted to use <code>p</code> to access the value stored in <code>x</code>?
+                For that, we use the <i>dereference</i> operator <code>*</code>:
+            </p>
+
+            <code-box data-codeId="basicDereferenceOperator"><pre>#include &lt;iostream&gt;
+
+int main() {
+    int x = 42;
+    int* p = &x;
+    std::cout << *p << std::endl; // Prints 42
+    return 0;
+}</pre></code-box>
+
+            <p>
+                Note that we can use <code>*p</code> on the left or right side of an assignment. In the below code, <code>y = *p</code>,
+                copies the value stored in <code>*p</code> (i.e., the value of <code>x</code>) into <code>y</code>, and then 
+                <code>*p = 5</code> copies the value <code>5</code> into the memory pointed to by <code>p</code>, which is the memory 
+                used by <code>x</code>, just like when we assign to a reference:
+            </p>
+
+            <code-box data-codeId="slightlyLessBasicDereferenceOperator"><pre>#include &lt;iostream&gt;
+
+int main() {
+    int x = 2, y = 3;
+    int* p = &x;
+    y = *p;
+    *p = 5;
+    std::cout << *p << ' ' << x << ' ' << y << std::endl; // Prints 5 5 2
+    return 0;
+}</pre></code-box>
+
+            <p>
+                Unlike a reference, the value of a pointer can be reassigned after it is declared. (As a result, it is legal to 
+                declare a pointer without initializing it, since it can be given a value later.) Try to predict what the following 
+                code will print before you run it:
+            </p>
+
+            <code-box data-codeId="reassignPointer"><pre>#include &lt;iostream&gt;
+
+int main() {
+    int x = 2, y = 3;
+    int* p = &x;
+    *p = 5;
+    p = &y;
+    *p = 7;
+    std::cout << *p << ' ' << x << ' ' << y << std::endl;
+    return 0;
+}</pre></code-box>
+
+            <h2>The arrow operator</h2>
+
+            <p>
+                What if you have a pointer to an object, and you want to access a class member for that object? For example, suppose 
+                you have a pointer to a <code>std::string s</code> and you want to access <code>s.size()</code>. You could simply 
+                dereference the pointer to get <code>s</code>, and then use the <code>.size()</code> notation directly:
+            </p>
+
+            <code-box data-codeId="arrowWithoutArrow"><pre>#include &lt;iostream&gt;
+
+int main() {
+    std::string s{"Hello, world!"};
+    std::string* p = &s;
+    int n = (*p).size();
+    std::cout << n << std::endl; // Prints 13
+    return 0;
+}</pre></code-box>
+
+            <p>
+                However, you have to be very careful with the order of operations. Notice that we wrote <code>(*p).size()</code> above;
+                if we had written <code>*p.size()</code> without the parentheses, C++ would interpret the order of operations as 
+                <code>*(p.size())</code>, which is nonsense, and the code would not compile:
+            </p>
+
+            <code-box data-codeId="arrowWithoutArrowDoneWrong"><pre>#include &lt;iostream&gt;
+
+int main() {
+    std::string s{"Hello, world!"};
+    std::string* p = &s;
+    int n = *p.size();
+    std::cout << n << std::endl; // Prints 13
+    return 0;
+}</pre></code-box>
+
+            <p>
+                This is mildly annoying. When we do it right, our code is muddied with ugly parentheses, and we need to remember to 
+                write those parentheses every time. Fortunately, C++ provides a nicer solution: the arrow operator <code>-></code>. Applying the 
+                arrow operator to a pointer is exactly the same as applying the dot member access operator to the object it points to:
+            </p>
+
+            <code-box data-codeId="arrow"><pre>#include &lt;iostream&gt;
+
+int main() {
+    std::string s{"Hello, world!"};
+    std::string* p = &s;
+    int n = p->size();
+    std::cout << n << std::endl; // Prints 13
+    return 0;
+}</pre></code-box>
+
+            <h2><code>nullptr</code></h2>
+
+            <p>
+                C++ has a keyword <code>nullptr</code> which represents the <i>null pointer</i>, a pointer which doesn't point to 
+                anything. This serves two main purposes. First, if you wish to declare a pointer without initializing it, you can 
+                initialize it to <code>nullptr</code>. That way, if you accidentally dereference it, you don't need to worry that 
+                you're dereferencing an uninitialized value (which could lead to undefined behavior). Dereferencing an uninitialized 
+                value might treat whatever data is in the uninitialized memory as an address and dereference that random address, or 
+                might crash the program immediately, depending on your compiler. (When I run the following code on my computer, it 
+                crashes, but when I run it <a href="https://www.onlinegdb.com/online_c++_compiler" target="_blank">online</a>, it prints a 
+                random garbage value.)
+            </p>
+
+            <wrong-code-box data-codeId="dereferenceUninitializedPointer"><pre>#include &lt;iostream&gt;
+
+int main() {
+    int* p;
+    std::cout << *p << std::endl; // May crash or print a garbage value
+    return 0;
+}</pre></wrong-code-box>
+
+            <p>
+                Instead of leaving the pointer uninitialized, we could have set it to <code>nullptr</code> instead. Technically, 
+                dereferencing <code>nullptr</code> is still undefined behavior according to the C++ standard, but the compiler 
+                is more likely to crash when dereferencing a nul pointer than it is when dereferencing an uninitialized pointer,
+                which will make the bug easier to diagnose.
+            </p>
+
+            <wrong-code-box data-codeId="dereferenceNullPointer"><pre>#include &lt;iostream&gt;
+
+int main() {
+    int* p = nullptr;
+    std::cout << *p << std::endl; // Almost certainly crashes
+    return 0;
+}</pre></wrong-code-box>
+
+            <p>
+                Remember, you should <b>never</b> dereference a null pointer -- but if you're going to dereference a pointer that 
+                doesn't point to valid memory, it's probably better for it to be a null pointer than an uninitialized pointer.
+            </p>
+
+            <p>
+                The other benefit of <code>nullptr</code> is even more important, because it can be useful in working code, not just for 
+                debugging bad code. Sometimes you're not sure whether you will have data for a particular variable. It may be possible to 
+                use an obvious garbage value to indicate missing data, e.g., an inventory of -1 might mean that you haven't counted that 
+                item yet. But in other cases, there might not be an obvious garbage value.
+            </p>
 
         </div> <!-- /.content -->
         <script type="text/javascript" src="codeblock.js"></script>
