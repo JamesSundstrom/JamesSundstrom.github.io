@@ -628,14 +628,19 @@ Employee topLevelSupervisor(const Employee& e) {
     // Write your code here
 } 
 
+void printTopLevelSupervisor(const Employee& e) {
+    std::cout << e.name << "'s top-level supervisor is " <<
+                 topLevelSupervisor(e).name << std::endl;
+}
+
 int main() {
     Employee DavidWallace{"David Wallace", nullptr};
     Employee MichaelScott{"Michael Scott", &DavidWallace};
     Employee DwightSchrute{"Dwight Schrute", &MichaelScott};
 
-    std::cout << DavidWallace.name << "'s top-level supervisor is " << topLevelSupervisor(DavidWallace).name << std::endl;
-    std::cout << MichaelScott.name << "'s top-level supervisor is " << topLevelSupervisor(MichaelScott).name << std::endl;
-    std::cout << DwightSchrute.name << "'s top-level supervisor is " << topLevelSupervisor(DwightSchrute).name << std::endl;
+    printTopLevelSupervisor(DavidWallace);  
+    printTopLevelSupervisor(MichaelScott); 
+    printTopLevelSupervisor(DwightSchrute);
     return 0;
 }</pre></code-box>
 
