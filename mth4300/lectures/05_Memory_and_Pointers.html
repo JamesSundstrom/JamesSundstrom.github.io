@@ -105,7 +105,7 @@ int main() {
                 hexadecimal. Then the number gives the address of the byte where the variable starts. (As mentioned previously, bytes are the 
                 smallest addressable units of memory, so we don't get an address for an individual bit.) In the above example, the variable 
                 <code>x</code> starts at the address <code>0x91c13ff6ac</code>. With my compiler (as with almost all modern C++ compilers), an 
-                <code>int</code> occupies four bits, so this means that <code>x</code> is stored in bits <code>0x91c13ff6ac</code>, 
+                <code>int</code> occupies four bytes, so this means that <code>x</code> is stored in bytes <code>0x91c13ff6ac</code>, 
                 <code>0x91c13ff6ad</code>, <code>0x91c13ff6ae</code>, and <code>0x91c13ff6af</code>.
             </p>
 
@@ -311,8 +311,340 @@ int main() {
                 The other benefit of <code>nullptr</code> is even more important, because it can be useful in working code, not just for 
                 debugging bad code. Sometimes you're not sure whether you will have data for a particular variable. It may be possible to 
                 use an obvious garbage value to indicate missing data, e.g., an inventory of -1 might mean that you haven't counted that 
-                item yet. But in other cases, there might not be an obvious garbage value.
+                item yet. But in other cases, there might not be an obvious garbage value. For example, suppose you want to create an 
+                <code>Employee</code> structure (<code>struct</code>), where each <code>Employee</code> has a supervisor. (We haven't covered 
+                structures yet, so don't worry about the details of how they work. You should be able to tell what's going on well enough to 
+                get the idea of the example.)
             </p>
+
+            <wrong-code-box data-codeId="badEmployeeStruct"><pre>struct Employee {
+    std::string name;
+    Employee supervisor;
+};</pre></wrong-code-box>
+
+            <p>
+                This code defines a structure where each <code>Employee</code> has a name and a supervisor. But there are two obvious problems with it 
+                (and one less obvious, but even more serious, problem). First, there's a real-world problem. Not everybody has a supervisor; we won't 
+                be able to represent the CEO by an Employee object. Second, there's a technical problem. We can't create a new <code>Employee</code> 
+                without having an existing <code>Employee</code> to serve as the supervisor. So how do we create the first <code>Employee</code>? In 
+                fact, we won't even get to the point of that being an issue, because the compiler won't allow us to define a structure like this at all. 
+                The problem is that, in order to create an object of type <code>Employee</code>, the compiler would need to know how much memory is needed 
+                to store an <code>Employee</code>. But that would require it to store the employee's supervisor, which is also an <code>Employee</code>, so 
+                the compiler can't figure out how much memory to set aside for an <code>Employee</code> unless it already knows how much memory to set 
+                aside for an <code>Employee</code>. If we continued down this rabbit hole, we would need to set aside memory for the supervisor, and then 
+                the supervisor's supervisor, and that person's supervisor, and so on, until the program memory overflowed from too many supervisors.
+            </p>
+            
+            <p>
+                You might be tempted to try to solve this problem by creating separate <code>SupervisedEmployee</code> and <code>UnsupervisedEmployee</code>
+                classes. You can freely create <code>UnsupervisedEmployee</code> objects whenever you want, and then you can create a 
+                <code>SupervisedEmployee</code> using an <code>UnsupervisedEmployee</code> as its supervisor. But this is messy for several reasons. If a 
+                supervised employee gets promoted to an unsupervised role, we need to completely change the object representing that employee, not just 
+                change data stored within the object. Also, we assumed that a <code>SupervisedEmployee</code> will be supervised by an 
+                <code>UnsupervisedEmployee</code>, but that might not be the case in the real world. Often supervisors have their own supervisors that they 
+                answer to. Are you going to try to modify the <code>SupervisedEmployee</code> structure to use some kind of polymorphism, so that it can 
+                be supervised by either type of employee?
+            </p>
+
+            <p>
+                The simple-sounding problem of "Not everyone has a supervisor" is quickly spiraling out of control. Fortunately, C++ provides a better 
+                solution. Instead of having an <code>Employee</code> store a copy of its supervisor, instead store a pointer to the supervisor. If an 
+                <code>Employee</code> doesn't have a supervisor, we can store <code>nullptr</code> to denote that situation. This avoids the problems 
+                that we had before, and it's fairly intuitive for programmers to work with: if an Employee has no supervisor, then the pointer to the 
+                supervisor is literally a pointer to nothing, indicating that there is no supervisor. 
+            </p>
+
+            <p>    
+                This probably feels familiar to you from Python. 
+                Python has the <code language="Python">None</code> object, of type <code language="Python">NoneType</code>, that can serve a similar purpose. 
+                But we can't do that in C++ because C++ variables need to have definition types; we can't tell the compiler that <code>supervisor</code> 
+                is sometimes an object of type <code>Employee</code> and sometimes an object of type <code>NoneType</code>. (That's not 100% true, but it
+                takes more effort to set up a situation like that in C++.) Now we can define Employees with no trouble:
+            </p>
+
+            <code-box data-codeId="employeeUsingPointer"><pre>#include &lt;iostream&gt;
+
+struct Employee {
+    std::string name;
+    Employee* supervisor;
+};
+
+int main() {
+    Employee DavidWallace{"David Wallace", nullptr};
+    Employee MichaelScott{"Michael Scott", &DavidWallace};
+    Employee DwightSchrute{"Dwight Schrute", &MichaelScott};
+
+    std::cout << DavidWallace.name << std::endl;
+    std::cout << MichaelScott.name << " reports to " << MichaelScott.supervisor->name << std::endl;
+    std::cout << DwightSchrute.name << " reports to " << DwightSchrute.supervisor->name << std::endl;
+    return 0;
+}</pre></code-box>
+
+        <p> 
+            This definition works fine in the real world, because we can easily create employees with or without supervisors. Furthermore,
+            the compiler doesn't object to this definition, because it knows exactly how much memory to set aside when a new <code>Employee</code>
+            is created: memory to store one string and one pointer. The compiler doesn't need to know in advance how much memory is used to store 
+            the supervisor because it's not storing the supervisor, only a pointer which contains the address of the supervisor. (Of course, pointers 
+            are always the same size because they're simply addresses, regardless of how much memory is used by the thing they point to.) 
+        </p>
+
+        <p>
+            What if we want to know whether a particular employee has a supervisor? In other words, we want to check whether the <code>Employee</code>
+            object's <code>supervisor</code> pointer is a null pointer or not. We can check that in exactly the way you expect:
+        </p>
+
+        <code-box data-codeId="checkNullPointerWithEqualsEquals"><pre>#include &lt;iostream&gt;
+
+struct Employee {
+    std::string name;
+    Employee* supervisor;
+};
+
+bool hasSupervisor(const Employee& e) {
+    return e.supervisor != nullptr;
+}
+
+int main() {
+    Employee DavidWallace{"David Wallace", nullptr};
+    Employee MichaelScott{"Michael Scott", &DavidWallace};
+    Employee DwightSchrute{"Dwight Schrute", &MichaelScott};
+
+    std::cout << std::boolalpha;
+    std::cout << DavidWallace.name << ": " << hasSupervisor(DavidWallace) << std::endl;
+    std::cout << MichaelScott.name << ": " << hasSupervisor(MichaelScott) << std::endl;
+    std::cout << DwightSchrute.name << ": " << hasSupervisor(DwightSchrute) << std::endl;
+    return 0;
+}</pre></code-box>
+
+        <p>
+            For more concise code, you can use a pointer directly in a place where a <code>bool</code> is expected. The null pointer 
+            is treated as <code>false</code>, and any other pointer is treated as <code>true</code>:
+        </p>
+
+        <code-box data-codeId="checkNullPointerAsBool"><pre>#include &lt;iostream&gt;
+
+struct Employee {
+    std::string name;
+    Employee* supervisor;
+};
+
+void printSupervisedStatus(const Employee& e) {
+    if (e.supervisor) {
+        std::cout << e.name << " has a supervisor." << std::endl;
+    } else {
+        std::cout << e.name << " does not have a supervisor." << std::endl;
+    }
+}
+
+int main() {
+    Employee DavidWallace{"David Wallace", nullptr};
+    Employee MichaelScott{"Michael Scott", &DavidWallace};
+    Employee DwightSchrute{"Dwight Schrute", &MichaelScott};
+
+    printSupervisedStatus(DavidWallace);
+    printSupervisedStatus(MichaelScott);
+    printSupervisedStatus(DwightSchrute);
+    return 0;
+}</pre></code-box>
+
+        <h2><code>const</code> pointers</h2>
+
+        <p>
+            What does it mean for a pointer to be declared <code>const</code>? There are two possible interpretations:
+        </p>
+
+        <ul>
+            <li> 
+                It means that the pointer cannot be used to modify the memory it points to (similar to a <code>const</code> reference.)
+            </li>
+            <li>
+                It means that the pointer itself cannot be modified (i.e., it always contains the same address, but it can be used to 
+                modify the value stored at that address).
+            </li>
+        </ul>
+
+        <p>
+            These are both reasonable things to want, so C++ lets us do both. If we declare <code>const int* p = &x</code>, then <code>p</code>
+            is a pointer to const: it cannot be used to change the value of <code>x</code> (but <code>x</code> can still be changed directly, 
+            assuming it wasn't also <code>const</code>). If we declare <code>int* const p = &x</code>, then <code>p</code> is a const pointer: 
+            the memory address that it stores cannot be changed, but <code>p</code> can be used to change the value stored at that address.
+        </p>
+
+        <p> 
+            We can even declare <code>const int* const p = &x</code> if we want both guarantees: the address stored in <code>p</code> can't change, 
+            and <code>p</code> can't be used to change the value of <code>x</code>.
+        </p>
+
+        <p> 
+            As with references, we can't use a non-<code>const</code> pointer to cheat and modify a <code>const</code> object. If <code>x</code> 
+            is declared as a <code>const int</code>, then any pointer to <code>x</code> has to be declared as <code>const int*</code>. However, the 
+            other way is fine: we can declare a <code>const int*</code> which points to a plain <code>int</code>; as with references, this means 
+            that the pointer won't be used to modify the value it points to, even if the value could be modified directly:
+        </p>
+
+        <wrong-code-box data-codeId="constPointerExample"><pre>#include &lt;iostream&gt;
+
+int main() {
+    int x{1};
+    const int y{2};
+    const int* p = &x; // Allowed
+    int* q = &y;       // Not allowed
+    *p = 3;            // Not allowed
+    return 0;
+}</pre></wrong-code-box>
+
+        <h2>Exercise on <code>const</code></h2>
+
+        <p>
+            Without running the following code, try to predict which lines of code are not allowed. If we delete the illegal lines of code, 
+            what does the program print?
+        </p>
+
+        <wrong-code-box data-codeId="constPointerExercise"><pre>#include &lt;iostream&gt;
+
+int main() {
+    int x{1}, y{2}, z{3};
+    const int* p = &x;
+    int* const q = &y;
+    const int* const r = &z;
+    p = &y;
+    *p = 5;
+    q = &z;
+    *q = 7;
+    r = &x;
+    *r = 6;
+    std::cout << x << ' ' << y << ' ' << z << ' ' << *p << ' ' << *q << ' ' << *r << std::endl;
+    return 0;
+}</pre></wrong-code-box>
+
+        <h2>Pointers and References</h2>
+
+        <p>
+            You cannot create a pointer to a reference, because a reference is not an object; it is an alias for a memory 
+            location, but it does not have its own memory location. Thus <code>int&* p = &r;</code> is illegal. However, you 
+            can use the address-of operator on a reference: as you might expect, it returns the address that the reference refers 
+            to. As such, if <code>r</code> is a reference to an <code>int x</code>, then <code>int* p = &r;</code> is perfectly legal. 
+            For example, the below code is fine:
+        </p>
+
+        <code-box data-codeId="addressOfReference"><pre>#include &lt;iostream&gt;
+
+int main() {
+    int x{1};
+    int& r = x;
+    int* p = &r;
+    *p = 5;
+    std::cout << x << std::endl; // Can you predict what this prints?
+    return 0;
+}</pre></code-box>
+
+        <p>
+            On the other hand, you can create a reference to a pointer. A pointer is simply a value (which happens to be an address) 
+            stored in memory, so why shouldn't you be able to create a reference to that piece of memory? For example, you might want 
+            to pass a pointer to a function by reference, if you want the function to be able to change the pointer.
+        </p>
+
+        <code-box data-codeId="referenceToPointer"><pre>#include &lt;iostream&gt;
+
+int main() {
+    int x{1}, y{2};
+    int* p = &x;
+    int*& r = p;
+    r = &y;
+    std::cout << *p << std::endl; // Can you predict what this prints?
+    return 0;
+}</pre></code-box>
+
+        <p>
+            You can even create a pointer to a pointer:
+        </p>
+
+        <code-box data-codeId="pointerToPointer"><pre>#include &lt;iostream&gt;
+
+int main() {
+    int x{1}, y{2};
+    int* p = &x;
+    int** q = &p;
+    **q = 3;
+    *q = &y;
+    *p = 5;
+    std::cout << x << ' ' << y << std::endl; // Can you predict what this prints?
+    return 0;
+}</pre></code-box>
+
+        <h2>Summary: Pointers vs References</h2>
+
+        <p>
+            Here are the key differences between pointers and references:
+        </p>
+        <ul>
+            <li>
+                A pointer stores an address. A reference is an alias of an existing variable.
+            </li>
+            <li>
+                A pointer can be null. A reference must be bound to a variable.
+            </li>
+            <li>
+                A pointer can be changed to a different address. A reference cannot be reseated.
+            </li>
+            <li>
+                We get the value pointed to by a pointer using the dereferencing operator <code>*</code>. We get the value 
+                pointed to be a reference by using the reference directly, just like the original variable. 
+            </li>
+            <li>
+                A pointer does not need to be initialized when it is created. A reference does. (But even though it's technically 
+                legal to leave a pointer uninitialized, it's good practice to initialize a pointer to <code>nullptr</code> rather 
+                than leave it uninitialized.)
+            </li>
+        </ul>
+
+        <h2><i>The Office</i> Exercise</h2>
+
+        <p>
+            Using our <code>Employee</code> structure from earlier, write a function <code>topLevelSupervisor</code> which accepts an 
+            <code>Employee</code> as argument and returns the <code>Employee</code>'s "top-level supervisor" (i.e., the supervisor's 
+            supervisor's supervisor's ... until we reach the top of the corporate ladder). Note that an <code>Employee</code> who 
+            does not have an assigned supervisor is considered their own top-level supervisor.
+        </p>
+
+        <p>
+            Since we haven't covered structures yet, the only thing you need to know about them is that, if <code>e</code> is an 
+            <code>Employee</code>, then <code>e.supervisor</code> returns (a pointer to) <code>e</code>'s supervisor.
+        </p>
+
+        <p>
+            If your functioin works correctly, then the sample code below should identify David Wallace as the top-level supervisor 
+            of each <code>Employee</code> in the example.
+        </p>
+
+        <code-box data-codeId="officeExercise"><pre>#include &lt;iostream&gt;
+
+struct Employee {
+    std::string name;
+    Employee* supervisor;
+};
+
+Employee topLevelSupervisor(const Employee& e) {
+    // Write your code here
+} 
+
+int main() {
+    Employee DavidWallace{"David Wallace", nullptr};
+    Employee MichaelScott{"Michael Scott", &DavidWallace};
+    Employee DwightSchrute{"Dwight Schrute", &MichaelScott};
+
+    std::cout << DavidWallace.name << "'s top-level supervisor is " << topLevelSupervisor(DavidWallace).name << std::endl;
+    std::cout << MichaelScott.name << "'s top-level supervisor is " << topLevelSupervisor(MichaelScott).name << std::endl;
+    std::cout << DwightSchrute.name << "'s top-level supervisor is " << topLevelSupervisor(DwightSchrute).name << std::endl;
+    return 0;
+}</pre></code-box>
+
+        <p>
+            Note that your code works by listing every level of the <code>Employee</code>'s supervision: an <code>Employee</code> links to their 
+            supervisor, who links to their supervisor, and so on until you reach the top of the corporate ladder. This is an example of a 
+            <i>linked list</i>, a data structure that we'll discuss later in the course. In a linked list, we list the items in order by having 
+            each item in the list store a link to the next one, rather than by storing items one after the other in an array.
+        </p>
 
         </div> <!-- /.content -->
         <script type="text/javascript" src="codeblock.js"></script>
