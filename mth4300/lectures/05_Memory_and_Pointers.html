@@ -240,7 +240,7 @@ int main() {
                 <code>*(p.size())</code>, which is nonsense, and the code would not compile:
             </p>
 
-            <code-box data-codeId="arrowWithoutArrowDoneWrong"><pre>#include &lt;iostream&gt;
+            <wrong-code-box data-codeId="arrowWithoutArrowDoneWrong"><pre>#include &lt;iostream&gt;
 
 int main() {
     std::string s{"Hello, world!"};
@@ -248,7 +248,7 @@ int main() {
     int n = *p.size();
     std::cout << n << std::endl; // Prints 13
     return 0;
-}</pre></code-box>
+}</pre></wrong-code-box>
 
             <p>
                 This is mildly annoying. When we do it right, our code is muddied with ugly parentheses, and we need to remember to 
@@ -290,7 +290,7 @@ int main() {
             <p>
                 Instead of leaving the pointer uninitialized, we could have set it to <code>nullptr</code> instead. Technically, 
                 dereferencing <code>nullptr</code> is still undefined behavior according to the C++ standard, but the compiler 
-                is more likely to crash when dereferencing a nul pointer than it is when dereferencing an uninitialized pointer,
+                is more likely to crash when dereferencing a null pointer than it is when dereferencing an uninitialized pointer,
                 which will make the bug easier to diagnose.
             </p>
 
