@@ -502,6 +502,245 @@ int main() {
     return 0;
 }</pre></code-box>
 
+        <h2>Allocating arrays on the heap</h2>
+
+        <p>
+            If you want to allocate an array on the heap, the process is basically the same, except that you use <code>new[]</code> and 
+            <code>delete[]</code>:
+        </p>
+
+        <code-box data-codeId="newAndDeleteArray"><pre>#include &lt;iostream>
+
+int main() {
+    int n;
+    std::cout << "Enter a positive integer n: ";
+    std::cin >> n;
+    int* arr = new int[n]; // Allocated on the heap
+    for (int i = 0; i < n; ++i) {
+        arr[i] = i < 2 ? i : arr[i-1] + arr[i-2];
+    }
+    std::cout << "The first n Fibonacci numbers are: ";
+    for (int i = 0; i < n; ++i) {
+        std::cout << arr[i] << ' ';
+    }
+    std::cout << std::endl;
+
+    delete[] arr;
+    arr = nullptr;
+
+    return 0;
+}</pre></code-box>
+
+        <p>
+            If you're deleting a single object, you must always use <code>delete</code>; if you're deleting an array, you must always 
+            use <code>delete[]</code>. Deleting a single object using <code>delete[]</code> or an array using <code>delete</code> is 
+            undefined behavior.
+        </p>
+
+        <h2>Multi-dimensional arrays</h2>
+
+        <p>
+            You can declare a multi-dimensional array on the stack in much the way you would expect: just as <code>int arr[m]</code> 
+            declared a 1-dimensional <code>int</code> array of length <code>m</code>, <code>int arr[m][n]</code> declares a 2-dimensional 
+            (rectangular) array where one dimension has length m and the other dimension has length n. We usually interpret the first dimension 
+            as the row, so that <code>int arr[m][n]</code> would be an array with <code>m</code> rows and <code>n</code> columns. Of course, 
+            you can also extend this to more than two dimensions in the obvious way.
+        </p>
+
+        <p>
+            For example, the below code creates (on the stack) the 2 x 3 matrix
+        </p>
+
+        <pre style="font-size: 20px;">1 2 3
+9 8 7</pre>
+
+        <code-box data-codeId="twoDimensionalArrayOnStack"><pre>#include &lt;iostream>
+
+int main() {
+    const int rows = 2;
+    const int cols = 3;
+    int matrix[rows][cols];
+    matrix[0][0] = 1;
+    matrix[0][1] = 2;
+    matrix[0][2] = 3;
+    matrix[1][0] = 9;
+    matrix[1][1] = 8;
+    matrix[1][2] = 7;
+    for (int row = 0; row < rows; ++row) {
+        for (int col = 0; col < cols; ++col) {
+            std::cout << matrix[row][col] << ' ';
+        }
+        std::cout << '\n';
+    }
+    return 0;
+}</pre></code-box>
+
+        <p>
+            If you need to allocate a C-style multidimensional array on the heap, the simplest way to do it is by 
+            creating an array of pointers, where each pointer points to a separate row of the array. This allows 
+            you to index into the array using brackets, exactly the same as for a multidimensional array on the 
+            stack. We're creating an array of pointers, so we would like the type to be <code>T*[]</code>, but 
+            since <code>new</code> gives us a pointer rather than an explicit array, the type will be <code>T**</code>.
+        </p>
+        
+        <p> 
+            The below code allows the user to enter dimensions m and n, and creates the m x n matrix defined by 
+            A<sub>ij</sub> = i + j. (However, matrices in math are 1-indexed rather than 0 indexed, so this means 
+            that the top-left corner should be 1+1 = 2.)
+        </p>
+
+        <code-box data-codeId="twoDimensionalArrayOnHeap"><pre>#include &lt;iostream>
+
+int** f(int m, int n) {
+    int** arr = new int*[m]; // Declare array of pointers, one for each row
+    for (int i = 0; i < m; ++i) {
+        arr[i] = new int[n]; // Declare each row
+        for (int j = 0; j < n; ++j) {
+            arr[i][j] = i + j + 2; // Initialize each entry in the row
+        }
+    }
+    return arr;
+}
+
+int main() {
+    int rows, cols;
+    std::cout << "Enter number of rows: ";
+    std::cin >> rows;
+    std::cout << "Enter number of columns: ";
+    std::cin >> cols;
+    int** matrix = f(rows, cols);
+    for (int row = 0; row < rows; ++row) {
+        for (int col = 0; col < cols; ++col) {
+            std::cout << matrix[row][col] << ' ';
+        }
+        std::cout << '\n';
+    }
+
+    for (int i = 0; i < rows; ++i) {
+        delete[] matrix[i]; // Delete each row
+    }
+    delete[] matrix;
+    matrix = nullptr;
+
+    return 0;
+}</pre></code-box>
+
+        <p>
+            Notice that after we were done with the matrix, we deleted it to avoid a memory leak. But we needed to be 
+            careful with the order of deletion: we first deleted each row, and only then deleted <code>matrix</code> 
+            (the array of pointers to the rows) afterward. If we had deleted <code>matrix</code> first, that would free 
+            the memory that was allocated to store pointers to the rows, but it would not free the memory that stored the 
+            rows themselves. Then we would have a memory leak, because we could no longer delete the rows: 
+            <code>matrix</code> is the only way that we have of referring to those rows, so if we delete it prematurely, 
+            we can no longer delete the rows themselves.
+        </p>
+
+        <h2><code>std::array</code></h2>
+
+        <p>
+            As mentioned earlier, all this discussion of arrays should remain mostly theoretical in your day-to-day programming;
+            the standard library has <code>std::array</code>, which you should use instead of C-style arrays whenever you need 
+            an array whose size is known at compile time. If the size is not constant, or not known at compile time, you can use 
+            <code>std::vector</code> instead.
+        </p>
+
+        <p>
+            <b>Reminder:</b> The material about <code>new</code> and <code>delete</code> from this lecture is <b>very</b> important to 
+            understand! That is applicable to any type of object you store on the heap, not just arrays, so you will absolutely 
+            use <code>new</code> and <code>delete</code> all the time.
+        </p>
+            
+        <p>
+            You can use <code>std::array</code> pretty much exactly as you would like to use 
+            an array: you can still index into it using bracket notation, and it doesn't suffer from decay, so you can pass it 
+            into a function or return it from a function without losing size information.
+        </p>
+
+        <p>
+            To use <code>std::array</code>, you need to <code>#include &lt;array></code>. You can declare it using a template 
+            which provides the type to be stored in the array, and the size of the array (which again, must be known at compile time):
+        </p>
+
+        <code-box data-codeId="stdArray"><pre>#include &lt;iostream>
+#include &lt;array>
+
+int main() {
+    const int size = 10;
+    std::array&lt;int, size> powersOfTwo;
+    powersOfTwo[0] = 1;
+    for (int i = 1; i < size; ++i) {
+        powersOfTwo[i] = powersOfTwo[i-1] * 2;
+    }
+
+    for (int i = 0; i < size; ++i) {
+        std::cout << powersOfTwo[i] << ' ';
+    }
+    std::cout << std::endl;
+    return 0;
+}</pre></code-box>
+
+        <h2>Smart pointers</h2>
+
+        <p>
+            I lied a little bit above: there's actually a way to write C++ without using <code>new</code> and <code>delete</code>. You 
+            can use <i>smart pointers</i> instead. These are objects <code>std::unique_ptr</code> and <code>std::shared_ptr</code> in 
+            modern C++ that act like pointers, but also handle memory management for you. They're outside the scope of this course, but 
+            if you want to become a professional C++ programmer, you'll need to learn them someday.
+        </p>
+
+        <h2>C-style strings</h2>
+
+        <p>
+            Now that we've talked about arrays, we can understand C-style strings in a little more depth. Consider the below code:
+        </p>
+
+        <code-box data-codeId="CStyleHelloWorld"><pre>#include &lt;iostream>
+int main() {
+    auto s = "Hello, world!";
+    std::cout << s << std::endl;
+    return 0;
+}</pre></code-box>
+
+        <p>
+            What is the type of <code>s</code>? If you paste this code into your IDE and mouse over <code>s</code>, you'll probably 
+            see that its type is <code>const char*</code>. This is because C++ defaults to using C-style strings rather than 
+            <code>std::string</code>; as we've mentioned before, C-style strings are stored as an array of characters (and then 
+            the array decays to a pointer).
+        </p>
+
+        <p>
+            But then you might wonder why the string prints successfully -- if we lose the information about the length of an 
+            array when it decays to a pointer, how does the output statement know when to stop outputting? The trick is that 
+            C-style strings add a special null character (<code>'\0'</code>, assigned the numeric value <code>0</code>) at the end 
+            of the array. That way, we don't need to know the length in advance in order to print the string: we just keep printing 
+            until we find the null character.
+        </p>
+
+        <p>
+            You could also take advantage of this yourself, if you wanted to manipulate a C-style string in a context where you 
+            didn't know its size:
+        </p>
+
+        <code-box data-codeId="manipulateCStyleString"><pre>#include &lt;iostream>
+            
+int main() {
+    auto s = "Hello, world!";
+    
+    // Access each character of s individually, without referencing the length of s
+    for (int i = 0; s[i] != '\0'; ++i) {
+        std::cout << s[i] << std::endl;
+    }
+
+    // A different way of doing the same thing
+    for (const char* c = s; *c != '\0'; ++c) {
+        std::cout << *c << std::endl;
+    }
+
+    return 0;
+}
+</pre></code-box>
+
+
         </div> <!-- /.content -->
         <script type="text/javascript" src="codeblock.js"></script>
     </body>
