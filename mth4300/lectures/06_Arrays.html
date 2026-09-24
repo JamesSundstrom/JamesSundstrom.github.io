@@ -1,0 +1,508 @@
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Lecture 06: Arrays</title>
+        <link rel="stylesheet" href="../style.css">
+    </head>
+    <body>
+        <div class="top-bar"><a href="../mth4300.html">🏠 Back to Math 4300 homepage</a>
+        </div>
+        <div class="content">
+            <h1>Lecture 06: Arrays</h1>
+
+            <p>
+                An array is the C++ equivalent of Python's list type. However, there are some key differences. Unlike Python, C++ doesn't let you store 
+                objects of different types together in the same array. You've already seen this principle in C++ with <code>std::vector&lt;T></code>: 
+                you need to specify the type <code>T</code> of objects that the vector or array will contain.
+            </p>
+
+            <p>
+                Aside: The C++ mechanism that lets you use <code>std::vector</code> and similar classes with whatever type of data you want is called a 
+                called a <i>template</i>. We'll talk more about templates later, but for now it's enough for you to be aware that when you see syntax 
+                like this, it indicates that the code will work polymorphically with different classes.
+            </p>
+
+            <p>
+                Another important difference between C++ arrays and Python lists is that C++ arrays can't be resized after they're created. As we've 
+                seen before, <code>std::vector&lt;T></code> is resizable, so you can use that if you need a resizable list.
+            </p>
+
+            <p>
+                The last important difference is another one we've seen before: C++ does not check array bounds. If <code>arr</code> is an array of 
+                size 5, then <code>arr[-1]</code> and <code>arr[5]</code> lead to undefined behavior. (As usual, arrays are 0-indexed, so 5 is out 
+                of bounds for an array of size 5.)
+            </p>
+
+            <p>
+                There are actually two different types of arrays in C++: the old-fashioned C-style array and the more modern <code>std::array</code>. 
+                You should use <code>std::array</code> in your code. It's just as efficient, and it provides modern conveniences that make your code 
+                easier to write and understand. Nonetheless, we're going to require you to learn about C-style arrays in this course. For one thing, 
+                there is some C++ code that uses C-style arrays, and if you become a professional programmer, you may need to deal with old code that 
+                uses C-style arrays, even if you never write such code yourself. Relatedly, you may want your C++ code to be able to interface with C 
+                code, or you may even want to write C code yourself, in which case you'll need to understand C-style arrays. 
+            </p>
+
+            <h2>Declaring C-style arrays (on the stack)</h2>
+
+            <p>
+                You can declare an array of objects of type <code>T</code> in exactly the same way that you declare a single object of type <code>T</code>,
+                except that after the variable name, you put the size of the array in brackets.
+            </p>
+
+            
+            <code-box data-codeId="declareAndInitializeArray"><pre>#include &lt;iostream>
+
+int main() {
+    int squares[6] = {0, 1, 4, 9, 16, 25}; // Declare and initialize
+    for (int square : squares) {
+        std::cout << square << ' ';
+    }
+    return 0;
+}</pre></code-box>
+
+            <p>
+                As with other variables, you can also declare an array without initializing it. Of course, you still need to initialize the data before 
+                trying to access the values, or you'll get undefined behavior.
+            </p>
+
+            <code-box data-codeId="declareUninitializedArray"><pre>#include &lt;iostream>
+
+int main() {
+    int squares[5]; // Declare without initializing
+    for (int i = 0; i < 5; ++i) {
+        squares[i] = i * i; // Now initialize
+    }
+    for (int i = 0; i < 5; ++i) {
+        std::cout << squares[i] << ' ';
+    }
+    return 0;
+}</pre></code-box>
+
+            <p>
+                Note that when you declare an array like this, the size of the array must be known at compile time. This is because the array is 
+                stored in stack memory and, as we discussed earlier, the compiler always needs to know exactly how much memory everything on the 
+                stack will use. You can't create an array on the stack if you don't know how many items it will hold. (Later, we'll see how you 
+                can create an array on the heap, which allows you to create an array whose size isn't known until runtime.) For example, the 
+                following code is illegal according to the C++ standard:
+            </p>
+
+            <wrong-code-box data-codeId="illegalVariableSizeArray"><pre>#include &lt;iostream>
+
+int main() {
+    int size;
+    std::cout << "Enter a non-negative integer: "; 
+    std::cin >> size;
+    int squares[size];
+    for (int i = 0; i < size; ++i) {
+        squares[i] = i * i;
+    }
+    for (int s : squares) {
+        std::cout << s << ' ';
+    }
+    std::cout << std::endl;
+    return 0;
+}</pre></wrong-code-box>
+
+        <p>
+            Some compilers may actually allow you to compile this code, but you still shouldn't write it; it's an extremely bad idea to write 
+            nonconforming code that only works with certain compilers. For example, I can compile this code using:
+        </p>
+
+        <code-box data-codeId="compileWithNoOptions"><pre>g++ -o example example.cpp</pre></code-box>
+
+        <p>
+            However, if I turn on the compiler option to warn me about nonconforming code, I get a warning:
+        </p>
+
+        <code-box data-codeId="compileWithPedanticOption"><pre>g++ -o example example.cpp -Wpedantic</pre></code-box>
+
+        <p>
+            There are other options <code>-Wall</code> and <code>-Wextra</code> that you can turn on to get more warnings, and an option 
+            <code>-Werror</code> that turns all warnings into errors that prevent compilation. It's a good idea to compile your code with 
+            these options turned on, so that you can't accidentally compile nonconforming code:
+        </p>
+
+        <code-box data-codeId="compileWithAllOptions"><pre>g++ -o example example.cpp -Wpedantic -Wall -Wextra -Werror</pre></code-box>
+
+        <p>
+            If you try to compile the above example with these options, it won't compile.
+        </p>
+
+        <p>
+            It is also against the C++ standard to declare an array whose size is a non-constant variable. With the strict options above 
+            turned on, the following code won't compile:
+        </p>
+
+        <wrong-code-box data-codeId="illegalVariableSizeArrayOfKnownSize"><pre>#include &lt;iostream>
+
+int main() {
+    int size = 10;
+    int squares[size]; // Still against the C++ standard!
+    for (int i = 0; i < size; ++i) {
+        squares[i] = i * i;
+    }
+    for (int s : squares) {
+        std::cout << s << ' ';
+    }
+    std::cout << std::endl;
+    return 0;
+}</pre></wrong-code-box>
+
+        <p>
+            However, if the variable representing the size is declared as a <code>const</code>, then the compiler can replace the variable with 
+            its (known, constant) value, and the code becomes legal. In fact, this is often good practice: instead of using a "magic number" for 
+            the size of your array, give it a helpful name. The following code is legal:
+        </p>
+
+        <code-box data-codeId="legalConstVariableSizeArray"><pre>#include &lt;iostream>
+
+int main() {
+    const int size = 10;
+    int squares[size]; // This is fine
+    for (int i = 0; i < size; ++i) {
+        squares[i] = i * i;
+    }
+    for (int s : squares) {
+        std::cout << s << ' ';
+    }
+    std::cout << std::endl;
+    return 0;
+}</pre></code-box>
+
+        <p>
+            (Of course, this code is just for demonstration. If we actually wanted to write a program to print out the first few squares, we should 
+            just calculate and print them one at a time; there's no reason to store them all in an array first.)
+        </p>
+
+        <h2>Arrays, pointers, and pointer arithmetic</h2>
+
+        <p>
+            An array <i>decays</i> to a pointer, which means that if an array is provided somewhere that a pointer is expected, it is converted to a
+            pointer to the first element of the array. For example, if <code>nums</code> is an array of ints, then <code>int *p = nums</code> is 
+            equivalent to <code>int *p = &nums[0]</code>.
+        </p>
+
+        <p>
+            However, you should remember that this decay is a type conversion: an array is <b>not</b> a pointer. For example, we can't reassign an 
+            array as we would a pointer:
+        </p>
+
+        <code-box data-codeId="illegalArrayReassignment"><pre>int main() {
+    int x{1}, y{2};
+    int *p = &x, *q = &y;
+    p = q; // Legal
+
+    int z[5] = {1, 2, 3, 5, 8}, w[5] = {2, 3, 5, 7, 11};
+    z = w; // Illegal
+    return 0;
+}</pre></code-box>
+
+        <p>
+            Another difference is that we can use <code>sizeof</code> to get the correct size of an array (in bytes), which wouldn't work if we had only the 
+            pointer to the first element:
+        </p>
+
+        <code-box data-codeId="sizeofGivesCorrectSize"><pre>#include &lt;iostream>
+
+int main() {
+    int nums[5] = {1, 2, 3, 5, 8};
+    int* ptr = &nums[0];
+    std::cout << sizeof(nums) << std::endl; // Prints 20 (assuming an int is 4 bytes)
+    std::cout << sizeof(ptr) << std::endl;  // 
+    return 0;
+}</pre></code-box>
+
+        <p>
+            In fact, you can even use pointers to access the elements of an array. To understand why and how this works, you need to understand 
+            pointer arithmetic. If <code>ptr</code> is a pointer to an object of type <code>T</code> and <code>n</code> is an integer, then 
+            the code <code>ptr + n</code> corresponds to the number <code>ptr</code> plus <code>n * sizeof(T)</code>. For example, the below code 
+            should print two numbers that differ by 16 (since pointers print in hexadecimal, this means they'll probaby differ by 1 in the 16's 
+            place.)
+        </p>
+
+        <code-box data-codeId="basicPointerArithmetic"><pre>#include &lt;iostream>
+
+int main() {
+    int nums[5] = {1, 2, 3, 5, 8};
+    int *ptr = nums;
+    std::cout << ptr << std::endl;
+    std::cout << ptr + 4 << std::endl;
+    return 0;
+}</pre></code-box>
+
+        <p>
+            Of course, the same rule applies if you try to do subtraction an integer from a pointer, or if you try to apply 
+            the increment/decrement operators to a pointer. If you subtract two pointers, you get the difference between them 
+            divided by <code>sizeof(T)</code>.
+        </p>
+
+        <code-box data-codeId="morePointerArithmetic"><pre>#include &lt;iostream>
+
+int main() {
+    int nums[5] = {1, 2, 3, 5, 8};
+    int *p = nums;
+    int *q = nums + 3;
+    std::cout << p << std::endl;
+    std::cout << q << std::endl; // Prints something 12 greater than the previous output
+    std::cout << q - p << std::endl; // Prints 3, not 12
+    return 0;
+}</pre></code-box>
+
+        <p>
+            You can't add a pointer to another pointer, but why would you ever want to?
+        </p>
+
+        <p>
+            The purpose of defining pointer arithmetic this way is that it allows you to traverse arrays using pointers. For 
+            example, if <code>arr</code> is an array and <code>p</code> is a pointer to <code>arr[i]</code>,
+            then <code>p + n</code> is a pointer to <code>arr[i+n]</code>: the array stores the data in <code>arr</code> in 
+            contiguous memory, so increasing an address by <code>sizeof(T)</code> bytes hops over exactly one <code>T</code> 
+            and advances us to the next item in the array. Since adding <code>n</code> to a pointer corresponds to increasing the 
+            pointer by <code>sizeof(T)</code> <code>n</code> times, this moves us forward <code>n</code> items in the array.
+            Similarly, if <code>p</code> is a pointer to <code>arr[i]</code> and <code>q</code> is a pointer to <code>arr[j]</code>, 
+            then <code>q - p</code> returns <code>j-i</code>, the "distance" (in plain English, not in bytes) between the two array 
+            entries.
+        </p>
+
+        <p>
+            To summarize, if <code>p</code> is a pointer to <code>arr[0]</code>, then <code>p + n</code> is a pointer to <code>arr[n]</code>. 
+            If we wanted to, we could access <code>arr[n]</code> as <code>*(arr+n)</code>; in fact, this is the definition of <code>arr[n]</code>. 
+            Since addition is commutative, this also means that <code>n[arr]</code> is also equivalent to <code>arr[n]</code>!
+            (Of course, you generally shouldn't write <code>*(arr+n)</code> and you definitely should never write <code>n[arr]</code>-- try your 
+            best to make your code easily understandable!)
+        </p>
+
+        <h2>Pointer Arithmetic Exercise</h2>
+
+        <p>
+            Figure out what the below code prints without running it. (You won't be able to predict the last line exactly, but what can you 
+            predict about it?)
+        </p>
+
+        <code-box data-codeId="pointerArithmeticExercise"><pre>#include &lt;iostream>
+
+int main() {
+    int nums[9] = {1, 2, 3, 5, 8, 13, 21, 34, 55};
+    int* ptr = nums + 5;
+    std::cout << *(nums + 2) << std::endl;
+    std::cout << ptr[2] << std::endl;
+    *ptr = -1;
+    ptr -= 4;
+    for (; ptr < nums + 6; ++ptr) {
+        std::cout << *ptr << std::endl;
+    }
+    std::cout << nums << ' ' << ptr << std::endl;
+    return 0;
+}</pre></code-box>
+
+        <h2>Array decay</h2>
+
+        <p>
+            When you pass a C-style array as an argument to a function, the array decays into a pointer to the first element. In other words, even 
+            if you declare a function as <code>void f(int arr[])</code>, it will still act like <code>void f(int *arr)</code>. Sometimes, this 
+            doesn't matter -- as we saw above, <code>nums[i]</code> does the same thing regardless of whether <code>nums</code> is an array or a 
+            pointer. But it does matter in a very important way -- by decaying into a pointer to the first element, we've lost the information about 
+            the size of the array. We no longer have any clue where the array ends! As a result, we can't use <code>sizeof</code> to get the size of 
+            the array inside a function:
+        </p>
+
+        <code-box data-codeId="sizeofInsideFunction"><pre>#include &lt;iostream>
+
+void printSize(int arr[]) {
+    std::cout << sizeof(arr) << std::endl;
+}
+
+int main() {
+    int nums[9] = {1, 2, 3, 5, 8, 13, 21, 34, 55};
+    std::cout << sizeof(nums) << std::endl; // Prints 36
+    printSize(nums);                        // Prints 8
+    return 0;
+}</pre></code-box>
+
+        <p>
+            This also means that we can't iterate over the array, because it's meaningless to iterate over a pointer. For example, the 
+            below code won't compile:
+        </p>
+
+        <wrong-code-box data-codeId="iterateOverDecayedArray"><pre>#include &lt;iostream>
+
+void print(int arr[]) {
+    for (int n : arr) {
+        std::cout << n << ' ';
+    }
+}
+
+int main() {
+    int nums[9] = {1, 2, 3, 5, 8, 13, 21, 34, 55};
+    print(nums); 
+    return 0;
+}</pre></wrong-code-box>
+
+        <p>
+            Even if we tried to use an index-based for loop instead, we still couldn't get the <code>print</code> function to work because it 
+            simply hasn't received enough information -- it knows where the array starts, but not where it ends. The simplest solution is to 
+            pass the size of the array as a separate argument, so that <code>print</code> has the information it needs:
+        </p>
+
+        <code-box data-codeId="iterateOverDecayedArrayProperly"><pre>#include &lt;iostream>
+
+void print(int arr[], int size) {
+    for (int i = 0; i < size; ++i) {
+        std::cout << arr[i] << ' ';
+    }
+}
+
+int main() {
+    const int size = 9;
+    int nums[size] = {1, 2, 3, 5, 8, 13, 21, 34, 55};
+    print(nums, size); 
+    return 0;
+}</pre></code-box>
+
+        <p>
+            Technically, you can pass a C-style array as an argument to a function without decay by using templates, but 
+            that's more advanced, and you won't need to know how to do that for this course. After all, you shouldn't even 
+            be using C-style arrays in your own code.
+        </p>
+
+        <code-box data-codeId="avoidDecayUsingTemplate"><pre>#include &lt;iostream>
+
+template &lt;typename T, std::size_t N>
+void print(T (&arr)[N]) {
+    for (T i : arr) {
+        std::cout << i << " ";
+    }
+}
+
+int main() {
+    int nums[9] = {1, 2, 3, 5, 8, 13, 21, 34, 55};
+    print(nums); 
+    return 0;
+}</pre></code-box>
+
+        <p>
+            Similarly, a C++ function cannot return a C-style array, only a pointer to the first element of the array. 
+            Again, the easiest solution to this problem is simply not to use C-style arrays: use the C++ standard library 
+            <code>std::array</code> or <code>std::vector</code>.
+        </p>
+
+        <p>
+            But if we want our functions to be able to return arrays, we actually have an even bigger problem to deal with 
+            first. Without reading ahead, can you figure out what's wrong with the following code?
+        </p>
+
+        <wrong-code-box data-codeId="returnPointerToLocalVariableError"><pre>#include &lt;iostream>
+#include &lt;cmath>
+
+int* digitPowers(int n) {
+    int s[10];
+    for (int d = 0; d < 10; ++d) {
+        s[d] = pow(d, n);
+    }
+    return s;
+}
+
+int main() {
+    int* digitCubes = digitPowers(3);
+    for (int i = 0; i < 10; ++i) {
+        std::cout << digitCubes[i];
+    }
+    return 0;
+}</pre></wrong-code-box>
+
+        <p>
+            The function <code>digitPowers</code> returns the array <code>s</code>, which decays to a pointer to <code>s</code> 
+            when it's returned. But <code>s</code> is a local variable that <code>digitPowers</code> created on the stack, which 
+            gets destroyed as soon as <code>digitPowers</code> returns. So (if this code compiles at all), <code>digitPowers</code> 
+            is giving you garbage, a memory address for a block of memory that's no longer allocated to our array.
+        </p>
+
+        <p>
+            If we want to solve this problem, we finally need to learn how to allocate memory on the heap.
+        </p>
+
+        <h2>Allocating on the heap</h2>
+
+        <p>
+            We've seen that variables allocated on the stack need to be destroyed when the function that created them is destroyed, 
+            and that the compiler needs to know exactly how much memory to allocate for them. But frequently, we want to 
+            allocate memory that doesn't meet those criteria. For example, we might need to allocate an array whose size won't be 
+            known until runtime, because it's based on user input. Or, as in the <code>digitPowers</code> example above, we might 
+            want an object to outlive the function that created it. In cases such as these, we need to use heap memory instead.
+        </p>
+
+        <p>
+            You can allocate memory on the heap using <code>new</code>, which returns a pointer to the allocated memory. Here's 
+            an example which (for no good reason other than demonstrating <code>new</code>) allocates two <code>int</code>s on 
+            the heap:
+        </p>
+
+        <code-box data-codeId="firstHeapExample"><pre>#include &lt;iostream>
+
+int main() {
+    int* p = new int{1729}; // Allocate an int on the heap, and initialize it to 1729
+    int* q = new int;       // Allocate an int on the heap, uninitialized
+    *q = 1234;              // As usual, we must initialize a variable before we use it
+    
+    std::cout << *p << ' ' << *q << std::endl; // Prints 1729 1234
+
+    delete p;
+    p = nullptr;
+    delete q;
+    q = nullptr;
+
+    return 0;
+}</pre></code-box>
+
+        <p>
+            After we're finished using a variable that's allocated on the heap, we need to delete it manually. 
+            Many other programming languages, including Python, provide what's known as <i>garbage collection</i>: when 
+            an object is no longer referenced by any variable, so that the program can no longer use it, the object is 
+            automatically deleted from memory. This ensures that the memory isn't filled with objects that we've finished 
+            using, so that we don't run out of memory due to storing garbage.
+        </p>
+
+        <p>
+            The benefit of automatic garbage collection is obvious: the programmer doesn't have to keep track of when an 
+            object is no longer needed and delete it manually. But garbage collection has a downside: your program is doing 
+            a lot of behind-the-scenes work to keep track of whether each object is still needed, and all that extra work 
+            could affect performance. If it does start to affect performance at an inconvenient moment, you as the programmer 
+            have no way to deal with that, since you don't control when garbage collection occurs. C++ has decided to adopt the 
+            opposite philosophy: give the programmer control over when objects on the heap are deleted. The programmer now has 
+            more control over the performance of the program, at the cost of more effort while writing the code.
+        </p>
+
+        <p>
+            When you're done using a heap-allocated object, you need to delete it; if you don't, that's a <i>memory leak</i>.
+            If that happens too often (say, you have a memory leak inside a long-running loop), your program could eventually 
+            run out of memory and crash. Thus, in the above example, we deleted the objects on the heap when we were done with 
+            them using <code>delete p</code> and <code>delete q</code>.
+        </p>
+
+        <p>
+            After deleting <code>p</code> and <code>q</code>, we set them both to <code>nullptr</code>. While this is not technically 
+            necessary, many C++ programmers and style guides consider it best practice. It's a safety measure: you don't want to 
+            accidentally use <code>p</code> to access a memory block that no longer stores the object you expect, so you null out 
+            <code>p</code> to prevent that from happening. This also protects you from accidentally calling <code>delete</code> on the 
+            same pointer twice. Double-deleting a pointer is undefined (and often difficult to debug) behavior, so we want to avoid that; 
+            using <code>delete</code> on <code>nullptr</code> does nothing by definition, so it won't cause any problems. (At least, it won't 
+            cause any new problems -- you should still figure out how you got a double-delete in the first place, because it might be a sign 
+            of a more serious bug.)
+        </p>
+
+        <p>
+            If we don't use <code>delete</code>, we get a memory leak. Below is an example of a memory leak. In this case, it's benign, 
+            because the program ends immediately anyway. But something like this could cause a problem in the context of a larger program.
+        </p>
+
+        <code-box data-codeId="babysFirstMemoryLeak"><pre>int main() {
+    int* p = new int{1729}; 
+    p = nullptr; // Memory leak! We have no pointer to 1729, so it can't be freed
+    return 0;
+}</pre></code-box>
+
+        </div> <!-- /.content -->
+        <script type="text/javascript" src="codeblock.js"></script>
+    </body>
+</html>
