@@ -635,6 +635,73 @@ int main() {
             we can no longer delete the rows themselves.
         </p>
 
+        <h2>2D array exercises</h2>
+
+        <ol>
+            <li> 
+                Define a function <code>makeIdentity</code> which accepts as argument a positive <code>int n</code> and 
+                returns (using a C-style array) an n x n identity matrix, i.e., an n x n square grid <code>arr</code> where 
+                <code>arr[i][j]</code> is <code>1</code> if <code>i == j</code> and <code>0</code> otherwise.
+            </li>
+            <li>
+                Define a function <code>double** matrixMultiply(double** a, double** b, int m, int n, int p)</code> which accepts 
+                as arguments an <code>m</code> x <code>n</code> matrix <code>a</code> (i.e., <code>m</code> rows and <code>n</code> columns) 
+                and an <code>n</code> x <code>p</code> matrix <code>b</code> and returns the <code>m</code> x <code>p</code> array <code>c</code> 
+                where <code>c[i][j]</code> is the sum of <code>a[i][k] * b[k][j]</code> as <code>k</code> goes from <code>0</code> to <code>n-1</code>. 
+                You may use the below code to test that it works correctly:
+
+                <code-box data-codeId="matrixMultiplicationExercise"><pre>#include &lt;iostream>
+
+double** allocateMatrix(int rows, int cols) {
+    double** m = new double*[rows];
+    for (int i = 0; i < rows; ++i) {
+        m[i] = new double[cols];
+    }
+    return m;
+}
+
+double** matrixMultiply(double** a, double** b, int m, int n, int p) {
+    // Your code here
+}
+
+int main() {
+    const int m = 2;
+    const int n = 3;
+    const int p = 4;
+    
+    // Define matrices a and b
+    double** a = allocateMatrix(m, n);
+    double** b = allocateMatrix(n, p);
+    a[0][0] = 1; a[0][1] = 2; a[0][2] = 3; // 1 2 3
+    a[1][0] = 4; a[1][1] = 5; a[1][2] = 6; // 4 5 6
+    b[0][0] = 3; b[0][1] = 1; b[0][2] = 4; b[0][3] = 1; // 3 1 4 1
+    b[1][0] = 5; b[1][1] = 9; b[1][2] = 2; b[1][3] = 6; // 5 9 2 6
+    b[2][0] = 5; b[2][1] = 3; b[2][2] = 5; b[2][3] = 2; // 5 3 5 2
+
+    // Calculate C = AB and print C
+    // Should print: 
+    // 28 28 23 19
+    // 67 67 56 46
+    double** c = matrixMultiply(a, b, m, n, p);
+    for (int i = 0; i < m; ++i) {
+        for (int j = 0; j < p; ++j) {
+            std::cout << c[i][j] << ' ';
+        }
+        std::cout << '\n';
+    }
+
+    // Free memory
+    for (int i = 0; i < m; ++i) {
+        delete[] c[i];
+    }
+    delete[] c;
+    c = nullptr;
+
+    return 0;
+}</pre></code-box>
+            </li>
+        </ol>
+
         <h2><code>std::array</code></h2>
 
         <p>
@@ -739,6 +806,13 @@ int main() {
     return 0;
 }
 </pre></code-box>
+
+        <h2>C-style string exercise</h2>
+
+        <p> 
+            Define the string copy function <code>void strcpy(char* src, char* dest)</code> which copies the C-style string <code>src</code> 
+            into the memory used by the array <code>dest</code>. You may assume that <code>dest</code> has enough memory to hold <code>src</code>.
+        </p>
 
 
         </div> <!-- /.content -->
