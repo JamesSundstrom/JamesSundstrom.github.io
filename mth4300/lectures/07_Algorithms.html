@@ -1,0 +1,119 @@
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Lecture 06: Arrays</title>
+        <link rel="stylesheet" href="../style.css">
+    </head>
+    <body>
+        <div class="top-bar"><a href="../mth4300.html">🏠 Back to Math 4300 homepage</a>
+        </div>
+        <div class="content">
+            <h1>Lecture 07: Algorithms</h1>
+
+            <p>
+                The C++ standard library contains many useful algorithms to sort data, search data, 
+                etc. These algorithms are designed to work whether your data is stored in a C-style array,
+                <code>std::array</code>, <code>std::vector</code>, or something else. In order to understand 
+                how these algorithms work with various types of containers, we'll first need to understand the 
+                concept of an <i>iterator</i> in C++.
+            </p>
+
+            <h2>Iterators</h2>
+
+            <p>
+                An <i>iterator</i> is an object that in many ways acts like a pointer. It points into a container,
+                and supports the same operations as a pointer: dereference (<code>*</code>), increment (<code>++</code>), 
+                and comparison (<code>==</code>, <code>!=</code>). Depending on the type of the container, some 
+                iterators also support inequality comparisons (<code><</code> and <code>></code>), decrement (<code>--</code>), 
+                and addition/subtraction. Since vectors and arrays support random access (i.e., you can access any element using 
+                <code>arr[n]</code> without first accessing all the previous elements), they give you all these operations. A 
+                container that doesn't support random access will not give you all these (e.g., if you can only move forward
+                through the container, subtraction won't be supported).
+            </p>
+
+            <p>
+                Every standard container provides methods to return iterators <code>begin()</code> and <code>end()</code>. As 
+                the name suggests, <code>begin()</code> points to the beginning of the container. However, <code>end()</code> 
+                points one <i>past</i> the end of the container, in much the same way that, if <code>arr</code> has length 
+                <code>n</code>, then <code>arr[n]</code> points to the memory immediately after the end of <code>arr</code>
+            </p>
+
+            <p>
+                If your container has type <code>T</code>, then the iterator has type <code>T::iterator</code>. For example, 
+                for a <code>std::vector&lt;double></code>, the iterator has type <code>std::vector&lt;double>::iterator</code>, 
+                which is a bit verbose. You should almost always use <code>auto</code> when declaring an iterator.
+            </p>
+
+            <p>
+                As a simple example with iterators, we can use iterators to loop through a vector. Note that the syntax is 
+                very similar to looping through an array using a pointer:
+            </p>
+
+
+            <code-box data-codeId="firstIteratorExample"><pre>#include &lt;iostream>
+#include &lt;vector>
+
+int main() {
+    std::vector<double> v = {1.618, 2.718, 3.142};
+
+    for (auto it = v.begin(); it != v.end(); ++it) {
+        std::cout << *it << ' '; // Prints 1.618 2.718 3.142
+    }
+    std::cout << '\n';
+
+    return 0;
+}</pre></code-box>
+
+            <p>
+                The above code does the exact same thing as a range-based for loop. Obviously, the range-based for loop 
+                is easier, so you wouldn't use the above syntax unless you actually needed the iterator for some reason.
+            </p>
+
+            <h2>Lambdas</h2>
+
+            <p>
+                Another concept that will be helpful when we start talking about algorithms is lambdas.
+            </p>
+
+            <p>
+                A <code>lambda</code> is an anonymous function; if you have a function that you only need to use once, 
+                it may not be worth the trouble to name it and define it as a standalone function in your code. You can 
+                instead use a lambda so that the function exists only at the moment that you need it. 
+                You may have already seen the concept in Python. For example, you might use a lambda to tell a sorting
+                function the criterion to sort by:
+            </p>
+
+            <code-box data-codeId="PythonLambda" language="Python"><pre>scores = [("Alice", 92), ("Bob", 83), ("Charlie", 90)]
+scores.sort(key=lambda x : x[1], reverse=True)
+print(scores)
+</pre></code-box>
+
+            <p>
+                The lambda function <code language="Python">lambda x : x[1]</code> defines a function f(x) = x[1], which 
+                tells Python to sort the x's based on their x[1] values. This is a classic use for a lambda: we don't need 
+                the function f(x) = x[1] permanently, we just need it temporarily to tell the sort function the sorting 
+                criterion. This is also the main way that we'll use lambdas in C++.
+            </p>
+
+            <p>
+                C++ lets us do the same thing, with a different-looking syntax. The basic syntax is <code>[capture](parameters) { body }</code>. 
+                We'll discuss "capture" in a moment. We use "parameters" to enter the parameters for the function, in exactly the same way that 
+                we usually do, and then the body of the function is exactly what it would usually be. For example, we can use a lambda to define 
+                a cube function:
+            </p>
+
+            <code-box data-codeId="lambdaCube"><pre>#include &lt;iostream>
+
+int main() {
+    auto f = [](int x) { return x*x*x; };
+    std::cout << f(5) << std::endl; // Prints 125
+    return 0;
+}
+</pre></code-box>
+
+
+        </div> <!-- /.content -->
+        <script type="text/javascript" src="codeblock.js"></script>
+    </body>
+</html>
