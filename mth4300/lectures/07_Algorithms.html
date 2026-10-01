@@ -173,7 +173,7 @@ int main() {
             <p>
                 If you want to capture all local variable, C++ provides an abbreviation so you don't 
                 need to list them all: using <code>[=]</code> captures all local variables by value, and 
-                using <code>[&</code> captures all local variables by reference:
+                using <code>[&]</code> captures all local variables by reference:
             </p>
 
             <code-box data-codeId="multipleCaptureShorthand"><pre>#include &lt;iostream>
@@ -268,7 +268,7 @@ int main() {
             in the original list. The <code>std::sort</code> function is not guaranteed to be stable. 
             Below is an example, where we attempt to sort the integers so that all the even numbers come 
             before all the odd numbers. A stable sorting algorithm would give "0 4 2 1 1 1 1 1 1 1 1 1 1 1 1 1 3",
-            but that's not what happens here: the 2 gets moves before the 4, and the 3 gets moved before the 1's.
+            but that's not what happens here: the 2 gets moved before the 4, and the 3 gets moved before the 1's.
         </p>
 
         <code-box data-codeId="instability"><pre>#include &lt;iostream>
