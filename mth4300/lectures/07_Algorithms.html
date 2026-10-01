@@ -2,7 +2,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Lecture 06: Arrays</title>
+        <title>Lecture 07: Algorithms</title>
         <link rel="stylesheet" href="../style.css">
     </head>
     <body>
@@ -34,9 +34,10 @@
 
             <p>
                 Every standard container provides methods to return iterators <code>begin()</code> and <code>end()</code>. As 
-                the name suggests, <code>begin()</code> points to the beginning of the container. However, <code>end()</code> 
-                points one <i>past</i> the end of the container, in much the same way that, if <code>arr</code> has length 
-                <code>n</code>, then <code>arr[n]</code> points to the memory immediately after the end of <code>arr</code>
+                the name suggests, <code>v.begin()</code> points to the beginning of <code>v</code>. However, <code>v.end()</code> 
+                points one <i>past</i> the end of <code>v</code>, in much the same way that, if <code>arr</code> has length 
+                <code>n</code>, then <code>arr[n]</code> points to the memory immediately after the end of <code>arr</code>. 
+                Naturally, dereferencing <code>v.end()</code> is undefined behavior.
             </p>
 
             <p>
@@ -55,7 +56,7 @@
 #include &lt;vector>
 
 int main() {
-    std::vector<double> v = {1.618, 2.718, 3.142};
+    std::vector&lt;double> v = {1.618, 2.718, 3.142};
 
     for (auto it = v.begin(); it != v.end(); ++it) {
         std::cout << *it << ' '; // Prints 1.618 2.718 3.142
@@ -99,18 +100,454 @@ print(scores)
             <p>
                 C++ lets us do the same thing, with a different-looking syntax. The basic syntax is <code>[capture](parameters) { body }</code>. 
                 We'll discuss "capture" in a moment. We use "parameters" to enter the parameters for the function, in exactly the same way that 
-                we usually do, and then the body of the function is exactly what it would usually be. For example, we can use a lambda to define 
-                a cube function:
+                we usually do, and then the body of the function is exactly what it would usually be. For example:
             </p>
 
-            <code-box data-codeId="lambdaCube"><pre>#include &lt;iostream>
+            <code-box data-codeId="lambdaXXY"><pre>#include &lt;iostream>
 
 int main() {
-    auto f = [](int x) { return x*x*x; };
-    std::cout << f(5) << std::endl; // Prints 125
+    auto f = [](int x, int y) { return x*x*y; };
+    std::cout << f(5, 2) << std::endl; // Prints 50
     return 0;
 }
 </pre></code-box>
+
+            <p>
+                You may also want to define a function that depends on local variables. For example, suppose you want 
+                to define the function f(x) = x<sup>2</sup> + n, where n is entered by the user. You could work around 
+                this by defining f as a two-variable function f(x, n) and always passing in n explicitly, but that makes 
+                your code messier. Also, it might not be an option in situations where your function is expected to have 
+                a specific format; for example, if you're using a lambda function as the key for a sort, the <code>sort</code> 
+                function expects the key to have a specific form, so you can't use a function that takes unexpected arguments.
+            </p>
+
+            <p>
+                That's where "capture" comes in. This tells C++ which variables to capture from the surrounding environment, 
+                i.e., which variables can be used within the function. Now the following code works:
+            </p>
+
+            <code-box data-codeId="lambdaXSquaredPlusN"><pre>#include &lt;iostream>
+
+int main() {
+    int n;
+    std::cout << "Enter n: ";
+    std::cin >> n;
+    auto f = [n](int x) { return x*x + n; };
+    std::cout << f(5) << std::endl; // Prints 5^2 + n
+    return 0;
+}
+</pre></code-box>
+
+            <p>
+                Similarly, we can capture multiple variables by separating them with commas:
+            </p>
+
+            <code-box data-codeId="multipleCapture"><pre>#include &lt;iostream>
+
+int main() {
+    int m = 3, b = -2;
+    auto f = [m, b](int x) { return m*x + b; };
+    std::cout << f(5) << std::endl; // Prints 13
+    return 0;
+}</pre></code-box>
+
+            <p>
+                You can capture variables by value or by reference. Capture by value if you want the 
+                function to continue using the value of the variable at the time the lambda is declared, 
+                even if the variable changes later; capture by reference if you want the lambda to use the 
+                current value of the variable whenever it is called.
+            </p>
+
+            <code-box data-codeId="captureByValueVsReference"><pre>#include &lt;iostream>
+
+int main() {
+    int m = 3;
+    auto byVal = [m](int x) { return m*x; };
+    auto byRef = [&m](int x) { return m*x; };
+    m = 9;
+    std::cout << byVal(5) << std::endl; // Prints 15
+    std::cout << byRef(5) << std::endl; // Prints 45
+    return 0;
+}</pre></code-box>
+
+            <p>
+                If you want to capture all local variable, C++ provides an abbreviation so you don't 
+                need to list them all: using <code>[=]</code> captures all local variables by value, and 
+                using <code>[&</code> captures all local variables by reference:
+            </p>
+
+            <code-box data-codeId="multipleCaptureShorthand"><pre>#include &lt;iostream>
+
+int main() {
+    int m = 3, b = -2;
+    auto byVal = [=](int x) { return m*x + b; };
+    auto byRef = [&](int x) { return m*x + b; };
+    m = 7;
+    std::cout << byVal(5) << std::endl; // Prints 13
+    std::cout << byRef(5) << std::endl; // Prints 33
+    return 0;
+}</pre></code-box>
+
+        <h2><code>algorithm</code></h2>
+
+        <p>
+            Now we're prepared to see some of the algorithms provided in the C++ standard library. For all of the 
+            following, unless otherwise noted, you will need <code>#include &lt;algorithm></code> in order to 
+            use them.
+        </p>
+
+        <h2><code>std::sort</code></h2>
+
+        <p>
+            The <code>std::sort</code> function sorts the given container; it works on any type of container that 
+            supports random access of its elements. It runs in O(n log n) time. (If you don't know what that means,
+            we'll discuss it later in the course, but basically, it means that C++ guarantees a reasonably efficient 
+            sorting algorithm.) It requires two arguments: iterators pointing to the start and end (in the sense of 
+            the <code>end()</code> method, i.e., one past the actual end) of the container you want to sort:
+        </p>
+
+        <code-box data-codeId="basicSort"><pre>#include &lt;iostream>
+#include &lt;vector>
+#include &lt;algorithm>
+
+int main() {
+    std::vector&lt;int> v{2, 7, 5, 1, 9, -4, 8, 7};
+    std::sort(v.begin(), v.end());
+    for (int n : v) {
+        std::cout << n << ' '; // Prints -4 1 2 5 7 7 8 9 
+    }
+    return 0;
+}</pre></code-box>
+
+        <p>
+            Of course, <code>std::sort(v.begin(), v.end())</code> is how you'll usually use <code>std::sort</code>. 
+            If you only wanted to sort part of your container, you could manipulate the iterators like pointers to get 
+            only the parts you want. For example, suppose you have a list of finishers of a race, and you want to keep 
+            the top three in order, but sort the rest alphabetically:
+        </p>
+
+        <code-box data-codeId="partialSort"><pre>#include &lt;iostream>
+#include &lt;vector>
+#include &lt;algorithm>
+
+int main() {
+    std::vector&lt;std::string> v{"Dan", "Alice", "Eve", "Fred", "Bob", "Charlie"};
+    std::sort(v.begin() + 3, v.end());
+    for (std::string name : v) {
+        std::cout << name << ' '; // Prints Dan Alice Eve Bob Charlie Fred 
+    }
+    return 0;
+}</pre></code-box>
+
+        <p>
+            The sort function also accepts an optional third argument called a <i>comparator</i>, which 
+            is a function that returns <code>true</code> if the first argument should sort before the second. 
+            The default comparator is the less-than function, so that items are sorted from least to greatest.
+            If you want to sort in reverse order, you can use the greater-than function. The standard library 
+            provides a convenient way for you to access it:
+        </p>
+
+        <code-box data-codeId="reverseSort"><pre>#include &lt;iostream>
+#include &lt;vector>
+#include &lt;algorithm>
+
+int main() {
+    std::vector&lt;int> v{2, 7, 5, 1, 9, -4, 8, 7};
+    std::sort(v.begin(), v.end(), std::greater&lt;int>());
+    for (int n : v) {
+        std::cout << n << ' '; // Prints 9 8 7 7 5 2 1 -4 
+    }
+    return 0;
+}</pre></code-box>
+
+        <h2><code>stable_sort</code></h2>
+
+        <p>
+            A <i>stable</i> sorting algorithm is one in which items which are "tied" according to the 
+            comparator are guaranteed to appear in the sorted list in the same order that they appeared 
+            in the original list. The <code>std::sort</code> function is not guaranteed to be stable. 
+            Below is an example, where we attempt to sort the integers so that all the even numbers come 
+            before all the odd numbers. A stable sorting algorithm would give "0 4 2 1 1 1 1 1 1 1 1 1 1 1 1 1 3",
+            but that's not what happens here: the 2 gets moves before the 4, and the 3 gets moved before the 1's.
+        </p>
+
+        <code-box data-codeId="instability"><pre>#include &lt;iostream>
+#include &lt;vector>
+#include &lt;algorithm>
+
+// Example based on https://quuxplusone.github.io/blog/2020/09/11/unstable-sort-inputs/
+int main() {
+    std::vector&lt;int> v = {1, 1, 1, 1, 0, 1, 1, 1, 4, 1, 1, 1, 2, 1, 1, 1, 3,};
+    std::sort(v.begin(), v.end(), [](int a, int b) { return a % 2 < b % 2; });
+    for (int n : v) {
+        std::cout << n << ' '; // 0 2 4 3 1 1 1 1 1 1 1 1 1 1 1 1 1 
+    }
+    return 0;
+}</pre></code-box>
+
+        <p>
+            If you want a stable sort, you can use <code>std::stable_sort</code> in exactly the same 
+            way that you use <code>std::sort</code>:
+        </p>
+
+        <code-box data-codeId="stable_sortMod2"><pre>#include &lt;iostream>
+#include &lt;vector>
+#include &lt;algorithm>
+
+// Example based on https://quuxplusone.github.io/blog/2020/09/11/unstable-sort-inputs/
+int main() {
+    std::vector&lt;int> v = {1, 1, 1, 1, 0, 1, 1, 1, 4, 1, 1, 1, 2, 1, 1, 1, 3,};
+    std::stable_sort(v.begin(), v.end(), [](int a, int b) { return a % 2 < b % 2; });
+    for (int n : v) {
+        std::cout << n << ' '; // 0 4 2 1 1 1 1 1 1 1 1 1 1 1 1 1 3
+    }
+    return 0;
+}</pre></code-box>
+
+        <p>
+            Stable sorting algorithms is often useful because you may want to change how data is sorted 
+            while maintaining the original order as a "tiebreaker." For example, if you have an alphabetical 
+            list of contestants and you want to sort them by score, you may want to keep tied contestants 
+            in alphabetical order:
+        </p>
+
+        <code-box data-codeId="contestantSort"><pre>#include &lt;iostream>
+#include &lt;vector>
+#include &lt;string>
+#include &lt;algorithm>
+
+struct Player {
+    std::string name;
+    int score;
+};
+
+int main() {
+    std::vector&lt;Player> v = {{"Alice", 8},
+                             {"Bob", 9},
+                             {"Charlie", 5},
+                             {"Dan", 5},
+                             {"Eve", 8},
+                             {"Fred", 5},
+    };
+    std::stable_sort(v.begin(), v.end(), [](const Player& a, const Player& b){ return a.score > b.score; });
+    for (const Player& p : v) {
+        std::cout << p.score << ' ' << p.name << '\n'; // Order: Bob, Alice, Eve, Charlie, Dan, Fred
+    }
+    return 0;
+}</pre></code-box>
+
+        <p>
+            If you wanted to achieve the same sorting but your contestants weren't in alphabetical order to 
+            begin with, you would have two options. You could simply use <code>std::sort</code> to put 
+            them in alphabetical order, and then proceed as above. Alternatively, you could define a more complicated 
+            comparator that takes both score and name into account:
+        </p>
+
+        <code-box data-codeId="complicatedComparator"><pre>#include &lt;iostream>
+#include &lt;vector>
+#include &lt;string>
+#include &lt;algorithm>
+
+struct Player {
+    std::string name;
+    int score;
+};
+
+int main() {
+    std::vector&lt;Player> v = {{"Alice", 8},
+                             {"Bob", 9},
+                             {"Charlie", 5},
+                             {"Dan", 5},
+                             {"Eve", 8},
+                             {"Fred", 5},
+    };
+    std::sort(v.begin(), v.end(), 
+        [](const Player& a, const Player& b){return a.score > b.score || (a.score == b.score && a.name < b.name);});
+    for (const Player& p : v) {
+        std::cout << p.score << ' ' << p.name << '\n'; // Order: Bob, Alice, Eve, Charlie, Dan, Fred
+    }
+    return 0;
+}</pre></code-box>
+
+    <h2><code>reverse</code></h2>
+
+    <p>
+        The <code>std::reverse</code> function is fairly self-explanatory. Again, it accepts as arguments iterators to 
+        the start and end of the container:
+    </p>
+
+    <code-box data-codeId="complicatedComparator"><pre>#include &lt;iostream>
+#include &lt;vector>
+#include &lt;algorithm>
+
+int main() {
+    std::vector&lt;int> v{1, 3, 5, 7, 2, 4, 6, 8};
+    std::reverse(v.begin(), v.end());
+    for (int n : v) {
+        std::cout << n << ' '; // 8 6 4 2 7 5 3 1
+    }
+    return 0;
+}</pre></code-box>
+
+        <h2><code>count</code></h2>
+
+        <p>
+            The <code>std::count</code> function is also fairly self-explanatory:
+        </p>
+
+        <code-box data-codeId="count"><pre>#include &lt;iostream>
+#include &lt;vector>
+#include &lt;algorithm>
+
+int main() {
+    std::vector&lt;int> v{3, 3, 4, 5, 5, 4, 3, 2, 1, 1, 2, 3, 3, 2, 2};
+    int c = std::count(v.begin(), v.end(), 2);
+    std::cout << c << std::endl; // Prints 4
+    return 0;
+}</pre></code-box>
+
+        <h2><code>fill</code></h2>
+
+        <p>
+            The <code>std::fill</code> function fills the container with the given value:
+        </p>
+
+        <code-box data-codeId="fill"><pre>#include &lt;iostream>
+#include &lt;vector>
+#include &lt;algorithm>
+
+int main() {
+    std::vector&lt;int> v(5); // Creates a vector of length 5
+    std::fill(v.begin(), v.end(), 7);
+    for (int n : v) {
+        std::cout << n << ' '; // Prints 7 7 7 7 7
+    }
+    return 0;
+}</pre></code-box>
+
+        <h2><code>replace</code></h2>
+
+        <p>
+            The <code>std::replace</code> function replaces each occurrence of a given value with a given 
+            replacement value. For example, the below code replaces every 42 with 1729:
+        </p>
+
+        <code-box data-codeId="replace"><pre>#include &lt;iostream>
+#include &lt;vector>
+#include &lt;algorithm>
+
+int main() {
+    std::vector&lt;int> v{6, 42, 7, 1, -1, 10, 42, 360, 42};
+    std::replace(v.begin(), v.end(), 42, 1729);
+    for (int n : v) {
+        std::cout << n << ' '; // Prints 6 1729 7 1 -1 10 1729 360 1729
+    }
+    return 0;
+}</pre></code-box>
+
+
+        <h2><code>find</code></h2>
+
+        <p>
+            The <code>std::find</code> function locates the first occurrence of a given value in the container, if 
+            the value is in the container. It returns an iterator that points to the first match, or <code>v.end()</code> 
+            if there is no match. This is something you need to be careful with: don't dereference the result from 
+            <code>std::find</code> without checking that it actually found a result that you can dereference:
+        </p>
+
+        <code-box data-codeId="find"><pre>#include &lt;iostream>
+#include &lt;vector>
+#include &lt;algorithm>
+
+int main() {
+    std::vector&lt;int> primes{2, 3, 5, 7, 11, 13, 17, 19, 23, 29};
+    int n;
+    std::cout << "Enter a number &lt;= 30, and I'll tell you whether it's prime: ";
+    std::cin >> n;
+    auto it = std::find(primes.begin(), primes.end(), n);
+    if (it == primes.end()) {
+        std::cout << n << " is not a prime &lt;= 30" << std::endl;
+    } else {
+        int i = it - primes.begin();
+        std::cout << n << " = p_" << i + 1 << std::endl;
+    }     
+    return 0;
+}</pre></code-box>
+
+        <p>
+            Note above that if we want the index of the found item, rather than simply whether the item was found, we can 
+            get that information using iterator arithmetic (the same as pointer arithmetic).
+        </p>
+        
+        <h2><code>min_element</code> and <code>max_element</code></h2>
+
+        <p>
+            The <code>std::min_element</code> and <code>std::max_element</code> functions find the minimum and maximum elements of the 
+            container, respectively, returning an iterator pointing to the found element.
+        </p>
+
+        <code-box data-codeId="minAndMax"><pre>#include &lt;iostream>
+#include &lt;vector>
+#include &lt;algorithm>
+
+int main() {
+    std::vector&lt;int> v{3, 9, 2, -11, 7};
+    auto min = std::min_element(v.begin(), v.end());
+    auto max = std::max_element(v.begin(), v.end());
+    std::cout << *min << ' ' << *max << std::endl; // Prints -11 9
+    return 0;
+}</pre></code-box>
+
+        <h2>Logical functions: <code>any_of</code>, <code>all_of</code>, or <code>none_of</code></h2>
+
+        <p> 
+            The functions <code>std::any_of</code>, <code>std::all_of</code>, or <code>std::none_of</code> do 
+            exactly what they sound like: they tell you whether a given boolean function returns <code>true</code> 
+            for any, all, or none of the elements in the array. These functions are often used with lambdas; you 
+            will often want to define a temporary function to reflect the condition that you're checking.
+        </p>
+
+        <code-box data-codeId="logic"><pre>#include &lt;iostream>
+#include &lt;vector>
+#include &lt;algorithm>
+
+int main() {
+    std::vector&lt;int> v{0, 6, 12, 56, 63, 618};
+    bool anyDivisibleBy10 = std::any_of(v.begin(), v.end(), [](int n) {return n % 10 == 0;});
+    bool allEven = std::all_of(v.begin(), v.end(), [](int n) {return n % 2 == 0;});
+    bool noneNeg = std::none_of(v.begin(), v.end(), [](int n) {return n < 0;});
+    std::cout << std::boolalpha;
+    std::cout << anyDivisibleBy10 << '\n' << allEven << '\n' << noneNeg << std::endl;
+    return 0;
+}</pre></code-box>
+
+        <h2><code>accumulate</code></h2>
+
+        <p>
+            The function <code>std::accumulate</code> combines all the values in the container, starting from 
+            a given starting value. This is most commonly used to add up all the values in the container, so 
+            the starting value is 0 and the combining operation is addition. Since this is the most common use,
+            addition is the default value for the operation; you can provide a different option (perhaps using 
+            a lambda) if you want to use a different operation. The arguments to the operator are the current value 
+            of the accumulator, and the next value to be accumulated.
+        </p>
+
+        <p>
+            Note that <code>std::accumulate</code> comes from the <code>numeric</code> header, not the 
+            <code>algorithm</code> header like most of the functions discussed in this lecture.
+        </p>
+
+        <code-box data-codeId="accumulateSumProduct"><pre>#include &lt;iostream>
+#include &lt;vector>
+#include &lt;numeric>
+
+int main() {
+    std::vector&lt;int> v{1, 2, 3, 4, 5};
+    int sum = std::accumulate(v.begin(), v.end(), 0);
+    int product = std::accumulate(v.begin(), v.end(), 1, [](int acc, int val) {return acc * val;});
+    std::cout << sum << ' ' << product << std::endl; // Prints 15 120
+    return 0;
+}</pre></code-box>
 
 
         </div> <!-- /.content -->
