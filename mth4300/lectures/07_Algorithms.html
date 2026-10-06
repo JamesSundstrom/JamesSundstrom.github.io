@@ -420,7 +420,7 @@ int main() {
 
 int main() {
     std::vector&lt;int> v{3, 3, 4, 5, 5, 4, 3, 2, 1, 1, 2, 3, 3, 2, 2};
-    int c = std::count_if(v.begin(), v.end(), [](int n) { return n > 3 });
+    int c = std::count_if(v.begin(), v.end(), [](int n) { return n > 3; });
     std::cout << c << std::endl; // Prints 4
     return 0;
 }</pre></code-box>
