@@ -406,6 +406,25 @@ int main() {
     return 0;
 }</pre></code-box>
 
+        <h2><code>count_if</code></h2>
+
+        <p>
+            The <code>std::count_if</code> function is similar to count, but it counts items that satisfy a given 
+            criterion, which is provided as a function that returns a bool. For example, if we want to count all the numbers
+            greater than 3:
+        </p>
+
+        <code-box data-codeId="count_if"><pre>#include &lt;iostream>
+#include &lt;vector>
+#include &lt;algorithm>
+
+int main() {
+    std::vector&lt;int> v{3, 3, 4, 5, 5, 4, 3, 2, 1, 1, 2, 3, 3, 2, 2};
+    int c = std::count_if(v.begin(), v.end(), [](int n) { return n > 3 });
+    std::cout << c << std::endl; // Prints 4
+    return 0;
+}</pre></code-box>
+
         <h2><code>fill</code></h2>
 
         <p>
