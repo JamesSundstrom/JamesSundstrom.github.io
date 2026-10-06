@@ -550,6 +550,76 @@ int main() {
 }</pre></code-box>
 
 
+        <h2>Exercises</h2>
+
+        <ol>
+            <li>
+                Write a function <code>sortByLength</code> that takes as argument a <code>std::vector&lt;std::string></code>
+                and sorts its elements by length, least to greatest. Strings of the same length should be sorted alphabetically. 
+                (You may assume all strings consist only of lowercase letters, so that "alphabetically" matches the default 
+                ordering of strings.) Here's some code to help you test your function:
+
+                <code-box data-codeId="sortExercise"><pre>#include &lt;iostream>
+#include &lt;vector>
+#include &lt;algorithm>
+
+void sortByLength(std::vector&lt;std::string> &v) {
+    // Your code here
+}
+
+int main() {
+    std::vector&lt;std::string> v = {"garlic", "fig", "banana", "apple", "kiwi", "eggplant", "honeydew", "date", "cucumber"};
+    sortByLength(v);
+    for (const std::string &s : v) {
+        std::cout << s << ' '; // fig date kiwi apple banana garlic cucumber eggplant honeydew 
+    }
+    std::cout << std::endl;
+    return 0;
+}</pre></code-box>
+            </li>
+            <li>
+                Write a function <code>countAboveAverage</code> that takes as argument a <code>std::vector&lt;int></code> 
+                and returns the number of elements in the vector that are larger than the average of the vector's elements.
+                Can you do it with just two statements?
+
+                <code-box data-codeId="countExercise"><pre>#include &lt;iostream>
+#include &lt;vector>
+#include &lt;algorithm>
+
+// Your code here
+
+int main() {
+    std::vector&lt;int> v1 = {1, 2, 3, 6, 15, 20, 50, 75, 200};
+    std::vector&lt;int> v2 = {5, 5, 5, 5};
+    std::vector&lt;int> v3 = {5, -1, 3, -7, 15};
+    std::cout << countAboveAverage(v1) << std::endl; // 3
+    std::cout << countAboveAverage(v2) << std::endl; // 0
+    std::cout << countAboveAverage(v3) << std::endl; // 2
+    return 0;    
+}</pre></code-box>
+
+            </li>
+            <li>
+                Using only <code>std::accumulate</code>, write a function <code>toBinary</code> that takes as 
+                argument a <code>std::vector&lt;bool></code> and converts it to a binary number, treating <code>true</code> 
+                as 1, and reading left-to-right. For example, <code>toBinary({true, false, false, true, false})</code> 
+                would return 18 (10010<sub>2</sub>).
+
+                <code-box data-codeId="accumulateExercise"><pre>#include &lt;iostream>
+#include &lt;vector>
+#include &lt;numeric>
+
+// Your code here
+
+int main() {
+    std::vector&lt;bool> v = {true, false, false, true, false};
+    std::cout << toBinary(v) << std::endl; // 18
+    return 0;
+}</pre></code-box>
+            </li>
+        </ol>
+
+
         </div> <!-- /.content -->
         <script type="text/javascript" src="codeblock.js"></script>
     </body>

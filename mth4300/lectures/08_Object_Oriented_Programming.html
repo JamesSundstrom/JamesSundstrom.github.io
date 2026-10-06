@@ -1,0 +1,523 @@
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Lecture 08: Object-Oriented Programming</title>
+        <link rel="stylesheet" href="../style.css">
+    </head>
+    <body>
+        <div class="top-bar"><a href="../mth4300.html">🏠 Back to Math 4300 homepage</a>
+        </div>
+        <div class="content">
+            <h1>Lecture 08: Object-Oriented Programming</h1>
+
+            <p>
+                We're finally ready to start defining our own classes. As in Python, a class bundles together data 
+                and the methods that work with that data, as well as controlling who can access the data. As you 
+                might expect by now, C++ expects us to be a bit more hands-on with the details of how our 
+                classes work.
+            </p>
+
+            <h2>Encapsulation</h2>
+
+            <p>
+                One of the purposes of a class is to enforce <i>encapsulation</i>: we bundle data together with the 
+                methods not only for convenience, but also because that allows us to restrict access to the  
+                object's underlying data. Someone who wants to modify the object's internal data can only 
+                access the data through the provided methods, so that the data can only be modified in ways 
+                intended by the creator of the class. As a simple example, suppose we have a class <code>Counter</code>
+                representing a counter that should only ever go up by 1; maybe it has an attribute <code>n</code> 
+                representing the value of the counter. Without encapsulation, a programmer could accidentally (or 
+                maliciously) modify the value of the counter in unintended ways by writing something like <code>c.n -= 10</code>. 
+                With proper encapsulation, code that uses <code>Counter</code> doesn't have access to the attribute <code>n</code> 
+                directly; instead, the <code>Counter</code> class might make available an <code>increment()</code> method that 
+                adds 1 to <code>n</code>. This enforces the original designer's intention that the only way to modify <code>n</code> 
+                should be by adding 1.
+            </p>
+
+            <p>
+                Similarly, if you're writing a class that represents a bank account, you might not want to allow the balance to become 
+                negative. If the <code>balance</code> attribute were publicly available, people could write code like <code>acct.balance -= 1000</code>, 
+                which might make the balance negative. Instead, you could make <code>balance</code> a private attribute and provide 
+                a <code>withdraw</code> method that handles withdrawals however you want. In particular, if the bank later changes its 
+                policy and decides to start letting (some or all) customers overdraw their accounts, you need only update the 
+                <code>withdraw</code> method to implement that new policy; if outside code implemented withdrawals by modifying the balance 
+                directly, you would need to find and update every such piece of code.
+            </p>
+
+            <p>
+                A related benefit of encapsulation is that it allows us to change the implementation later. If we write code that 
+                accesses the attributes of a class directly, then we won't be able to change those attributes later without 
+                breaking the existing code. For example, what if we have data stored in one way, but we later realize that there 
+                was a more efficient way to store it? If there's already a lot of code that assumes the data will be stored in 
+                the original way, we're stuck with it. If instead the existing code only accesses the data through methods, then 
+                we can always change the internal storage of the class, and we need only update those methods to access the data 
+                in the new way.
+            </p>
+
+            <p>
+                There are three basic levels of privacy that you might want:
+            </p>
+            
+            <ul>
+                <li><code>public</code>: The attribute can be accessed by anyone.</li>
+                <li><code>protected</code>: the attribute can only be accessed by the class or its subclasses. </li>
+                <li><code>private</code>: The attribute can only be accessed within the class itself.</li>
+            </ul>
+
+            <p>
+                This idea existed in Python, but not strictly enforced by the language. Instead, Python uses the convention that an 
+                attribute name beginning with a single underscore is protected: the language doesn't prevent programmers from 
+                accessing the attribute directly, but the naming convention serves as a warning that you're using the class 
+                incorrectly. An attribute that begins with a double underscore is private. Python makes it more difficult to access 
+                a private attribute outside the class through <i>name mangling</i>: modifying the name of the attribute to make it 
+                harder to access accidentally. Nonetheless, such attributes can still be accessed if you try. Part of the design 
+                philosophy of Python is "We're all consenting adults here," meaning that if you really want to do something as a Python 
+                developer, the language will let you do it. C++ adopts the opposite philosophy: if an attribute is marked as private, it cannot be accessed outside the class. 
+            </p>
+
+            <h2>Structs and Classes</h2>
+
+            <p>
+                We've seen structs previously: in our lesson on pointers, we defined an <code>Employee</code> structure:
+            </p>
+
+            <code-box data-codeId="employeeStruct"><pre>#include &lt;iostream>
+
+struct Employee {
+    std::string name;
+    Employee* supervisor;
+};
+
+int main() {
+    Employee DavidWallace{"David Wallace", nullptr};
+    std::cout << DavidWallace.name << std::endl;
+    return 0;
+}</pre></code-box>
+
+            <p>
+                It turns out that we could have done almost the exact same thing with a <code>class</code>:
+            </p>
+
+            <wrong-code-box data-codeId="employeeClass"><pre>#include &lt;iostream>
+
+class Employee {
+    std::string name;
+    Employee* supervisor;
+};
+
+int main() {
+    Employee DavidWallace{"David Wallace", nullptr};
+    std::cout << DavidWallace.name << std::endl;
+    return 0;
+}</pre></wrong-code-box>
+
+            <p>
+                But this code doesn't compile! The reason is that members of a <code>struct</code> are <code>public</code> by default, 
+                whereas members of a <code>class</code> are private by default. Therefore the code in <code>main</code> that attempts 
+                to access <code>name</code> is illegal.
+            </p>
+
+            <p>
+                In fact, the default access level is the only technical difference between <code>struct</code> and <code>class</code>; 
+                they are otherwise completely interchangeable. In practice, <code>struct</code> is generally used for pure data bundles 
+                with no methods, while <code>class</code> is used to encapsulate data and methods. 
+            </p>
+
+            <p>
+                Of course, we can override the default access levels if we want:
+            </p>
+
+            <code-box data-codeId="employeeClassPublicAccess"><pre>#include &lt;iostream>
+
+class Employee {
+public:
+    std::string name;
+    Employee* supervisor;
+};
+
+int main() {
+    Employee DavidWallace{"David Wallace", nullptr};
+    std::cout << DavidWallace.name << std::endl;
+    return 0;
+}</pre></code-box>
+
+            <p>
+                Note that <code>public:</code> is not indented, but the attributes being defined are. (As usual, the whitespace doesn't 
+                matter technically, but following the standard formatting makes your code easier to read.)
+            </p>
+
+            <h2>Managing access</h2>
+
+            <p>
+                Let's try to write the simple <code>Counter</code> class that we mentioned earlier. This class will have one member 
+                variable <code>count_</code> and two member functions <code>getValue</code> and <code>increment.</code>
+            </p>
+
+            <code-box data-codeId="counter0"><pre>#include &lt;iostream>
+
+class Counter {
+public:
+    int getValue() const { return count_; }
+    void increment() { ++count_; }
+private:
+    int count_{0};
+};
+
+int main() {
+    Counter c;
+    std::cout << c.getValue() << std::endl; // 0
+    c.increment();
+    c.increment();
+    std::cout << c.getValue() << std::endl; // 2
+    // std::cout << c.count_ << std::endl; // Not allowed
+    return 0;
+}</pre></code-box>
+
+        <p>
+            There are several interesting things to note about this code:
+        </p>
+
+        <ul>
+            <li>
+                The private member variable <code>count_</code> has a name which ends in a single underscore. This is a common 
+                C++ convention to indicate that something is a private member variable. 
+            </li>
+            <li>
+                Note that <code>count_</code> is initialized to 0 when a new <code>Counter</code> object is created. 
+            </li>
+            <li>
+                Since the variable that stores the count is private, the class must now provide methods that allow the user to 
+                access it in the intended ways: increment the count, or view the value of the counter.
+            </li>
+            <li>
+                Note the semicolon after the class declaration: this is mandatory.
+            </li>
+            <li>
+                In <code>main()</code>, the code <code>Counter c;</code> tells the compiler to create an object of type <code>Counter</code>. You 
+                might wonder how this is possible, since we haven't written code to tell the compiler how to do that. (In Python, we would have 
+                the <code language="Python">__init__</code> method.) If you don't define any constructor, the compiler will automatically generate 
+                a default constructor for you. The code <code>Counter c;</code> implicitly calls this constructor to create a new <code>Counter</code>. 
+                We'll see later how you could define your own constructor.
+            </li>
+            <li>
+                The <code>const</code> on the declaration of <code>getValue</code> tells the compiler that the <code>getValue</code> 
+                method doesn't alter any of the attributes of its object. If you want to be able to call a method with a <code>const</code> 
+                object, the method needs to be declared <code>const</code> to tell the compiler that's safe. (Of course, a <code>const Counter</code> 
+                wouldn't make much sense, since it wouldn't be able to count, but you might want a <code>const</code> reference to a non-const 
+                <code>Counter</code>.) The below example illustrates what goes wrong without the <code>const</code>:
+            </li>
+        </ul>
+
+        <wrong-code-box data-codeId="counter1"><pre>#include &lt;iostream>
+
+class Counter {
+public:
+    int getValue() { return count_; }
+    void increment() { ++count_; }
+private:
+    int count_{0};
+};
+
+int main() {
+    Counter c;
+    const Counter& r = c;
+    c.increment();
+    std::cout << r.getValue() << std::endl; // Not legal!
+    return 0;
+}
+</pre></wrong-code-box>
+
+        <p>
+            Of course, if you put the <code>const</code> back on the declaration of <code>getValue</code>, the above code works.
+        </p>
+
+        <p>
+            As a rule, you should always put <code>const</code> on any method that doesn't modify the object. This takes basically 
+            no effort. In return, it prevents you from accidentally modifying the object when you didn't mean to, and it allows you 
+            to use the methods with <code>const</code> objects.
+        </p>
+
+        <p>
+            In the preceding examples, we wrote all the code for the class methods directly inside the class declaration. In this 
+            case, the methods were very brief, so this was fine. But you can imagine that this might make our code difficult to read 
+            if the methods had long, complicated code. If you're trying to understand how to use a class, it would be nice to be able 
+            to see exactly what attributes/methods are declared without needing to wade through the code for each method to find the next 
+            one. C++ lets us move the definitions of the class methods outside the class declaration. (There are also technical reasons besides 
+            readability why you might want to do that, but we won't worry about that for now.)
+        </p>
+
+        <code-box data-codeId="counter2"><pre>#include &lt;iostream>
+
+class Counter {
+public:
+    int getValue() const;
+    void increment();
+private:
+    int count_{0};
+};
+
+int Counter::getValue() const { return count_; }
+void Counter::increment() { ++count_; }
+
+int main() {
+    Counter c;
+    c.increment();
+    std::cout << c.getValue() << std::endl; // 1
+    return 0;
+}</pre></code-box>
+
+        <p>
+            Note that when we define the class methods outside the class, we use the scope resolution operator <code>::</code>
+            to tell the compiler tha tthis is <code>Counter</code>'s <code>getValue</code> method, not a separate function 
+            named <code>getValue</code>.
+        </p>
+
+        <p>
+            Note also that inside the <code>Counter</code> class declaration, we need a semicolon after each method that's 
+            declared but not defined.
+        </p>
+
+        <h2>Constructors</h2>
+
+        <p>
+            A <i>constructor</i> is the function that runs automatically when an object is created. It has the same name as 
+            the class, and no return type. For example, we can add an explicit constructor to our <code>Counter</code> class 
+            rather than relying on the compiler to create one for us. We can even add multiple constructors, so that new 
+            objects can be created in different ways.
+        </p>
+
+        <code-box data-codeId="counter3"><pre>#include &lt;iostream>
+
+class Counter {
+public:
+    Counter(); 
+    Counter(int start);
+    int getValue() const;
+    void increment();
+private:
+    int count_;
+};
+
+Counter::Counter() : count_(0) {}
+Counter::Counter(int start) : count_(start) {}
+int Counter::getValue() const { return count_; }
+void Counter::increment() { ++count_; }
+
+int main() {
+    Counter c;
+    c.increment();
+    Counter d(5);
+    d.increment();
+    std::cout << c.getValue() << ' ' << d.getValue() << std::endl; // 1 6
+    return 0;
+}</pre></code-box>
+
+        <p>
+            As you probably expected, <code>Counter c</code> calls the default constructor (which creates a counter starting from 0),
+            while <code>Counter d(5)</code> calls the parametrized constructor that accepts an <code>int</code> parameter telling the 
+            counter where to count from.
+        </p>
+
+        <p>
+            Notice the <code>count_(0)</code> before the (empty) body of the constructor. This is a <i>member initializer list</i>, 
+            which initializes class members before running the code in the constructor body. It is generally preferred to initialize 
+            class members this way, when possible. (Of course, you're allowed to mix the two -- have a member initializer list and 
+            also write code in the body.) One possible source of confusion is that class members are always initialized in the order 
+            they're declared, regardless of the order of the member initializer list. If some members are defined in terms of others, 
+            this could cause a bug if they're not initiallized in the order you're expecting. To avoid this issue, the member 
+            initializer list should always be written in the same order that the members are declared:
+        </p>
+
+        <wrong-code-box data-codeId="memberInitializerOrderError"><pre>#include &lt;iostream>
+
+class Pair {
+public:
+    Pair(int n) : y_(n), x_(y_+1) {} // Error, because it tries to initialize x_ before y_
+    int x_;
+    int y_;
+};
+
+
+int main() {
+    Pair p(5);
+    std::cout << p.x_ << ' ' << p.y_ << std::endl;
+    return 0;
+}</pre></wrong-code-box>
+
+        <p>
+            The above code may compile (depending on your compiler settings), but if it does, it will probably print "1 5" instead 
+            of the "6 5" you might expect. This is because <code>x_</code> is initialized to <code>y_+1</code> before <code>y_</code> 
+            is initialized, so it probably used the default value 0 for <code>y_</code>.
+        </p>
+
+        <p>
+            Another possible pitfall: if you define any constructor, the compiler no longer creates a default constructor for you, so 
+            you will need to define one yourself if you still want a default constructor. For example, the following code would not work:
+        </p>
+
+        <wrong-code-box data-codeId="counter4"><pre>#include &lt;iostream>
+
+class Counter {
+public:
+    Counter(int start);
+    int getValue() const;
+    void increment();
+private:
+    int count_{0};
+};
+
+Counter::Counter(int start) : count_(start) {}
+int Counter::getValue() const { return count_; }
+void Counter::increment() { ++count_; }
+
+int main() {
+    Counter c; // Illegal! There's no default constructor anymore.
+    std::cout << c.getValue() << std::endl;
+    return 0;
+}</pre></wrong-code-box>
+
+            <h2>
+                Destructors
+            </h2>
+
+            <p>
+                A <i>destructor</i> is a method that runs automatically when your object is deleted (either explicitly, or because 
+                it goes out of scope). The destructor should release any heap resources that the object owned. As such, a class with 
+                no heap resources usually does not need an explicit destructor, because nothing needs to be destroyed. (Technically, 
+                a destructor is still called when the object is deleted; it's just that the compiler provides a default destructor that
+                does nothing.)
+            </p>
+
+            <p>
+                Strictly speaking, there's no requirement that the destructor can only free heap resources. You can tell it to do 
+                anything that you want done every time an object is destroyed. For example, you can ask it to print a message, which 
+                can sometimes be helpful for debugging (or occasionally even a feature in your finished program).
+            </p>
+
+            <p>
+                The destructor is defined with the exact same syntax as the constructor, except that it's prefixed with a tilde 
+                (<code>~</code>). To demonstrate the destructor, let's start creating a <code>Polynomial</code> class. We'll need to
+                store the coefficients of the polynomial. In the real world, it would probably make sense to use a <code>std::vector</code> 
+                to store them, but we'll use a C-style array so that we have heap memory that we can demonstrate deleting.
+            </p>
+
+            <code-box data-codeId="polynomial0"><pre>#include &lt;iostream>
+#include &lt;vector>
+#include &lt;numeric>
+
+class Polynomial {
+public:
+    Polynomial(const std::vector&lt;int> &coefficients);
+    ~Polynomial();
+    int eval(int n) const;
+private:
+    int* coefficients_;
+    int degree_;
+};
+
+// Copy the given coefficients vector into coefficients_, while also removing 
+// any leading zeros so that degree_ is calculated correctly.
+Polynomial::Polynomial(const std::vector&lt;int> &coefficients) {
+    int i;
+    for (i=0; i < coefficients.size(); ++i) {
+        if (coefficients[i] != 0) {
+            break;
+        }
+    }
+    degree_ = coefficients.size() - i - 1;
+    coefficients_ = new int[degree_ + 1];
+    for (int j = i; j < coefficients.size(); ++j) {
+        coefficients_[j-i] = coefficients[j];
+    }
+}
+
+Polynomial::~Polynomial() {
+    delete[] coefficients_;
+}
+
+int Polynomial::eval(int n) const {
+    auto f = [n](int acc, int val) { return acc * n + val; };
+    return std::accumulate(coefficients_, coefficients_ + degree_ + 1, 0, f);
+}
+
+int main() {
+    Polynomial f{{3, -2, 5}}; // Initialize f(x) = 3x^2 - 2x + 5
+    std::cout << f.eval(10) << std::endl; // 285
+    return 0;
+}
+</pre></code-box>
+
+            <p>
+                Make sure you understand the above code; we're going to continue using <code>Polynomial</code> for more 
+                examples later. 
+            </p>
+            <p>
+                Basically, the constructor just copies the given coefficients into our array 
+                <code>coefficients_</code>. However, this is complicated by the fact that we don't want to include 
+                leading 0's in our coefficient array; if we receive the array {0, 0, 2, 1}, we want to store the polynomial 
+                as 2x + 1, not 0x<sup>3</sup> + 0x<sup>2</sup> + 2x + 1.
+            </p>
+
+            <p>
+                The destructor is quite simple, because it only needs to free the memory for the array. (As mentioned earlier, 
+                if we had stored the coefficients in a <code>std::vector&lt;int></code>, we wouldn't need to write an 
+                explicit destructor at all.) Later, we'll see examples where the destructor is more difficult to write. 
+            </p>
+
+            <p>
+                Finally, we have an <code>eval()</code> method, which evaluates the polynomial at a given point. The example code 
+                defines <code>f</code> to be the polynomial 3x<sup>2</sup> - 2x + 5, and then evaluates it at x=10, which gives 285.
+            </p>
+
+            <h2>The <code>this</code> pointer</h2>
+
+            <p>
+                When you are writing code for a method within a class, sometimes you need to refer to the object that the method was 
+                called on. You can do that using <code>this</code>, which is a pointer to the object. This can be useful if you want 
+                to pass the object as an argument to another function, or for a method to return the object itself. It can also be 
+                useful when a member variable's name is <i>shadowed</i> by another variable with the same name; in that case, the 
+                member variable can be accessed via <code>this</code>, as in the below example.
+            </p>
+
+            <code-box data-codeId="polynomial0"><pre>#include &lt;iostream>
+#include &lt;string>
+
+class Line {
+public:
+    Line(double a, double b, double c, double d);
+    std::string toString();
+    double m;
+    double b;
+};
+
+// Constructs the line through (a, b) and (c, d)
+// Note that the class member b is shadowed by the stupid argument name b
+Line::Line(double a, double b, double c, double d) {
+    m = (d - b) / (c - a);
+    this->b = b - a * m; // We can access the class member b as this->b
+}
+
+// Very crude way of representing a line as a string.
+std::string Line::toString() {
+    return "y = " + std::to_string(m) + "x + " + std::to_string(b);
+}
+
+int main() {
+    Line line(1, 3, 3, 7); // y = 2x+1 goes through (1, 3) and (2, 7)
+    std::cout << line.toString() << std::endl;
+    return 0;
+}</pre></code-box>
+
+            <p>
+                Of course, shadowing a variable that you need is pretty stupid, so a better solution would be to choose 
+                better variable names in the first place. (For example, <code>Line::Line(double x0, double y0, double x1, double y1)</code> 
+                would solve our shadowing problem and make the code easier to understand.) But sometimes it might be 
+                necessary -- maybe somebody else made this mess, and you want to get their code working before you start 
+                trying to clean it up by renaming variables.
+            </p>
+
+        </div> <!-- /.content -->
+        <script type="text/javascript" src="codeblock.js"></script>
+    </body>
+</html>
