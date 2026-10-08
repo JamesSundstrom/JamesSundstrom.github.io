@@ -699,7 +699,7 @@ Polynomial::Polynomial(const Polynomial& other)
 
 // Copy assignment
 Polynomial& Polynomial::operator=(const Polynomial& other) {
-    if (this == &other) {return this;} // Guards against self-assignment (see below)
+    if (this == &other) {return *this;} // Guards against self-assignment (see below)
     delete[] coefficients_;
     degree_ = other.degree_;
     coefficients_ = new int[degree_ + 1];
