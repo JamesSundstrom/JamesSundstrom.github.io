@@ -1,0 +1,183 @@
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Midterm 1 Practice</title>
+        <link rel="stylesheet" href="./style.css">
+    </head>
+    <body>
+        <div class="top-bar"><a href="./mth4300.html">🏠 Back to Math 4300 homepage</a>
+        </div>
+        <div class="content">
+            <h1>Midterm 1 Practice Solutions</h1>
+
+            <h2>Problem 1</h2>
+
+            <p>
+                What exactly does the following code print?
+            </p>
+
+            <code-box data-codeId="Problem1"><pre>#include &lt;iostream&gt;
+int main() {
+    int m = 30, n = 4;
+    int p = m / n;
+    int r = m % n;
+    double x = m / n;
+    double y = static_cast&lt;double>(m) / n;
+    std::cout << p << r << x << y << std::endl;
+    return 0;
+}</pre></code-box>
+
+            <p><b>Answer:</b> <code>7277.5</code></p>
+
+            <p> 
+                First <code>p</code> and <code>r</code> are designed to be the quotient and remainder when 30 is divided by 4, which are 7 and 2. 
+                Then <code>x</code> is also defined to be <code>m / n</code>. Since <code>m</code> and <code>n</code> are <code>int</code>s, this 
+                division is still integer division, notwithstanding that the answer is subsequently converted to a double to store it as <code>x</code>,
+                so <code>x</code> is also 7. When assigning <code>y</code>, <code>m</code> is cast to a double before dividing, so the division is 
+                <code>double</code> division, which gives 7.5. Therefore the numbers that print are 7, 2, 7, and 7.5. But the print statement doesn't 
+                insert any space between them, so the output appears as <code>7277.5</code>.
+            </p>
+
+            <h2>Problem 2</h2>
+
+            <p>
+                What exactly does the following code print?
+            </p>
+
+            <code-box data-codeId="Problem2"><pre>#include &lt;iostream&gt;
+int main() {
+    std::cout << (5 < 2 || (3 <= 3 && 't' - 1 == 's')) << std::endl;
+    return 0;
+}</pre></code-box>
+
+            <p><b>Answer:</b> <code>1</code></p>
+
+            <p>
+                Note that <code>5 < 2</code> evaluates to <code>false</code>, <code>3 <= 3</code> evaluates to <code>true</code>, and 
+                <code>'t' - 1 == 's'</code> evaluates to <code>true</code>, so the boolean expression becomes 
+                <code>false || (true && true)</code>, which simplifies to <code>true</code>. When we print <code>true</code>, it 
+                prints as <code>1</code>.
+            </p>
+
+
+            <h2>Problem 3</h2>
+
+            <p>
+                What exactly does the following code print?
+            </p>
+
+            <code-box data-codeId="Problem3"><pre>#include &lt;iostream&gt;
+int main() {
+    int i = 2;
+    while (i < 10) {
+        if (i % 3) {
+            i -= 1;
+            continue;
+        }
+        std::cout << i << std::endl;
+        i += 5;
+    }
+}</pre></code-box>
+
+            <p><b>Answer:</b> </p>
+            <p><code><pre>0 
+3 
+6</pre></code></p>
+
+            <p>
+                First <code>i</code> is initialized as <code>2</code>. This is less than 10, so we enter the loop. (Every time we iterate we need to 
+                check whether <code>i < 10</code>, but to make it easier to focus on the interesting content, I won't mention this check for every 
+                iteration.) Then <code>i % 3</code> is <code>2</code>, which is converted to a <code>bool</code> as <code>true</code> since it's 
+                non-zero. Therefore we execute <code>i -= 1</code> (which reassigns <code>i</code> to 1) and then <code>continue</code>, going back 
+                to the top of the loop. Again <code>i % 3</code> is nonzero, so we subtract 1 from i and continue. Then <code>i</code> is 0, so 
+                <code>i % 3</code> is treated as false, which causes us to print <code>i</code> (0) and then add <code>5</code> to <code>i</code>. 
+                The same process repeats, with <code>i</code> becoming 4, 3, 8, 7, 6, 11 (and printing every time it's divisible by 3). Finally, once 
+                <code>i</code> is 11, we break out of the loop.
+            </p>
+
+            <h2>Problem 4</h2>
+
+            <p>
+                What exactly does the following code print?
+            </p>
+
+            <code-box data-codeId="Problem4"><pre>#include &lt;iostream&gt;
+int main() {
+    int j = 2;
+    for (int i = 25; i * i > 20; i -= 3) {
+        std::cout << i << ' ' << j << std::endl;
+        if (i == j) break;
+        j *= 2;
+    }
+}</pre></code-box>
+
+            <h2>Problem 5</h2>
+
+            <p>
+                What exactly does the following code print?
+            </p>
+
+            <code-box data-codeId="Problem5"><pre>#include &lt;iostream&gt;
+int main() {
+    int j = 2;
+    for (int i = 25; i * i > 20; i -= 3) {
+        std::cout << i << ' ' << j << std::endl;
+        if (i == j) break;
+        j *= 2;
+    }
+}</pre></code-box>
+
+            <h2>Problem 5</h2>
+
+            <p>
+                What exactly does the following code print?
+            </p>
+
+            <code-box data-codeId="Problem5"><pre>#include &lt;iostream&gt;
+int main() {
+    for (int i = 0; i < 3; ++i)
+        std::cout << i << ' ';
+        std::cout << "Loop!" << std::endl;
+    return 0;
+}</pre></code-box>
+
+            <h2>Problem 6</h2>
+
+            <p>
+                What exactly does the following code print?
+            </p>
+
+            <code-box data-codeId="Problem6"><pre>#include &lt;iostream&gt;
+int f(int i, int j) {
+    if (j <= 0) {
+        return (i % 3 == 0) ? i : f(i / 3, 2);
+    }
+    return f(i+1, j-1);
+}
+
+int main() {
+    std::cout << f(9, 400) << std::endl;
+    return 0;
+}</pre></code-box>
+
+
+            <h2>Problem 7</h2>
+
+            <p>
+                We say that a set of integers is <i>shy</i> if it does not contain any two consecutive integers. For example, {1, 3, 6} is 
+                shy and {1, 3, 4, 6} is not. Define a function <code>shySets(n)</code> that takes as argument a non-negative <code>int n</code>,
+                and returns a <code>std::vector&lt;std::vector&lt;int>></code> consisting of all the shy subsets of {0, 1, ..., n-1}. For example,
+                <code>shySets(0)</code> should return <code>{{}}</code> and <code>shySets(3)</code> should return 
+                <code>{{}, {0}, {1}, {2}, {0, 2}}</code> (in any order).
+            </p>
+
+            <p>
+                You do not need to worry about making your code run efficiently for this problem. (It's a good exercise to think about that, but 
+                on a test you just need to write code that works in theory.)
+            </p>
+
+        </div> <!-- /.content -->
+        <script type="text/javascript" src="codeblock.js"></script>
+    </body>
+</html>

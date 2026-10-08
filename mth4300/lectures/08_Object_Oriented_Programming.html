@@ -408,17 +408,17 @@ int main() {
 
 class Polynomial {
 public:
-    Polynomial(const std::vector&lt;int> &coefficients);
+    Polynomial(const std::vector&lt;int>& coefficients);
     ~Polynomial();
     int eval(int n) const;
 private:
-    int* coefficients_;
     int degree_;
+    int* coefficients_;
 };
 
 // Copy the given coefficients vector into coefficients_, while also removing 
 // any leading zeros so that degree_ is calculated correctly.
-Polynomial::Polynomial(const std::vector&lt;int> &coefficients) {
+Polynomial::Polynomial(const std::vector&lt;int>& coefficients) {
     int i;
     for (i=0; i < coefficients.size(); ++i) {
         if (coefficients[i] != 0) {
@@ -445,8 +445,7 @@ int main() {
     Polynomial f{{3, -2, 5}}; // Initialize f(x) = 3x^2 - 2x + 5
     std::cout << f.eval(10) << std::endl; // 285
     return 0;
-}
-</pre></code-box>
+}</pre></code-box>
 
             <p>
                 Make sure you understand the above code; we're going to continue using <code>Polynomial</code> for more 
@@ -517,22 +516,232 @@ int main() {
                 trying to clean it up by renaming variables.
             </p>
 
+        <h2>LeetCode Exercise</h2>
 
-            <!--
-        <h2>Exercises</h2>
+        <a href="https://leetcode.com/problems/design-parking-system/" target="_blank">1603. Design Parking System</a>
+
+        <h2>Exercise</h2>
+
+        <p>
+                A linked list is a data structure in which data is stored sequentially in nodes. Each <code>ListNode</code> contains two attributes: the 
+                value that it stores (which we'll assume is an <code>int</code> for this exercise), and a pointer to the next <code>ListNode</code> in 
+                the list. (The last <code>ListNode</code> has a null pointer to indicate that it's the end.) Then the only data stored directly in the 
+                <code>LinkedList</code> class itself is a pointer to the first node, because that's all you need: the first node points to the second, 
+                which points to the third, and so on, so we have enough information to access the entire list. We saw before that our employee/supervisor 
+                example was essentially forming a linked list of employees. 
+        </p>
+
+        <p>
+                For this exercise, you'll create a simple linked list class. It should include: 
+        </p>
+        <ul> 
+            <li>
+                A struct <code>ListNode</code> which stores an <code>int</code> and a pointer to the next <code>ListNode</code>.
+            </li>
+            <li>
+                A constructor that takes as argument an <code>int</code>, and constructs a new linked list consisting of a single node storing that <code>int</code> 
+                as its data.
+            </li>
+            <li>
+                A method <code>insertAtHead</code> that takes as argument an <code>int</code>, and adds a node storing that int at the beginning of the list.
+            </li>
+            <li>
+                A method <code>pop</code> that takes no arguments, deletes the first node in the list, and returns the <code>int</code> that was stored there.
+                (Your program should crash if this is run on an empty list -- it's the caller's responsibility to check that the list is nonempty.)
+            </li>
+            <li>
+                A method <code>isEmpty</code> that takes no arguments, and returns a <code>bool</code> indicating whether the list is empty.
+            </li>
+        </ul>
+
+        <p>
+            Here's some code you can use to test your class. It should print the numbers 2 3 5 7 13 in that order.
+        </p>
+
+        <code-box data-codeId="linkedListExercise"><pre>#include &lt;iostream>
+
+// Define the LinkedList class here
+
+int main() {
+    LinkedList list(13);
+    list.insertAtHead(7);
+    list.insertAtHead(2);
+    std::cout << list.pop() << std::endl;
+    list.insertAtHead(5);
+    list.insertAtHead(3);
+    while (!list.isEmpty()) {
+        std::cout << list.pop() << std::endl;
+    }
+    return 0;
+}</pre></code-box>
+
+            <p>
+                Note that you've implemented a stack -- a last-in-first-out (LIFO) data structure. Since you insert data at the head of 
+                the list, the most-recently-inserted data is always the first data that gets read.
+            </p>
+
+            <p>
+                If you get all that working and still have time, make sure you have no memory leaks! The <code>pop</code> method should 
+                free memory for the node it deletes, and your class should have a destructor that frees memory for <b>all</b> the nodes!
+            </p>
+
+
+            <h2>The shallow copy problem</h2>
+
+            <p>
+                When you copy an object, by default C++ copies each member value. If a member variable points to data stored on the heap, C++ 
+                doesn't make a copy of the data on the heap; it just makes a copy of the pointer. This can be a problem. What do you think 
+                happens when the following code is run?
+            </p>
+
+            <code-box data-codeId="polynomialShallowCopyProblem"><pre>#include &lt;iostream>
+#include &lt;vector>
+#include &lt;numeric>
+
+class Polynomial {
+public:
+    Polynomial(const std::vector&lt;int>& coefficients);
+    ~Polynomial();
+    int eval(int n) const;
+private:
+    int degree_;
+    int* coefficients_;
+};
+
+// Copy the given coefficients vector into coefficients_, while also removing 
+// any leading zeros so that degree_ is calculated correctly.
+Polynomial::Polynomial(const std::vector&lt;int>& coefficients) {
+    int i;
+    for (i=0; i < coefficients.size(); ++i) {
+        if (coefficients[i] != 0) {
+            break;
+        }
+    }
+    degree_ = coefficients.size() - i - 1;
+    coefficients_ = new int[degree_ + 1];
+    for (int j = i; j < coefficients.size(); ++j) {
+        coefficients_[j-i] = coefficients[j];
+    }
+}
+
+Polynomial::~Polynomial() {
+    delete[] coefficients_;
+}
+
+int Polynomial::eval(int n) const {
+    auto f = [n](int acc, int val) { return acc * n + val; };
+    return std::accumulate(coefficients_, coefficients_ + degree_ + 1, 0, f);
+}
+
+void surprise() {
+    Polynomial f{{3, -2, 5}}; // Initialize f(x) = 3x^2 - 2x + 5
+    Polynomial g = f;
+}
+
+int main() {
+    surprise();
+    std::cout << "Program finished" << std::endl;
+    return 0;
+}</pre></code-box>
+
+            <p>
+                You may be surprised to learn that "Program finished" doesn't print, because the program crashes before it 
+                gets there! Our innocent-looking <code>surprise</code> function, which merely defines two polynomials and 
+                doesn't even try to do anything with them, somehow causes a crash. What's going on?
+            </p>
+
+            <p>
+                The problem is that after <code>surprise</code> runs, the polynomials defined there go out of scope, causing 
+                their destructors to be called. The destructors both free the coefficient list. First, the destructor of <code>g</code>
+                frees the memory storing the coefficients of <code>g</code>. Then the destructor of <code>f</code> tries to do the 
+                same. But since <code>f</code> and <code>g</code> were both using the same memory for their coefficients, this means 
+                that <code>f</code> is trying to free memory that <code>g</code> already freed, resulting in a double free error.
+            </p>
+
+            <p>
+                To solve this problem, we don't want our objects to be shallow-copied; we want <code>g</code> to get its own copy of 
+                the coefficient array. That is, we want a <i>deep copy</i>.
+            </p>
+
+            <p>
+                There are two different methods that exist to copy our objects. There's the <i>copy constructor</i>, which is called 
+                when one object is initialized as a copy of another object, and there's the <i>copy assignment operator</i>, which 
+                is called when one existing object is assigned to another.
+            </p>
+
+            <p>
+                The copy constructor is initialized in exactly the same way as any other constructor: a method that has the same name 
+                as the class, and takes whatever arguments are used in the construction. (In this case, the argument is another 
+                instance of the object, which naturally is passed as a const reference since we don't want our constructor to make 
+                an unnecessary extra copy, or to modify the existing object.)
+            </p>
+
+            <p>
+                The copy assignment operator is an operator named <code>operator=</code> which takes as argument a const reference to 
+                the object being copied and returns a reference to the object being assigned. (We'll discuss why momentarily.)
+            </p>
+
+            <p>
+                Here are the new methods we need to add to our class:
+            </p>
+
+            <code-box data-codeId="polynomialAddCopy"><pre>// Within the class:
+Polynomial(const Polynomial& other);
+Polynomial& operator=(const Polynomial& other);
+
+// Definitions: 
+
+// Copy constructor
+Polynomial::Polynomial(const Polynomial& other)
+    : degree_(other.degree_), coefficients_(new int[degree_ + 1]) {
+    std::copy(&other.coefficients_, &other.coefficients_ + degree_ + 1, &coefficients_);
+}
+
+// Copy assignment
+Polynomial& Polynomial::operator=(const Polynomial& other) {
+    if (this == &other) {return this;} // Guards against self-assignment (see below)
+    delete[] coefficients_;
+    degree_ = other.degree_;
+    coefficients_ = new int[degree_ + 1];
+    std::copy(&other.coefficients_, &other.coefficients_ + degree_ + 1, &coefficients_);
+    return *this;
+}</pre></code-box>
+
+        <p>
+            The copy constructor probably looks roughly like you expected; it merely copies the data from one object 
+            to the other. The copy assignment operator is a little more complicated. Let's look at it in more detail:
+        </p>
 
         <ol>
             <li>
-                A linked list is a data structure in which data is stored sequentially in nodes. Each <code>Node</code> contains two attributes: the 
-                value that it stores (which we'll assume is an <code>int</code> for this exercise), and a pointer to the next <code>Node</code> in 
-                the list. (The last <code>Node</code> has a null pointer to indicate that it's the end.) Note that you don't actually need a separate 
-                <code>LinkedList</code> class, because the first <code>Node</code> gives you the entire linked list. We saw before that our employee/supervisor 
-                example was essentially forming a linked list of employees. 
+                Now you can see why the copy constructor and copy assignment operator need to be different operators: 
+                the copy assignment operator needs to delete the old data to avoid a memory leak, which obviously doesn't
+                make sense for the copy constructor.
             </li>
-
+            <li>
+                Note that the first line of code in the copy assignment operator is a guard against self-assignment: if we 
+                (for some reason) try to assign an object to be a copy of itself, then we don't need to do anything, so we 
+                return immediately. This isn't for efficiency, but because the code would have a bug if we didn't guard against 
+                this. If we didn't have that guard there and then attempted to assign an object <code>f</code> to be a copy of 
+                itself, the copy operator would delete the coefficient array of <code>f</code>. But then it would try to copy 
+                the array that was just deleted, which is undefined behavior. To avoid this, copy assignment operators should 
+                always guard against self-copying.
+            </li>
+            <li>
+                The copy assignment operator must always return a reference to the object being assigned. This is to support 
+                <i>assignment chaining</i>, meaning that you can write things like <code>a = b = c = 1729</code> to set 
+                <code>a</code>, <code>b</code>, and <code>c</code> all to 1729 simultaneously. The way this works is that 
+                C++ reads the chained assignment right-to-left, so it first performs the assignment <code>c = 1729</code>. 
+                Then the copy assignment operator returns a reference to <code>c</code>, so that the remaining code is 
+                essentially <code>a = b = c</code>. Now the process repeats: <code>b</code> gets assigned the value of <code>c</code>,
+                and then <code>b = c</code> returns a reference to <code>b</code>, so that <code>a = b</code> can copy the same 
+                value into <code>a</code>. (Assignment chaining like this is generally discouraged by style guides because it can 
+                make code harder to read -- it needs to be read right to left, which is inconvenient. But it's technically a valid 
+                part of the language, so your copy assignment operator needs to support it so that you don't set a trap for other 
+                people using your code who might try to use chained assignment.)
+            </li>
         </ol>
-            -->
-        
+
         </div> <!-- /.content -->
         <script type="text/javascript" src="codeblock.js"></script>
     </body>
