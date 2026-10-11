@@ -1,6 +1,5 @@
 class CodeBox extends HTMLElement {
   connectedCallback() {
-    console.log(this.dataset);
     const codeId = this.dataset.codeid;
     const code = this.innerText.replaceAll("<", "&lt;");
     this.innerHTML = `
@@ -43,9 +42,6 @@ copyButtons.forEach((button) => {
   button.addEventListener("click", (e) => {
     const codeId = e.target.dataset.copy;
     const code = document.getElementById(codeId);
-    console.log(e.target.dataset);
-    console.log(codeId);
-    console.log(code);
     navigator.clipboard.writeText(code.innerText)
   });
 });

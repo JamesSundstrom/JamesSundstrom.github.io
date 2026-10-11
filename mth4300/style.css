@@ -26,7 +26,7 @@ body {
 
 .copyButtonDiv {
     padding-top: 10px;
-    display: flex;
+    display: display-internal;
     justify-content: flex-end;
     align-items: anchor-center;
 }
