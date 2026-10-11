@@ -29,6 +29,7 @@ body {
     display: display-internal;
     justify-content: flex-end;
     align-items: anchor-center;
+    height: 200px;
 }
 
 .code {
