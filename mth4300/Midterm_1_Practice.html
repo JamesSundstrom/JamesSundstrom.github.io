@@ -165,6 +165,31 @@ int main() {
 }</pre></code-box>
 
 
+            <h2 id="P9">Problem 9
+                <span style="font-weight: normal; font-size: 1rem;">(<a href="./Midterm_1_Practice_Solutions.html#P9">Solution</a>)</span>
+            </h2> 
+
+            <p>
+                What does the following code print?
+            </p>
+
+            <code-box data-codeId="Problem9"><pre>#include &lt;iostream&gt;
+
+void f(int*& p, int* q) {
+    *p += 5;
+    p = q;
+    *q = 9;
+}
+
+int main() {
+    int a = 1, b = 2;
+    int *p = &a, *q = &b; 
+    f(p, q);
+    std::cout << a << ' ' << b << ' ' << *p << ' ' << *q << std::endl;
+    return 0;
+}</pre></code-box>
+
+
 
         </div> <!-- /.content -->
         <script type="text/javascript" src="codeblock.js"></script>

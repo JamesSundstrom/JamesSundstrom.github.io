@@ -264,6 +264,40 @@ int main() {
             </p>
 
 
+            <h2 id="P9"><a href="./Midterm_1_Practice.html#P9">Problem 9</a></h2>
+
+            <p>
+                What does the following code print?
+            </p>
+
+            <code-box data-codeId="Problem9"><pre>#include &lt;iostream&gt;
+                
+void f(int*& x, int* y) {
+    *x += 5;
+    x = y;
+    *y = 9;
+}
+
+int main() {
+    int a = 1, b = 2;
+    int *p = &a, *q = &b; 
+    f(p, q);
+    std::cout << a << ' ' << b << ' ' << *p << ' ' << *q << std::endl;
+    return 0;
+}</pre></code-box>
+
+
+        <p>
+            <b>Answer:</b> <code>6 9 9 9</code>
+        </p>
+
+        <p>
+            The line <code>*x += 5</code>, adds 5 to the value pointed to by <code>x</code>, which in this case sets <code>a</code> to 6.
+            The line <code>x = y</code> reassigns <code>x</code>; since <code>p</code> was passed by reference, this means that <code>p</code> 
+            is changed to match <code>q</code> in <code>main</code>. Now they both point to <code>b</code>. Then <code>*y = 9</code> reassigns 
+            the value that <code>x</code> and <code>y</code> now both point at, so subsequently <code>p</code> and <code>q</code> both point to 
+            <code>b</code>, which holds the value 9.
+        </p>
 
         </div> <!-- /.content -->
         <script type="text/javascript" src="codeblock.js"></script>
