@@ -29,7 +29,8 @@ body {
     display: display-internal;
     justify-content: flex-end;
     align-items: flex-start;
-    height: 200px;
+    flex-direction: column-reverse;
+    /*height: 200px;*/
 }
 
 .code {
