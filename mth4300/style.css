@@ -28,7 +28,7 @@ body {
     padding-top: 10px;
     display: display-internal;
     justify-content: flex-end;
-    align-items: top;
+    align-items: flex-start;
     height: 200px;
 }
 
