@@ -138,6 +138,34 @@ int main() {
                 on a test you just need to write code that works in theory.)
             </p>
 
+
+
+            <h2 id="P8">Problem 8
+                <span style="font-weight: normal; font-size: 1rem;">(<a href="./Midterm_1_Practice_Solutions.html#P8">Solution</a>)</span>
+            </h2> 
+
+            <p>
+                What does the following code print?
+            </p>
+
+            <code-box data-codeId="Problem8"><pre>#include &lt;iostream&gt;
+void f(int a, int& b) {
+    a += 5;
+    b -= 2;
+    std::cout << a * b << std::endl;
+}
+
+int main() {
+    int i{1}, j{6};
+    f(i, j);
+    std::cout << i << ' ' << j << std::endl;
+    f(j, i);
+    std::cout << i << ' ' << j << std::endl;
+    return 0;
+}</pre></code-box>
+
+
+
         </div> <!-- /.content -->
         <script type="text/javascript" src="codeblock.js"></script>
     </body>

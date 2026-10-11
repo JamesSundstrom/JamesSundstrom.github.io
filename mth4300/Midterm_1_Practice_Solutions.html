@@ -228,6 +228,43 @@ std::vector&lt;std::vector&lt;int>> shySets(int n) {
             Note the use of <code>auto</code> to avoid repeatedly typing the tedious <code>std::vector&lt;std::vector&lt;int>></code>.
         </p>
 
+        <h2 id="P8"><a href="./Midterm_1_Practice.html#P8">Problem 8</a></h2>
+        
+            <p>
+                What does the following code print?
+            </p>
+
+            <code-box data-codeId="Problem8"><pre>#include &lt;iostream&gt;
+void f(int a, int& b) {
+    a += 5;
+    b -= 2;
+    std::cout << a * b << std::endl;
+}
+
+int main() {
+    int i{1}, j{6};
+    f(i, j);
+    std::cout << i << ' ' << j << std::endl;
+    f(j, i);
+    std::cout << i << ' ' << j << std::endl;
+    return 0;
+}</pre></code-box>
+
+            <p><b>Answer:</b> </p>
+            <p><code><pre>24
+1 4
+-9
+-1 4</pre></code></p>
+
+            <p>
+                For the first call to <code>f</code>, <code>a</code> and <code>b</code> are reassigned to 6 and 4, so <code>a * b</code> is 24.
+                Only <code>j</code> was passed by reference, so only <code>j</code> is changed by <code>f</code>; for the next print statement, 
+                <code>i</code> is still 1, but now <code>j</code> is 4. A similar thing happens with the next <code>f(j, i)</code>, but this 
+                time it's <code>i</code> that's changed by <code>f</code>.
+            </p>
+
+
+
         </div> <!-- /.content -->
         <script type="text/javascript" src="codeblock.js"></script>
     </body>
