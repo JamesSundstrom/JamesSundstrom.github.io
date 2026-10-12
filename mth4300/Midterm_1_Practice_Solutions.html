@@ -634,6 +634,66 @@ std::string longestSubstringWithoutPeriods(const std::string& s) {
     return size >= other.size() ? s.substr(0, size) : other;
 }</pre></code-box>
 
+            <soln-h2></soln-h2>
+
+            <p>
+                The below code is supposed to calculate the product of the numbers in the vector, but it has 3 bugs. 
+                Find them, and explain how to correct them.
+            </p>
+
+            <wrong-code-box data-codeId="Problem16"><pre>#include &lt;iostream>
+#include &lt;vector>
+#include &lt;algorithm>
+
+int product(std::vector&lt;int>& v) {
+    return std::accumulate(v.begin(), v.end(), 0, [](int acc, int val) {return acc * val;});
+}
+
+int main() {
+    const std::vector&lt;int> pi{3, 1, 4, 1, 5, 9, 2, 6, 5, 3};
+    std::cout << product(pi) << std::endl;
+    return 0;
+}</pre></wrong-code-box>
+
+            <p><b>Answer:</b></p>
+
+            <code-box data-codeId="Problem16Solution"><pre>#include &lt;iostream>
+#include &lt;vector>
+#include &lt;numeric> // Corrected: std::accumulate is from numeric header, not algorithm
+
+int product(const std::vector&lt;int>& v) { // Argument needs to be const
+    return std::accumulate(v.begin(), v.end(), 1, [](int acc, int val) {return acc * val;}); // Start at 1, not 0
+}
+
+int main() {
+    const std::vector&lt;int> pi{3, 1, 4, 1, 5, 9, 2, 6, 5, 3};
+    std::cout << product(pi) << std::endl;
+    return 0;
+}</pre></code-box>
+
+            <soln-h2></soln-h2>
+
+            <p>
+                Given numbers r<sub>0</sub>, ..., r<sub>n-1</sub>, the corresponding square <i>Vandermonde matrix</i> is the n x n matrix for which 
+                row i of the matrix consists of r<sub>i</sub><sup>0</sup>, r<sub>i</sub><sup>1</sup>, ..., r<sub>i</sub><sup>n-1</sup>. Define a function 
+                <code>double** vandermonde(const double* numbers, int n)</code> that accepts as arguments an array of doubles and a positive integer 
+                <code>n</code> representing the number of doubles in the array, and returns the corresponding <code>n</code> x <code>n</code> 
+                Vandermonde matrix (as a two-dimensional C-style array).
+            </p>
+
+            <p><b>Answer:</b></p>
+
+            <code-box data-codeId="Problem17Solution"><pre>double** vandermonde(const double* numbers, int n) {
+    double** matrix = new double*[n];
+    for (int i = 0; i < n; ++i) {
+        matrix[i] = new double[n];
+        matrix[i][0] = 1.0;
+        for (int j = 1; j < n; ++j) {
+            matrix[i][j] = numbers[i] * matrix[i][j-1];
+        }
+    }
+    return matrix;
+}</pre></wrong-code-box>
 
         </div> <!-- /.content -->
         <script type="text/javascript" src="codeblock.js"></script>

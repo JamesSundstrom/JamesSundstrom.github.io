@@ -1,0 +1,123 @@
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Lecture 08 Solutions</title>
+        <link rel="stylesheet" href="../style.css">
+    </head>
+    <body>
+        <div class="top-bar"><a href="../mth4300.html">🏠 Back to Math 4300 homepage</a>
+        </div>
+        <div class="content">
+            <h1>Lecture 08 Solutions</h1>
+
+            <h2 id="LinkedListExercise">
+                Linked List Exercise
+                <span style="font-weight: normal; font-size: 1rem;">
+                    (<a href="08_Object_Oriented_Programming.html#LinkedListExercise">Back to lecture</a>)
+                </span>
+            </h2>
+
+            <p>
+                    A linked list is a data structure in which data is stored sequentially in nodes. Each <code>ListNode</code> contains two attributes: the 
+                    value that it stores (which we'll assume is an <code>int</code> for this exercise), and a pointer to the next <code>ListNode</code> in 
+                    the list. (The last <code>ListNode</code> has a null pointer to indicate that it's the end.) Then the only data stored directly in the 
+                    <code>LinkedList</code> class itself is a pointer to the first node, because that's all you need: the first node points to the second, 
+                    which points to the third, and so on, so we have enough information to access the entire list. We saw before that our employee/supervisor 
+                    example was essentially forming a linked list of employees. 
+            </p>
+
+            <p>
+                    For this exercise, you'll create a simple linked list class. It should include: 
+            </p>
+            <ul> 
+                <li>
+                    A struct <code>ListNode</code> which stores an <code>int</code> and a pointer to the next <code>ListNode</code>.
+                </li>
+                <li>
+                    A constructor that takes as argument an <code>int</code>, and constructs a new linked list consisting of a single node storing that <code>int</code> 
+                    as its data.
+                </li>
+                <li>
+                    A method <code>insertAtHead</code> that takes as argument an <code>int</code>, and adds a node storing that int at the beginning of the list.
+                </li>
+                <li>
+                    A method <code>pop</code> that takes no arguments, deletes the first node in the list, and returns the <code>int</code> that was stored there.
+                    (Your program should crash if this is run on an empty list -- it's the caller's responsibility to check that the list is nonempty.)
+                </li>
+                <li>
+                    A method <code>isEmpty</code> that takes no arguments, and returns a <code>bool</code> indicating whether the list is empty.
+                </li>
+            </ul>
+
+            <p>
+                Here's some code you can use to test your class. It should print the numbers 2 3 5 7 11 in that order.
+            </p>
+
+            <code-box data-codeId="linkedListExerciseProvidedCode"><pre>#include &lt;iostream>
+
+    // Define the LinkedList class here
+
+    int main() {
+        LinkedList list(11);
+        list.insertAtHead(7);
+        list.insertAtHead(2);
+        std::cout << list.pop() << std::endl;
+        list.insertAtHead(5);
+        list.insertAtHead(3);
+        while (!list.isEmpty()) {
+            std::cout << list.pop() << std::endl;
+        }
+        return 0;
+    }</pre></code-box>
+
+                <p>
+                    Note that you've implemented a stack -- a last-in-first-out (LIFO) data structure. Since you insert data at the head of 
+                    the list, the most-recently-inserted data is always the first data that gets read.
+                </p>
+
+                <p>
+                    If you get all that working and still have time, make sure you have no memory leaks! The <code>pop</code> method should 
+                    free memory for the node it deletes, and your class should have a destructor that frees memory for <b>all</b> the nodes!
+                </p>
+
+                <p>
+                    <b>Answer:</b> A solution is provided below. Note that we can define the <code>ListNode</code> structure as 
+                    private within the <code>LinkedList</code> class. This supports proper encapsulation: code outside of the 
+                    <code>LinkedList</code> class doesn't have access to the details of how we implemented the linked list.
+                </p>
+
+                <code-box data-codeId="linkedListExerciseSolution"><pre>class LinkedList {
+public:
+    LinkedList(int val) : head_(new ListNode{val, nullptr}) {}
+    ~LinkedList() {
+        while (head_) {
+            ListNode* next = head_->next;
+            delete head_;
+            head_ = next;
+        }
+    }
+    void insertAtHead(int val) {head_ = new ListNode{val, head_};}
+    int pop() {
+        int val = head_->val;
+        ListNode* oldHead = head_;
+        head_ = head_->next;
+        delete oldHead;
+        return val;
+    }
+    bool isEmpty() {return head_ == nullptr;}
+private:
+    struct ListNode {
+        int val;
+        ListNode* next;
+    };
+    ListNode* head_;
+};</pre></code-box>
+
+                
+
+
+        </div> <!-- /.content -->
+        <script type="text/javascript" src="../codeblock.js"></script>
+    </body>
+</html>
