@@ -202,7 +202,7 @@ int main() {
 
             <p>
                 You do not need to worry about making your code run efficiently for this problem. (It's a good exercise to think about that, but 
-                on a test you just need to write code that works in theory.)
+                on a test you just need to write code that works in theory, unless the problem specifically asks for efficiency.)
             </p>
 
             <p>
@@ -306,6 +306,334 @@ int main() {
             the value that <code>x</code> and <code>y</code> now both point at, so subsequently <code>p</code> and <code>q</code> both point to 
             <code>b</code>, which holds the value 9.
         </p>
+
+
+        <soln-h2></soln-h2>
+
+            <p>Consider the following code:</p>
+
+            <code-box data-codeId="Problem10"><pre>#include &lt;iostream>
+
+int main() {
+    int n;
+    std::cout << "Enter an integer: ";
+    std::cin >> n;
+    int* arr = n < 0 ? nullptr : new int[n];
+    for (int i = 0; i < n; ++i) 
+        arr[i] = i*i;
+    for (int* p = arr; p && *p < 40; p += 2)
+        std::cout << *p << std::endl;
+    delete[] arr;
+    return 0;
+}</pre></code-box>
+
+            <p>
+                (a) If the user enters 10, what does this program print?
+            </p>
+
+            <p>
+                <b>Answer:</b> 
+            </p>
+            <p><code><pre>0
+4
+16
+36</pre></code></p>
+
+            <p>
+                The code fills the array <code>arr</code> with perfect squares from 0<sup>2</sup> to to (n-1)<sup>2</sup>, 
+                The loop initializes <code>p = arr</code> to point to <code>arr[0]</code>, and then after each iteration it 
+                points to <code>arr[2]</code>, <code>arr[4]</code>, etc. In other words, the pointer successively points to 
+                each even square. The loop stops when <code>*p < 40</code> is false; the first even square for which this is 
+                false is 64, so the loop prints 0, 4, 16, and 36.
+            </p>
+
+            <p>
+                (b) Are there any integers that the user could enter which would cause this program to have 
+                undefined behavior? If not, explain why not. If so, explain which inputs cause undefined 
+                behavior.
+            </p>
+
+            <p>
+                <b>Answer:</b> The behavior of the program is undefined if the user enters any integer from 0 to 8 
+                (inclusive). 
+            </p> 
+            <p>
+                Remember that the loop continues until <code>p</code> points to a number greater than 40. 
+                As discussed above, <code>p</code> points to even squares in <code>arr</code>, so the loop will terminate 
+                before <code>p</code> points outside of <code>arr</code> as long as <code>arr</code> contains an even square 
+                greater than or equal to 40. This is the case if n > 9. If 0 <= n <= 8, then <code>arr</code> does not contain 
+                an even square that stops the iteration, so <code>p</code> continues beyond the bounds of the array, leading to 
+                undefined behavior.
+            </p>
+            <p>
+                Note that entering a negative number does <b>not</b> result in undefined behavior. In that case, <code>p</code>
+                is initialized as a null pointer, so <code>p && *p < 40</code> evaluates to <code>false</code> before the first 
+                iteration of the loop, so the program never attempts to dereference a null pointer. (Note also that evaluating 
+                <code>p && *p < 40</code> doesn't involve dereferencing a null pointer due to short-circuit evaluation). Finally, 
+                <code>delete[] arr</code> is not a problem in this case either, because deleting a null pointer is defined as 
+                doing nothing.
+            </p>
+
+
+            <soln-h2></soln-h2>
+
+            <p>Consider the following code:</p>
+
+            <code-box data-codeId="Problem11"><pre>#include &;lt;iostream>
+#include &lt;vector>
+#include &lt;algorithm>
+
+int f(std::vector&lt;int> v, int n = -1) {
+    if (n < 0 || n > v.size()) 
+        n = v.size();
+    if (n == 0) return 0;
+    return f(v, n-1) + std::count_if(v.begin(), v.begin() + n, [](int a) {return a % 2 == 0;});
+}
+
+int main() {
+    std::vector&lt;int> v{42, 5, 1729, -6, 3, 18};
+    std::cout << f(v) << std::endl;
+    return 0;
+}</pre></code-box>
+
+            <p>(a) What does the code print?</p>
+
+            <p><b>Answer: </b> <code>10</code></p>
+
+            <p>
+                Let <code>c(v, n)</code> denote the number of even entries among the first <code>n</code> 
+                entries of <code>v</code>. Then <code>f(v, n)</code> returns <code>f(v, n-1) + c(v, n)</code>. 
+                Continuing recursively, this is <code>f(v, n-2) + c(v, n-1) + c(v, n)</code>, and so on until 
+                <code>c(v, 1) + ... + c(v, n)</code>. In the above example, this is 1 + 1 + 1 + 2 + 2 + 3, which is 10.
+            </p>
+
+            <p>
+                Alternatively, note that in the formula <code>c(v, 1) + ... + c(v, n)</code>, if <code>v[i]</code> is even, 
+                then it is counted by <code>c(v, i+1)</code> through <code>c(v, n)</code>, i.e., it is counted <code>n-i</code> 
+                times. Therefore <code>f(v, n)</code> can also be expressed as the sum of <code>n-i</code> for those values of 
+                <code>i</code> for which <code>v[i]</code> is even. In the above example, <code>v[i]</code> is even when 
+                <code>i</code> is 0, 3, or 5, so <code>f(v)</code> equals (6 - 0) + (6 - 3) + (6 - 5) = 6 + 3 + 1 = 10.
+            </p>
+
+            <p>
+                (b) Can you rewrite the code for <code>f</code> to do the same thing without using recursion? 
+                (At least not explicitly -- if you want, you can call standard library algorithms without 
+                worrying about how they're implemented.)
+            </p>
+
+            <p>
+                <b>Answer:</b> Three solutions are provided below. The first is based on the formula 
+                <code>c(v, 1) + ... + c(v, n)</code> described in the answer to part (a). The other two are based 
+                on the "sum of <code>n-i</code>" formula described in the alternative solution to part (a); one uses 
+                a straightforward loop, while the other uses <code>std::accumulate</code>.
+            </p>
+
+            <code-box data-codeId="Problem11Answer1"><pre>#include &lt;vector>
+#include &lt;algorithm>
+
+int f(const std::vector&lt;int>& v, int n = -1) {
+    if (n < 0 || n > v.size()) 
+        n = v.size();
+    int total{0};
+    for (int i = 1; i <= n; ++i) {
+        total += std::count_if(v.begin(), v.begin() + i, [](int a) {return a % 2 == 0;});
+    }
+    return total;
+}</pre></code-box>
+
+            <p></p>
+
+            <code-box data-codeId="Problem11Answer2"><pre>#include &lt;vector>
+#include &lt;algorithm>
+
+int f(const std::vector&lt;int>& v, int n = -1) {
+    if (n < 0 || n > v.size()) 
+        n = v.size();
+    int total{0};
+    for (int i = 0; i < n; ++i) {
+        if (v[i] % 2 == 0) {
+            total += n - i;
+        }
+    }
+    return total;
+}</pre></code-box>
+
+            <p></p>
+
+            <code-box data-codeId="Problem11Answer3"><pre>#include &lt;vector>
+#include &lt;numeric>
+
+int f(const std::vector&lt;int>& v, int n = -1) {
+    if (n < 0 || n > v.size()) 
+        n = v.size();
+    int i = 0;
+    return std::accumulate(v.begin(), v.begin() + n, 0, [&i, n](int acc, int val) 
+        {int result = acc + (val % 2 == 0 ? (n - i) : 0); ++i; return result;});
+}</pre></code-box>
+
+
+            <soln-h2></soln-h2>
+
+            <p>
+                What does the below code print?
+            </p>
+
+            <code-box data-codeId="Problem12"><pre>#include &lt;iostream>
+#include &lt;vector>
+
+int main() {
+    int n = 0;
+    std::vector&lt;int> v{1, 3, 5, 7, 2, 4, 6, 8};
+    auto f = [&n, &v](int i) { return v[i] > n++; };
+    for (int i = 0; i < v.size(); ++i) {
+        std::cout << f(i);
+    }
+    std::cout << std::endl;
+    return 0;
+}</pre></code-box>
+
+            <p><b>Answer:</b> <code>11110001</code></p>
+
+            <p>
+                Note that <code>f(i)</code> returns <code>true</code> if <code>v[i] > n</code> and then increments <code>n</code>
+                <i>after</i> the comparison. Thus, in the above code, <code>f(i)</code> always checks whether <code>v[i] > i</code>. 
+                This is true for <code>i = 0, 1, 2, 3, 7</code>.
+            </p>
+
+
+            <soln-h2></soln-h2>
+
+            <p>
+                The below code is supposed to calculate the average of numbers entered by the user, but it 
+                has three bugs. Identify the bugs and explain how to correct them (with as few changes as 
+                possible).
+            </p>
+
+            <wrong-code-box data-codeId="Problem13"><pre>#include &lt;iostream>
+
+double average(int arr[]) {
+    int size = arr.size();
+    int total = 0;
+    for (int i = 0; i < size; ++i) {
+        total += arr[i];
+    }
+    return total / size;
+}
+
+int main() {
+    int n;
+    std::cout << "Enter a positive integer: ";
+    std::cin >> n;
+    int arr[n];
+    std::cout << "Enter n integers: ";
+    for (int i = 0; i < n; ++i) {
+        std::cin >> arr[i];
+    }
+    std::cout << average(arr) << std::endl;
+    return 0;
+}</pre></wrong-code-box>
+
+            <p><b>Answer:</b></p>
+
+            <code-box data-codeId="Problem13Answer"><pre>#include &lt;iostream>
+
+double average(int arr[], int size) { // Must pass size as argument
+    int total = 0;
+    for (int i = 0; i < size; ++i) {
+        total += arr[i];
+    }
+    return static_cast<double>(total) / size; // Must cast to double before dividing
+}
+
+int main() {
+    int n;
+    std::cout << "Enter a positive integer: ";
+    std::cin >> n;
+    int* arr = new int[n]; // Since n is not known at compile time, must allocate on heap
+    std::cout << "Enter n integers: ";
+    for (int i = 0; i < n; ++i) {
+        std::cin >> arr[i];
+    }
+    std::cout << average(arr, n) << std::endl;
+    delete[] arr; // Now that arr is on the heap, it should be deleted
+    return 0;
+}</pre></code-box>
+
+
+            <soln-h2></soln-h2>
+
+            <p>
+                Define a function <code>sortByDistance</code> which accepts two arguments, a 
+                <code>std::vector&lt;double> v</code> and a <code>double target</code>, and
+                sorts the elements of <code>v</code> by their distance from <code>target</code>. 
+                Sort from closest to furthest. For example, if <code>v</code> is 
+                <code>{2.0, -1.1, 5.4, 1.9}</code> and <code>target</code> is 3.2, then after 
+                calling <code>f(v, target)</code>, <code>v</code> should be <code>{2.0, 1.9, 5.4, -1.1}</code>.
+            </p>
+
+            <p>
+                Hint: You can access the absolute value function <code>std::abs</code> from the <code>cmath</code> 
+                header.
+            </p>
+
+            <p><b>Answer:</b></p>
+
+            <code-box data-codeId="Problem14"><pre>#include &lt;vector>
+#include &lt;cmath>
+#include &lt;algorithm>
+
+void sortByDistance(std::vector&lt;double>& v, double target) {
+    auto f = [target](double x, double y) {return std::abs(x - target) < std::abs(y - target);};
+    std::sort(v.begin(), v.end(), f);
+}</pre></code-box>
+
+
+            <soln-h2></soln-h2>
+
+            <p>
+                Define a function <code>longestSubstringWithoutPeriods</code> which accepts as argument a 
+                <code>std::string s</code> and returns the longest substring of <code>s</code> that 
+                does not contain any periods. (In the event of a tie, you may choose any of the options.)
+            </p>
+
+            <p>
+                For example, if <code>s</code> is <code>"www.google.com"</code>, the function should return 
+                <code>"google"</code>; if <code>s</code> is <code>"abcdefg"</code>, the function should return 
+                <code>"abcdefg"</code>.
+            </p>
+
+
+            <p>
+                <b>Answer:</b> Perhaps the easiest way to solve the problem is with recursion. Find the first 
+                period-free substring, then recursively find the longest period-free substring from the rest of 
+                <code>s</code>, and compare the two options to see which is longest. Two solutions are provided 
+                below using this algorithm, one via the <code>find</code> method of the <code>string</code> 
+                class, and the other via <code>std::find</code>:
+            </p>
+
+
+            <code-box data-codeId="Problem15Solution1"><pre>#include &lt;string>
+
+std::string longestSubstringWithoutPeriods(const std::string& s) {
+    int size = s.find("."); // Size of first substring
+    if (size == std::string::npos) return s;
+    std::string other = longestSubstringWithoutPeriods(s.substr(size + 1));
+    return size >= other.size() ? s.substr(0, size) : other;
+}</pre></code-box>
+
+            <p></p>
+
+            <code-box data-codeId="Problem15Solution2"><pre>#include &lt;string>
+#include &lt;algorithm>
+
+std::string longestSubstringWithoutPeriods(const std::string& s) {
+    auto it = std::find(s.begin(), s.end(), '.');
+    if (it == s.end()) return s;
+    int size = it - s.begin(); // Size of first substring
+    std::string other = longestSubstringWithoutPeriods2(s.substr(size + 1));
+    return size >= other.size() ? s.substr(0, size) : other;
+}</pre></code-box>
+
 
         </div> <!-- /.content -->
         <script type="text/javascript" src="codeblock.js"></script>

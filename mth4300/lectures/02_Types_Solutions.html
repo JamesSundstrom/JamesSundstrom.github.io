@@ -1,0 +1,73 @@
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Lecture 02 Solutions</title>
+        <link rel="stylesheet" href="../style.css">
+    </head>
+    <body>
+        <div class="top-bar"><a href="../mth4300.html">🏠 Back to Math 4300 homepage</a>
+        </div>
+        <div class="content">
+            <h1>Lecture 02 Solutions</h1>
+
+            <h2 id="distance">
+                Distance Exercise
+                <span style="font-weight: normal; font-size: 1rem;">
+                    (<a href="02_Types.html#distance">Back to lecture</a>)
+                </span>
+            </h2>
+
+            <p>
+                Write a program which asks the user to enter the x- and y-coordinates of two points, and prints the distance 
+                between the points.
+            </p>
+            <p>Hints:</p>
+            <ul>
+                <li>You can import <code>std::sqrt</code> from the <code>cmath</code> library.</li>
+                <li>You can use <i>double</i> (which we'll discuss below) as the type for a variable that represents a real number.</li>
+            </ul>
+
+            <p>
+                <b>Answer:</b>
+            </p>
+
+            <code-box data-codeId="distanceSolution"><pre>#include &lt;iostream&gt;
+#include &lt;cmath&gt;
+
+int main() {
+    double x0, y0, x1, y1;
+    std::cout << "Enter the x- and y-coordinates of the first point, separated by a space: ";
+    std::cin >> x0 >> y0;
+    std::cout << "Enter the x- and y-coordinates of the second point, separated by a space: ";
+    std::cin >> x1 >> y1;
+    double dx{x1 - x0}, dy{y1 - y0};
+    double dist{std::sqrt(dx*dx + dy*dy)};
+    std::cout << "The distance between the points is " << dist << std::endl;
+    return 0;
+}</pre></code-box>
+
+        <h2 id="char">
+            Char Exercise
+            <span style="font-weight: normal; font-size: 1rem;">
+                (<a href="02_Types.html#char">Back to lecture</a>)
+            </span>
+        </h2>
+
+        <p>What range of values can be stored in a signed char? An unsigned char?</p>
+        
+        <p>
+            <b>Solution:</b> Since a char is one byte (8 bits), a signed char has 7 non-sign bits, so the maximum value 
+            is 2<sup>7</sup> - 1 = 127 and the minimum value is -2<sup>7</sup> = -128. Thus the range is 
+            [-128, 127].
+        </p>
+
+        <p>
+            Similarly, an unsigned char has a maximum value 2<sup>8</sup> - 1 = 255 and the minimum value is, of course 0. 
+            Thus the range is [0, 255].
+        </p>
+
+        </div> <!-- /.content -->
+        <script type="text/javascript" src="../codeblock.js"></script>
+    </body>
+</html>

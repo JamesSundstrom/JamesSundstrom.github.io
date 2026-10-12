@@ -117,7 +117,12 @@ int main() {
             clear the newline.
         </p>
 
-        <h2>Exercise</h2>
+        <h2 id="distance">
+            Distance Exercise
+            <span style="font-weight: normal; font-size: 1rem;">
+                (<a href="02_Types_Solutions.html#distance">Solution</a>)
+            </span>
+        </h2>
 
         <p>
             Write a program which asks the user to enter the x- and y-coordinates of two points, and prints the distance 
@@ -185,8 +190,8 @@ int main() {
         <h2>int</h2>
 
         <p>
-            There are several types in C++ that can be used to store integers, but probably the most commonly-used one is int. 
-            The C++ standard says that the compiler is required to allocate at least two bytes to store an int, but most compilers
+            There are several types in C++ that can be used to store integers, but probably the most commonly-used one is <code>int</code>. 
+            The C++ standard says that the compiler is required to allocate at least two bytes to store an <code>int</code>, but most compilers
             allocate 4 bytes. If you want to know how many bytes your compiler uses, run the below code:
         </p>
 
@@ -229,7 +234,7 @@ int main() {
             For most real-world applications, you'll never need to deal with numbers larger than 2,147,483,647, which can make 
             it easy to forget that there's an int limit on the rare occasions when you are using huge numbers. Any time you're 
             working with big integers, make sure you take a moment to check whether those numbers will fit inside an int (or 
-            just use a bigger type to be safe). For example, the below program prints the wrong answer for 13 factorial. The code 
+            just use a bigger type to be safe). For example, the below program prints the wrong answer for 13!. The code 
             is correct, except that an int isn't big enough to hold the number we want:
         </p>
 
@@ -357,9 +362,14 @@ int main() {
             declare a variable "signed char" or "unsigned char" explicitly.
         </p>
 
-        <h2>Exercise</h2>
+        <h2 id="char">
+            Char Exercise
+            <span style="font-weight: normal; font-size: 1rem;">
+                (<a href="02_Types_Solutions.html#char">Solution</a>)
+            </span>
+        </h2>
 
-        What range of values can be stored in a signed char? An unsigned char?
+        <p>What range of values can be stored in a signed char? An unsigned char?</p>
         
         <h2>bool</h2>
 

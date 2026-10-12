@@ -329,7 +329,8 @@ int main() {
                              {"Eve", 8},
                              {"Fred", 5},
     };
-    std::stable_sort(v.begin(), v.end(), [](const Player& a, const Player& b){ return a.score > b.score; });
+    std::stable_sort(v.begin(), v.end(), 
+        [](const Player& a, const Player& b){ return a.score > b.score; });
     for (const Player& p : v) {
         std::cout << p.score << ' ' << p.name << '\n'; // Order: Bob, Alice, Eve, Charlie, Dan, Fred
     }
@@ -362,7 +363,8 @@ int main() {
                              {"Fred", 5},
     };
     std::sort(v.begin(), v.end(), 
-        [](const Player& a, const Player& b){return a.score > b.score || (a.score == b.score && a.name < b.name);});
+        [](const Player& a, const Player& b)
+            {return a.score > b.score || (a.score == b.score && a.name < b.name);});
     for (const Player& p : v) {
         std::cout << p.score << ' ' << p.name << '\n'; // Order: Bob, Alice, Eve, Charlie, Dan, Fred
     }
@@ -569,7 +571,12 @@ int main() {
 }</pre></code-box>
 
 
-        <h2>Exercises</h2>
+            <h2 id="Exercises">
+                Exercises
+                <span style="font-weight: normal; font-size: 1rem;">
+                    (<a href="07_Algorithms_Solutions.html#Exercises">Solutions</a>)
+                </span>
+            </h2>
 
         <ol>
             <li>
@@ -596,6 +603,7 @@ int main() {
     std::cout << std::endl;
     return 0;
 }</pre></code-box>
+            <p></p>
             </li>
             <li>
                 Write a function <code>countAboveAverage</code> that takes as argument a <code>std::vector&lt;int></code> 
@@ -617,7 +625,7 @@ int main() {
     std::cout << countAboveAverage(v3) << std::endl; // 2
     return 0;    
 }</pre></code-box>
-
+            <p></p>
             </li>
             <li>
                 Using only <code>std::accumulate</code>, write a function <code>toBinary</code> that takes as 

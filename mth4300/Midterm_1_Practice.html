@@ -129,7 +129,7 @@ int main() {
 
             <p>
                 You do not need to worry about making your code run efficiently for this problem. (It's a good exercise to think about that, but 
-                on a test you just need to write code that works in theory.)
+                on a test you just need to write code that works in theory, unless the problem specifically asks for efficiency.)
             </p>
 
 
@@ -179,6 +179,152 @@ int main() {
     return 0;
 }</pre></code-box>
 
+
+            <prob-h2></prob-h2>
+
+            <p>Consider the following code:</p>
+
+            <code-box data-codeId="Problem10"><pre>#include &lt;iostream>
+
+int main() {
+    int n;
+    std::cout << "Enter an integer: ";
+    std::cin >> n;
+    int* arr = n < 0 ? nullptr : new int[n];
+    for (int i = 0; i < n; ++i) 
+        arr[i] = i*i;
+    for (int* p = arr; p && *p < 40; p += 2)
+        std::cout << *p << std::endl;
+    delete[] arr;
+    return 0;
+}</pre></code-box>
+
+            <p>
+                (a) If the user enters 10, what does this program print?
+            </p>
+
+            <p>
+                (b) Are there any integers that the user could enter which would cause this program to have 
+                undefined behavior? If not, explain why not. If so, explain which inputs cause undefined 
+                behavior.
+            </p>
+
+
+            <prob-h2></prob-h2>
+
+            <p>Consider the following code:</p>
+
+            <code-box data-codeId="Problem11"><pre>#include &lt;iostream>
+#include &lt;vector>
+#include &lt;algorithm>
+
+int f(const std::vector&lt;int>& v, int n = -1) {
+    if (n < 0 || n > v.size()) 
+        n = v.size();
+    if (n == 0) return 0;
+    return f(v, n-1) + std::count_if(v.begin(), v.begin() + n, [](int a) {return a % 2 == 0;});
+}
+
+int main() {
+    std::vector&lt;int> v{42, 5, 1729, -6, 3, 18};
+    std::cout << f(v) << std::endl;
+    std::cout << g(v) << std::endl;
+    return 0;
+}</pre></code-box>
+
+            <p>(a) What does the code print?</p>
+
+            <p>
+                (b) Can you rewrite the code for <code>f</code> to do the same thing without using recursion? 
+                (At least not explicitly -- if you want, you can call standard library algorithms without 
+                worrying about how they're implemented.)
+            </p>
+
+
+            <prob-h2></prob-h2>
+
+            <p>
+                What does the below code print?
+            </p>
+
+            <code-box data-codeId="Problem12"><pre>#include &lt;iostream>
+#include &lt;vector>
+
+int main() {
+    int n = 0;
+    std::vector&lt;int> v{1, 3, 5, 7, 2, 4, 6, 8};
+    auto f = [&n, &v](int i) { return v[i] > n++; };
+    for (int i = 0; i < v.size(); ++i) {
+        std::cout << f(i);
+    }
+    std::cout << std::endl;
+    return 0;
+}</pre></code-box>
+
+
+            <prob-h2></prob-h2>
+
+            <p>
+                The below code is supposed to calculate the average of numbers entered by the user, but it 
+                has three bugs. Identify the bugs and explain how to correct them (with as few changes as 
+                possible).
+            </p>
+
+            <wrong-code-box data-codeId="Problem13"><pre>#include &lt;iostream>
+
+double average(int arr[]) {
+    int size = arr.size();
+    int total = 0;
+    for (int i = 0; i < size; ++i) {
+        total += arr[i];
+    }
+    return total / size;
+}
+
+int main() {
+    int n;
+    std::cout << "Enter a positive integer: ";
+    std::cin >> n;
+    int arr[n];
+    std::cout << "Enter n integers: ";
+    for (int i = 0; i < n; ++i) {
+        std::cin >> arr[i];
+    }
+    std::cout << average(arr) << std::endl;
+    return 0;
+}</pre></wrong-code-box>
+
+
+            <prob-h2></prob-h2>
+
+            <p>
+                Define a function <code>sortByDistance</code> which accepts two arguments, a 
+                <code>std::vector&lt;double> v</code> and a <code>double target</code>, and
+                sorts the elements of <code>v</code> by their distance from <code>target</code>. 
+                Sort from closest to furthest. For example, if <code>v</code> is 
+                <code>{2.0, -1.1, 5.4, 1.9}</code> and <code>target</code> is 3.2, then after 
+                calling <code>f(v, target)</code>, <code>v</code> should be <code>{2.0, 1.9, 5.4, -1.1}</code>.
+            </p>
+
+            <p>
+                Hint: You can access the absolute value function <code>std::abs</code> from the <code>cmath</code> 
+                header.
+            </p>
+
+
+            <prob-h2></prob-h2>
+
+            <p>
+                Define a function <code>longestSubstringWithoutPeriods</code> which accepts as argument a 
+                <code>std::string s</code> and returns the longest substring of <code>s</code> that 
+                does not contain any periods. (In the event of a tie, you may choose any of the options.)
+            </p>
+
+            <p>
+                For example, if <code>s</code> is <code>"www.google.com"</code>, the function should return 
+                <code>"google"</code>; if <code>s</code> is <code>"abcdefg"</code>, the function should return 
+                <code>"abcdefg"</code>.
+            </p>
 
 
         </div> <!-- /.content -->

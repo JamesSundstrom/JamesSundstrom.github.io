@@ -1,0 +1,154 @@
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Lecture 04 Solutions</title>
+        <link rel="stylesheet" href="../style.css">
+    </head>
+    <body>
+        <div class="top-bar"><a href="../mth4300.html">🏠 Back to Math 4300 homepage</a>
+        </div>
+        <div class="content">
+            <h1>Lecture 04 Solutions</h1>
+
+            <h2 id="exercises">
+                Exercises
+                <span style="font-weight: normal; font-size: 1rem;">
+                    (<a href="04_Functions.html#exercises">Back to lecture</a>)
+                </span>
+            </h2>
+
+            <ol>
+                <li>
+                    What does the below code print? Try to figure it out without running the code.
+                        <code-box data-codeId="referenceExercise"><pre>#include &lt;iostream&gt;
+
+int triple(int n) {
+    n *= 3;
+    return n;
+}
+
+int quadruple(int& n) {
+    n *= 4;
+    return n;
+}
+
+int main() {
+    int a{5}, b{6}, c, d;
+    c = triple(a);
+    d = quadruple(b);
+    std::cout << a << " " << b << " " << c << " " << d << std::endl; 
+    return 0;
+}</pre></code-box>
+
+                <p>
+                    <b>Answer:</b> <code>5 24 15 24</code>
+                </p>
+
+                <p>
+                    The function <code>triple</code> has no effect on its argument, since the argument is passed by value. 
+                    Hence after <code>c = triple(a)</code>, <code>a</code> is still 5 and <code>c</code> is 15. On the 
+                    other hand, <code>quadruple</code> does change its argument, so after <code>d = quadruple(b)</code>, 
+                    <code>b</code> and <code>d</code> are both 24.
+                </p>
+
+                </li>
+                <li>
+                    Define a function <code>withoutVowels(word)</code> that accepts as argument a string <code>word</code>
+                    and returns the string consisting of <code>word</code> with its vowels (A, E, I, O, U) removed. Your function 
+                    should not unnecessarily copy <code>word</code>, nor should it be able to modify the contents of <code>word</code>.
+
+                    <p><b>Answer:</b></p>
+
+                    <code-box data-codeId="withoutVowelsSolution"><pre>#include &lt;string&gt;
+
+bool isVowel(char c) {
+    if ('A' <= c && c <= 'Z') c = c - 'A' + 'a';
+    switch (c) {
+        case 'a':
+        case 'e':
+        case 'i':
+        case 'o':
+        case 'u':
+            return true;
+        default:
+            return false;
+    }
+}
+
+std::string withoutVowels(const std::string& word) {
+    std::string s{""};
+    for (char c : word) {
+        if (!isVowel(c)) s += c;
+    }
+    return s;
+}</pre></code-box>
+                    
+
+                <p></p>
+                </li>
+                <li>
+                    Using your previous answer, define a <code>void</code> function <code>removeVowels(words)</code> which accepts 
+                    as argument a <code>std::vector&lt;std::string></code> called <code>words</code> and removes all the vowels from 
+                    the words in the vector.
+
+                    <p><b>Answer:</b></p>
+
+                    <code-box data-codeId="removeVowels"><pre>#include &lt;string&gt;
+#include &lt;vector&gt;
+
+void removeVowels(std::vector<std::string>& words) {
+    for (int i = 0; i < words.size(); ++i)
+        words[i] = withoutVowels(words[i]);
+}</pre></code-box>
+
+                </li>
+            </ol>
+
+
+            <h2 id="recursionExercise">
+                Recursion Exercise
+                <span style="font-weight: normal; font-size: 1rem;">
+                    (<a href="04_Functions.html#recursionExercise">Back to lecture</a>)
+                </span>
+            </h2>
+
+        <p>
+            Consider the sequence a<sub>n</sub> of real numbers defined by a<sub>0</sub> = 1 and a<sub>n+1</sub> = 1 + 1/a<sub>n</sub>.
+            Define a function <code>a(n)</code> that calculates this sequence. Use it to estimate the limit of a<sub>n</sub> as n goes 
+            to infinity.
+        </p>
+
+        <p>
+            If you finish before your classmates, write a different version of a<sub>n</sub>, so that you have one version of the code 
+            using recursion and one using a loop. Which one do you prefer?
+        </p>
+
+        <p>
+            <b>Answers:</b> The recursive and non-recursive solutions are shown below.
+        </p>
+
+        <code-box data-codeId="phiRecursive"><pre>double a(int n) {
+    return n <= 0 ? 1.0 : 1.0 + 1.0 / a(n - 1);
+}</pre></code-box>
+
+        <p></p>
+
+        <code-box data-codeId="phiLoop"><pre>double a(int n) {
+    double val{1.0};
+    for (int i = 0; i < n; ++i)
+        val = 1.0 + 1.0 / val;
+    return val;
+}</pre></code-box>
+
+        <p>
+            If you evaluate <code>a(n)</code> for a large value of <code>n</code> (say, at least 12), you'll get a value 
+            approximately 1.61803, so you can conclude that the limit of a<sub>n</sub> is approximately 1.61803. In fact, 
+            the exact value of the limit is (1 + sqrt(5)) / 2 = 1.61803..., which is the famous Golden Ratio.
+        </p>
+
+
+        </div> <!-- /.content -->
+        <script type="text/javascript" src="../codeblock.js"></script>
+    </body>
+</html>
