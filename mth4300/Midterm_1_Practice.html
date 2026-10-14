@@ -421,6 +421,62 @@ int main() {
                 Vandermonde matrix (as a two-dimensional C-style array).
             </p>
 
+            <prob-h2></prob-h2>
+
+            <p>
+                Define a function <code>middle(s)</code> that takes as argument a <code>std::string s</code> and returns <code>s</code> with its 
+                first two and last two characters removed. (If the length of <code>s</code> is less than 5, this should return the empty string.)
+            </p>
+
+            <prob-h2></prob-h2>
+
+            <p>
+                What does the below code print?
+            </p>
+
+            <code-box data-codeId="Problem19"><pre>#include &lt;iostream>
+
+int main() {
+    int arr[5] = {2, 3, 5, 7, 11};
+    std::cout << *(arr + 3) + *arr + 3 << std::endl;
+    return 0;
+}</pre></code-box>
+
+
+            <prob-h2></prob-h2>
+
+            <p>
+                (a) In the below code, what (if anything) needs to replace "/* Your code here */" to correctly
+                free the memory allocated for <code>s</code> and <code>p</code>?
+            </p>
+
+            <p>
+                (b) What does the code print?
+            </p>
+
+            <code-box data-codeId="Problem20"><pre>#include &lt;iostream>
+#include &lt;string>
+
+std::string* screams(int min, int max) {
+    int n = max - min + 1;
+    std::string* s = new std::string[n];
+    s[0] = std::string(min, 'a');
+    for (int i = 1; i < n; ++i) {
+        s[i] = s[i - 1] + 'a';
+    }
+    return s;
+}
+
+int main() {
+    std::string* s = screams(3, 6);
+    std::string* p = s + 2;
+    std::cout << p->size() << std::endl;
+    
+    /* Your code here */
+
+    return 0;
+}</pre></code-box>
+
 
         </div> <!-- /.content -->
         <script type="text/javascript" src="codeblock.js"></script>
