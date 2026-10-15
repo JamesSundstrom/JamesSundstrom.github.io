@@ -478,6 +478,38 @@ int main() {
 }</pre></code-box>
 
 
+            <prob-h2></prob-h2>
+
+            <p>
+                (a) In the below code, which line(s) of code will not compile?
+            </p>
+
+            <p>
+                (b) After you remove the invalid lines, what does the remaining code print?
+            </p>
+
+            <wrong-code-box data-codeId="Problem21"><pre>#include &lt;iostream>
+#include &lt;string>
+
+int f(int* const p) {
+    *p += 5;
+    return *p;
+}
+
+int main() {
+    int x{3}, y{4}, z{5};
+    const int w{6};
+    int *a = &x;
+    const int* b = &x;
+    int* const c = &w;
+    const int* d = &z;
+    d = a;
+    y = f(a);
+    z = f(d);
+    std::cout << x << y << z << std::endl;
+    return 0;
+}</pre></wrong-code-box>
+
         </div> <!-- /.content -->
         <script type="text/javascript" src="codeblock.js"></script>
         <script type="text/javascript" src="practice.js"></script>

@@ -791,7 +791,75 @@ int main() {
             </p>
         
 
+            <soln-h2></soln-h2>
 
+            <p>
+                (a) In the below code, which line(s) of code will not compile?
+            </p>
+
+            <p>
+                (b) After you remove the invalid lines, what does the remaining code print?
+            </p>
+
+            <wrong-code-box data-codeId="Problem21"><pre>#include &lt;iostream>
+#include &lt;string>
+
+int f(int* const p) {
+    *p += 5;
+    return *p;
+}
+
+int main() {
+    int x{3}, y{4}, z{5};
+    const int w{6};
+    int *a = &x;
+    const int* b = &x;
+    //int* const c = &w;
+    const int* d = &z;
+    int* const e = &w;
+    //c = &z;
+    y = f(a);
+    z = f(d);
+    std::cout << x << y << z << std::endl;
+    return 0;
+}</pre></wrong-code-box>
+
+            <p><b>Answer:</b></p>
+
+            <p>
+                (a) The invalid lines are commented out below. Make sure you understand why they're invalid, and why the other 
+                lines are valid!
+            </p>
+
+            <code-box data-codeId="Problem21Solution"><pre>#include &lt;iostream>
+#include &lt;string>
+
+int f(int* const p) {
+    *p += 5;
+    return *p;
+}
+
+int main() {
+    int x{3}, y{4}, z{5};
+    const int w{6};
+    int *a = &x;
+    const int* b = &x;
+    //int* const c = &w; // w is a const int, but c is not declared as pointing to const int
+    const int* d = &z;
+    d = a;
+    y = f(a);
+    //z = f(d); // Cannot provide constant pointer as non-constant pointer argument 
+    std::cout << x << y << z << std::endl;
+    return 0;
+}</pre></code-box>
+
+        <p>(b) <code>885</code></p>
+
+        <p>
+            When <code>f(a)</code> is called, it adds 5 to the value pointed to by <code>a</code>, which is <code>x</code>,
+            changing <code>x</code> to 8. Then 8 is also returned by the function and assigned to <code>y</code>. None of 
+            the valid code ever attempts to change <code>z</code>, so <code>z</code> still has its original value of 5.
+        </p>
 
         </div> <!-- /.content -->
         <script type="text/javascript" src="codeblock.js"></script>
