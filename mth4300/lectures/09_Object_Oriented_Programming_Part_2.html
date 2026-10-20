@@ -30,7 +30,7 @@
             <p>
                 Let's take our <code>Polynomial</code> example from the previous lecture. Suppose we 
                 have a file <code>program.cpp</code> that uses <code>Polynomial</code>, which is 
-                efined in a file <code>polynomial.cpp</code>. We want to be able to compile 
+                defined in a file <code>polynomial.cpp</code>. We want to be able to compile 
                 <code>program.cpp</code> in a way that doesn't depend on the implementation of 
                 <code>Polynomial</code>. At first, that might sound impossible: how can the compiler 
                 compile code that uses <code>Polynomial</code> without knowing what <code>Polynomial</code> 
@@ -70,7 +70,6 @@
             <code-box data-codeId="polynomialHExample"><pre>#pragma once
 
 #include &lt;vector>
-#include &lt;numeric>
 
 class Polynomial {
 public:
@@ -93,6 +92,7 @@ private:
             </p>
 
             <code-box data-codeId="polynomialCppExample"><pre>#include &lt;vector>
+#include &lt;numeric>
 #include "polynomial.h"
 
 // Copy the given coefficients vector into coefficients_, while also removing 
