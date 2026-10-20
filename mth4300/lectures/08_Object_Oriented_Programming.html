@@ -269,7 +269,7 @@ int main() {
 
         <p>
             Note that when we define the class methods outside the class, we use the scope resolution operator <code>::</code>
-            to tell the compiler tha tthis is <code>Counter</code>'s <code>getValue</code> method, not a separate function 
+            to tell the compiler that this is <code>Counter</code>'s <code>getValue</code> method, not a separate function 
             named <code>getValue</code>.
         </p>
 
@@ -325,7 +325,7 @@ int main() {
             class members this way, when possible. (Of course, you're allowed to mix the two -- have a member initializer list and 
             also write code in the body.) One possible source of confusion is that class members are always initialized in the order 
             they're declared, regardless of the order of the member initializer list. If some members are defined in terms of others, 
-            this could cause a bug if they're not initiallized in the order you're expecting. To avoid this issue, the member 
+            this could cause a bug if they're not initialized in the order you're expecting. To avoid this issue, the member 
             initializer list should always be written in the same order that the members are declared:
         </p>
 
@@ -599,7 +599,7 @@ int main() {
                     happens when the following code is run?
                 </p>
 
-                <code-box data-codeId="polynomialShallowCopyProblem"><pre>#include &lt;iostream>
+                <wrong-code-box data-codeId="polynomialShallowCopyProblem"><pre>#include &lt;iostream>
 #include &lt;vector>
 #include &lt;numeric>
 
@@ -647,7 +647,7 @@ int main() {
     surprise();
     std::cout << "Program finished" << std::endl;
     return 0;
-}</pre></code-box>
+}</pre></wrong-code-box>
 
             <p>
                 You may be surprised to learn that "Program finished" doesn't print, because the program crashes before it 

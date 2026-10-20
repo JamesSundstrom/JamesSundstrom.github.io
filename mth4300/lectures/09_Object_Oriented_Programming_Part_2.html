@@ -1,0 +1,550 @@
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Lecture 09: Object-Oriented Programming, Part 2</title>
+        <link rel="stylesheet" href="../style.css">
+    </head>
+    <body>
+        <div class="top-bar"><a href="../mth4300.html">🏠 Back to Math 4300 homepage</a>
+        </div>
+        <div class="content">
+            <h1>Lecture 09: Object-Oriented Programming, Part 2</h1>
+
+            <p>
+                Before we go back to learning about how to define classes, we're going to take a short 
+                break to discuss some other aspects of C++ that become important when defining 
+                classes.
+            </p>
+
+            <h2>Header files</h2>
+
+            <p>
+                Large-scale software projects can contain millions (or sometimes even billions) of 
+                lines of code. This leads to a practical problem: you don't want to wait for all 
+                that code to recompile every time you make a tiny change to it. For example, 
+                if you make a small change in the implementation of a class that you've defined, 
+                you wouldn't want to need to recompile all of the code that uses that class. 
+            </p>
+
+            <p>
+                Let's take our <code>Polynomial</code> example from the previous lecture. Suppose we 
+                have a file <code>program.cpp</code> that uses <code>Polynomial</code>, which is 
+                efined in a file <code>polynomial.cpp</code>. We want to be able to compile 
+                <code>program.cpp</code> in a way that doesn't depend on the implementation of 
+                <code>Polynomial</code>. At first, that might sound impossible: how can the compiler 
+                compile code that uses <code>Polynomial</code> without knowing what <code>Polynomial</code> 
+                does? But actually, we don't need to know everything about how <code>Polynomial</code> 
+                works: we only need to know what attributes and methods the <code>Polynomial</code> class 
+                has, so that the compiler knows, e.g., this is an <code>int</code>, this is a method that 
+                takes an <code>int</code> as an argument and returns another <code>int</code>, etc. The 
+                compiler doesn't need to know specifically how the methods are defined; it can simply 
+                leave a "note" to look up the implementation in another file, when needed. Therefore, the 
+                compiled code for <code>program.cpp</code> doesn't need to change whenever the implementation 
+                of <code>Polynomial</code> changes. Of course, the overall compiled program will need to change, 
+                but only the parts of it that come from <code>polynomial.cpp</code>, not the parts that come 
+                from <code>program.cpp</code>.
+            </p>
+
+            <p>
+                In other words, when the compiler tries to compile <code>program.cpp</code>, it only needs to 
+                know the declaration of the <code>Polynomial</code> class, not the actual definitions of the 
+                methods. We've already seen that these can be separated: the class can be declared without 
+                definitions, and then definitions given later. (Recall that this used the scope resolution 
+                operator <code>::</code>.) Therefore, we need to put the class declaration in one file, 
+                with the definitions in a separate file. The declaration goes in a <i>header</i> file, which 
+                has a <code>.h</code> extension, while the definitions go in a normal <code>.cpp</code> file. 
+                Then, any code that needs to use the class can <code>#include</code> the header file. This 
+                allows it to "know" about the class without "knowing" any of the implementation details.
+            </p>
+
+            <p>
+                Here's what that might look like for our <code>Polynomial</code> class so far. (We'll add 
+                more to it later.)
+            </p>
+
+            <p>
+                First, here's the header file <code>polynomial.h</code>:
+            </p>
+
+            <code-box data-codeId="polynomialHExample"><pre>#pragma once
+
+#include &lt;vector>
+#include &lt;numeric>
+
+class Polynomial {
+public:
+    Polynomial(const std::vector&lt;int>& coefficients);
+    Polynomial(const Polynomial& other);
+    Polynomial& operator=(const Polynomial& other);
+    ~Polynomial();
+    int eval(int n) const;
+private:
+    int degree_;
+    int* coefficients_;
+};</pre></code-box>
+
+            <p>
+                We'll discuss the meaning of "<code>#pragma once</code>" later.
+            </p>
+
+            <p>
+                Next, here's the <code>.cpp</code> file:
+            </p>
+
+            <code-box data-codeId="polynomialCppExample"><pre>#include &lt;vector>
+#include "polynomial.h"
+
+// Copy the given coefficients vector into coefficients_, while also removing 
+// any leading zeros so that degree_ is calculated correctly.
+Polynomial::Polynomial(const std::vector&lt;int>& coefficients) {
+    int i;
+    for (i=0; i < coefficients.size(); ++i) {
+        if (coefficients[i] != 0) {
+            break;
+        }
+    }
+    degree_ = coefficients.size() - i - 1;
+    coefficients_ = new int[degree_ + 1];
+    for (int j = i; j < coefficients.size(); ++j) {
+        coefficients_[j-i] = coefficients[j];
+    }
+}
+
+// Copy constructor
+Polynomial::Polynomial(const Polynomial& other)
+    : degree_(other.degree_), coefficients_(new int[degree_ + 1]) {
+    std::copy(&other.coefficients_, &other.coefficients_ + degree_ + 1, &coefficients_);
+}
+
+// Copy assignment
+Polynomial& Polynomial::operator=(const Polynomial& other) {
+    if (this == &other) {return *this;}
+    delete[] coefficients_;
+    degree_ = other.degree_;
+    coefficients_ = new int[degree_ + 1];
+    std::copy(&other.coefficients_, &other.coefficients_ + degree_ + 1, &coefficients_);
+    return *this;
+}
+
+Polynomial::~Polynomial() {
+    delete[] coefficients_;
+}
+
+int Polynomial::eval(int n) const {
+    auto f = [n](int acc, int val) { return acc * n + val; };
+    return std::accumulate(coefficients_, coefficients_ + degree_ + 1, 0, f);
+}</pre></code-box>
+
+            <p>
+                Notice that when you <code>#include</code> a locally-defined file, you put the name 
+                of the file in quotes rather than angle brackets.
+            </p>
+
+            <p>
+                Copy the above blocks of code and save them (in the same folder) as 
+                <code>polynomial.h</code> and <code>polynomial.cpp</code>.
+            </p>
+
+            <p>
+                Now we'll write and compile a program that uses the <code>Polynomial</code> 
+                class. For the sake of demonstration, we'll create a very simple test program that 
+                calculates <i>f(10)</i> where <i>f(x) = x<sup>2</sup> + 5x + 9</i>. Copy the below 
+                code and save it (in the same folder) as <code>test.cpp</code>:
+            </p>
+
+            <code-box data-codeId="programCpp"><pre>#include &lt;iostream>
+#include "polynomial.h"
+
+int main() {
+    Polynomial f({1, 5, 9});
+    std::cout << f.eval(10) << std::endl; // Should print 159
+    return 0;
+}</pre></code-box>
+
+            <p>
+                Now let's demonstrate that we can compile the two <code>.cpp</code> files 
+                separately. These won't be finished, executable programs: only 
+                <code>test.cpp</code> even has a <code>main()</code> to run, and it can't 
+                run without the definitions from <code>polynomial.cpp</code>, so we won't 
+                get an <code>.exe</code> file. Instead, we'll get <i>object files</i> 
+                (<code>.o</code>, or sometimes <code>.obj</code>). Finally, we'll need to 
+                link the object files to get our final <code>.exe</code> file.
+            </p>
+
+            <p>
+                The flag that tells the compiler to create an object file rather than an 
+                <code>.exe</code> file is <code>-c</code>. Run the following command in 
+                the terminal to create <code>polynomial.o</code>:
+            </p>
+
+            <code-box data-codeId="terminalCompilePolynomialO">
+                g++ -c polynomial.cpp
+            </code-box>
+
+            <p>
+                Next, run the following command in the terminal to create <code>test.o</code>:
+            </p>
+
+            <code-box data-codeId="terminalCompileTestO">
+                g++ -c test.cpp
+            </code-box>
+
+            <p>
+                If you look in the folder where you saved these files (or use the <code>ls</code> 
+                command in the terminal), you should see two new files <code>polynomial.o</code> 
+                and <code>test.o</code>. Finally, we can <i>link</i> them together to create 
+                <code>test.exe</code> using the following command:
+            </p>
+
+            <code-box data-codeId="terminalCompileTestExe">
+                g++ -o test polynomial.o test.o
+            </code-box>
+
+            <p>
+                If everything worked, you should now have a program <code>test.exe</code> which 
+                prints <code>159</code> when you run it.
+            </p>
+            <p>
+                A few comments about this:
+            </p>
+
+            <ul>
+                <li>
+                    Note that as promised earlier, changing <code>polynomial.cpp</code> would not require us 
+                    to recompile <code>test.cpp</code>: we were able to compile <code>test.o</code> without 
+                    making any reference to <code>polynomial.cpp</code>. Indeed, if we change the implementation 
+                    in <code>polynomial.cpp</code>, we'll need to recompile <code>polynomial.o</code>, and then 
+                    we'll need to re-link <code>polynomial.o</code> with <code>test.o</code> to create the 
+                    final <code>.exe</code>, but we won't need to recompile <code>test.o</code>.
+                </li>
+                <li>
+                    Of course, there's no need to limit yourself to two <code>.o</code> files. You can 
+                    list as many files as you need to link. A large software project will almost certainly 
+                    involve many, many files. (A project like that would also have a system in place to 
+                    recompile automatically, so you don't need to manually list everything.)
+                </li>
+                <li>
+                    You can still compile <code>.cpp</code> files to <code>.exe</code> directly. For example,
+                    the below command will create <code>test.exe</code> even if you haven't previously compiled 
+                    <code>polynomial.o</code> or <code>test.o</code>:
+                    <code-box data-codeId="terminalCompileTestExeUsingCppFiles">
+                        g++ -o test polynomial.cpp test.cpp
+                    </code-box>
+                    You can even mix-and-match. For example, if you have a pre-compiled <code>polynomial.o</code>
+                    and you've just written program <code>test.cpp</code>, you can create <code>test.exe</code>
+                    directly:
+                    <code-box data-codeId="terminalCompileTestExeUsingOneOAndOneCpp">
+                        g++ -o test polynomial.o test.cpp
+                    </code-box>
+
+                </li>
+            </ul>
+
+            <h2><code>#pragma once</code></h2>
+
+            <p>
+                Now we're prepared to talk about why "<code>#pragma once</code>" appeared at the top of our 
+                <code>.h</code> file. If you want to see what goes wrong without it, temporarily comment it 
+                out, and add an extra "<code>#include "polynomial.h"</code>" at the beginning of <code>test.cpp</code>, 
+                so that it's now included twice. If you try to compile the program again (using 
+                <code>g++ -o test polynomial.cpp test.cpp</code>), it won't work: you'll get something like 
+                "<code>error: redefinition of 'class Polynomial'</code>".
+            </p>
+
+            <p>
+                (After you've seen the error, I suggest you undo the changes you just made, so that everything works 
+                correctly in case we want to refer back to it again later.)
+            </p>
+
+            <p>
+                The problem goes back to something that we talked about on the first day of class. The <code>#include</code>
+                directive is not a "smart" command; it simply tells the preprocessor to copy the contents of the file and 
+                paste them directly into your file. If you <code>#include</code> the same file twice, the preprocessor will 
+                copy and paste it twice. In this case, that means that the preprocessor copies two declarations of the class 
+                <code>Polynomial</code>. The compiler sees two classes both being named <code>Polynomial</code> and raises 
+                an error. 
+            </p>
+
+            <p>
+                At first, this might sound like a minor problem: can't we simply not include the same file twice? But that's 
+                actually not so simple. For example, suppose you need to include <code>x.h</code> and <code>y.h</code>, 
+                but both of those files have <code>#include &lt;vector></code>. You'll inevitably end up including vector 
+                twice. If we didn't have a way to protect against that situation, it would be impossible to write any 
+                program that uses both <code>x.h</code> and <code>y.h</code>.
+            </p>
+
+            <p>
+                The line <code>#pragma once</code> that we saw in our <code>polynomial.h</code> file earlier provides that 
+                protection. Putting it that the beginning of your <code>.h</code> file tells the preprocessor to only include 
+                the code in this file once per compilation, no matter how many times the code tries to include it. 
+                Every <code>.h</code> file that you create should include such protection.
+            </p>
+
+            <p>
+                There are a couple small problems with using <code>#pragma once</code>:
+            </p>
+            <ul>
+                <li>
+                    Although virtually all modern compilers support it, it is technically non-standard. If you want to 
+                    guarantee that your code will work with all C++ compilers, you can't use <code>#pragma once</code>.
+                </li>
+                <li>
+                    It sometimes fails to recognize that two included files are the same file, and therefore does not 
+                    prevent the double-inclusion.
+                </li>
+            </ul>
+
+            <p>
+                Despite these issues, many programmers consider <code>#pragma once</code> to be good practice. (Others do 
+                not -- for example, the Google style guide forbids its use.) I'll allow you to use <code>#pragma once</code> 
+                in this course. But you should also be familiar with the older, "official" way of guarding against multiple 
+                includes. Here's what it would look like if we used that method on <code>polynomial.h</code>:
+            </p>
+
+            <code-box data-codeId="polynomialHExampleWithDefineIncludeGuard"><pre>#ifndef POLYNOMIAL_H
+#define POLYNOMIAL_H
+
+// Code goes here
+
+#endif</pre></code-box>
+
+            <p>
+                The <code>#define</code> directive is used to define <i>macros</i>, which the preprocessor will replace 
+                before compiling the code. For example, you could write "<code>#define PI 3.14159</code>", and then every 
+                instance of <code>PI</code> in your code will be automatically replaced with 3.14159. The use of macros is 
+                generally discouraged. (For example, you could simply define a constant variable <code>pi</code>, which would 
+                then be treated like a normal variable subject to the usual conveniences like typechecking.) 
+            </p>
+
+            <p>
+                In this case, we don't actually intend to use <code>POLYNOMIAL_H</code> as a macro; instead, we define it simply 
+                so that the compiler can see that it's defined. Notice that the entire <code>polynomial.h</code> file is written 
+                between <code>#ifndef POLYNOMIAL_H</code> and <code>#endif</code>. The directive <code>#ifndef</code> stands for 
+                "if not defined," meaning that the code in between is only included if <code>POLYNOMIAL_H</code> is not already 
+                defined. The first time <code>polynomial.h</code> gets included, <code>POLYNOMIAL_H</code> is undefined, so 
+                we pass the <code>#ifndef</code> check and include the code normally (along with the <code>#define POLYNOMIAL_H</code>.)
+                If <code>polynomial.h</code> ever gets included again, <code>POLYNOMIAL_H</code> will already be defined, so we won't 
+                pass the <code>#ifndef</code> check, and the duplicate code will be ignored.
+            </p>
+
+            <p>
+                The downside of this is that, using this technique, every <code>.h</code> file needs to use a different name for 
+                its guard. That's why the name is generally based on the filename (and in a bigger project, on the file location), 
+                such as our <code>POLYNOMIAL_H</code> above.
+            </p>
+
+            <p>
+                For this course, you can use this technique or <code>#pragma once</code> for your include guard. But you must 
+                always include one or the other in any <code>.h</code> file you define.
+            </p>
+
+            <p>
+                That covers what you need to know about creating a <code>.h</code> file. Now for something completely different...
+            </p>
+
+
+            <h2>Lvalues and Rvalues</h2>
+
+            <p>
+                Every expression in C++ is either an <i>lvalue</i> or an <i>rvalue</i>. The distinction is that an lvalue is 
+                something that can appear on the left side of an assignment operator, whereas an rvalue can only appear on 
+                the right side. An lvalue must have a name and a permanent address, so that it makes sense to assign a value 
+                to it. An rvalue is a temporary value with no name, such as a literal or a result of a calculation. Some examples:
+            </p>
+
+            <code-box data-codeId="lvaluesAndRvalues"><pre>int main() {
+    int x = 5; // x is an lvalue, 5 is an rvalue
+    int y = x + 1; // y is an lvalue, x is an lvalue, x + 1 is an rvalue
+    int* p = &x; // p is an lvalue, &x is an rvalue
+    *p = 42;     // *p is an lvalue, 42 is an rvalue
+}</pre></code-box>
+
+            <p>
+                You may have seen an error referring to lvalues and/or rvalues at some point. For example, if you add 
+                <code>&x = &y;</code> above and try to compile it, the compiler will probably give you an error message 
+                like "error: lvalue required as left operand of assignment"; this is a fancy way of saying that it 
+                doesn't make sense to assign to <code>&x</code> (because <code>&x</code> is an rvalue).
+            </p>
+
+            
+            <h2>Rvalue references</h2>
+
+            <p>
+                An <i>rvalue reference</i> can be declared just like a regular reference, except that it is declared 
+                with <code>&&</code> instead of <code>&</code>, and it must be bound to an rvalue. That may sound like 
+                a contradiction -- how can we have a reference to a temporary value that is about to be destroyed? 
+                We'll see later that they do serve a purpose. But first, a (somewhat contrived) example to illustrate 
+                rvalue references in action:
+            </p>
+
+            <code-box data-codeId="rvalueReferenceContrivedExample"><pre>#include &lt;iostream>
+
+void f(int& x) {
+    std::cout << "Permanent value: " << x << std::endl;
+}
+
+void f(int&& x) {
+    std::cout << "Temporary value: " << x << std::endl;
+}
+
+int main() {
+    int x{42};
+    f(x);    // Permanent value: 42
+    f(1729); // Temporary value: 1729
+}</pre></code-box>
+
+            <p>
+                When we call <code>f(x)</code>, the compiler uses the "Permanent value" version of f; when we 
+                call <code>f(1729)</code>, the compiler uses the "Temporary value" version. This is an 
+                example of <code>overloading</code>, which we'll discuss in more detail later; you can define 
+                multiple functions with the same name but different arguments, and the compiler will choose 
+                the appropriate one for whatever arguments it's given. In this case, this means that 
+                <code>f(x)</code> can use the usual pass-by-reference but can't use rvalue reference because 
+                <code>x</code> isn't an rvalue. Conversely, <code>f(1729)</code> can only use the 
+                rvalue-reference version but not the ordinary version, because it doesn't make sense to 
+                pass a literal by reference.
+            </p>
+
+            <p>
+                Aside: If we also defined a pass-by-value version <code>void f(int x)</code>, that would 
+                cause an error. For each function call, the compiler would have two usable options, and 
+                wouldn't know which one to choose.
+            </p>
+
+            <p>
+                But that still doesn't answer the main question -- why would we actually want separate 
+                functions depending whether the argument is an lvalue or an rvalue?
+            </p>
+
+            <h2>Move semantics</h2>
+
+            <p>
+                There's a specific situation where we can take advantage of the knowledge that a 
+                function argument is an rvalue -- when we're copying an object. Ordinarily, we would 
+                need to copy all of the object's data, so that we don't have two different objects 
+                pointing to the same data, which we've seen can lead to problems. But if we're 
+                copying an rvalue, then the copied object is about to be destroyed anyway, so 
+                we don't need to copy its resources; we can simply "steal" them.
+            </p>
+
+            <h2>Move constructor</h2>
+
+            <p>
+                The move constructor lets you construct a new instance of your object based on 
+                an existing instance. But the existing instance is an rvalue, so we can steal 
+                its resources as described above. We'll see how it works with our <code>Polynomial</code> 
+                class:
+            </p>
+
+            <code-box data-codeId="polynomialMoveConstructor"><pre>Polynomial::Polynomial(Polynomial&& other) noexcept
+    : degree_(other.degree_), coefficients_(other.coefficients_) {
+    other.degree_ = -1; 
+    other.coefficients_ = nullptr;
+}</pre></code-box>
+
+            <p>
+                What exactly is happening here?
+            </p>
+
+            <ul>
+                <li>
+                    First, the obvious: <code>degree_(other.degree_), coefficients_(other.coefficients_)</code> does 
+                    exactly what was promised, copying data from <code>other</code> into the new <code>Polynomial</code>. 
+                    Instead of creating a copy of the coefficient array, it simply takes possession of it.
+                </li>
+                <li>
+                    After that, we need to put <code>other</code> into a state where its destruction won't harm us. 
+                    Most importantly, we need to null out <code>other.coefficients</code>, so that it doesn't get 
+                    freed when the rvalue is destroyed, because it's now the coefficient array for our newly-constructed 
+                    <code>Polynomial</code>. Often nothing would go wrong if we didn't change <code>other.degree_</code>, 
+                    but we can be safe by putting it into a state where we don't expect there to be any coefficients, so 
+                    that we can't accidentally try to access its coefficients.
+                </li>
+                <li>
+                    The <code>noexcept</code> tells the compiler that this method can never throw an exception. (If a function 
+                    marked as <code>noexcept</code> throws an exception, the program terminates immediately.) It is important 
+                    to mark the move constructor and move assignment operator (which we'll see next) as <code>noexcept</code> 
+                    (assuming they can't throw exceptions, which they usually can't). This is because library containers liks 
+                    <code>std::vector</code> behave differently with classes whose move constructors can/can't throw exceptions; 
+                    we get better efficiency in the <code>noexcept</code> case, and we need to mark it as such to get that benefit.
+                </li>
+            </ul>
+            
+
+            <h2>
+                Move assignment operator
+            </h2>
+
+            <p>
+                Just as the copy constructor came with the copy assignment operator, now that we have a custom 
+                move constructor, we also need a custom move assignment operator:
+            </p>
+
+            <code-box data-codeId="polynomialMoveAssignmentOperator"><pre>Polynomial& Polynomial::operator=(Polynomial&& other) noexcept {
+    if (this == &other) return *this;
+    delete[] coefficients_;
+    degree_ = other.degree_;
+    coefficients_ = other.coefficients_;
+    other.degree_ = -1;
+    other.coefficients_ = nullptr;
+    return *this;
+}</pre></code-box>
+
+            <p>
+                Unsurprisingly, this looks a lot like the code for the move constructor, except that when we assign a new value 
+                to an existing object, we need to delete the old data first. 
+            </p>
+            
+            <h2><code>std::move</code></h2>
+
+            <p>
+                Hopefully you're convinced that being able to steal resources from an object that's about to be deleted is
+                a nice trick to make your code a little more efficient. So far, we can only steal from rvalues, because 
+                their imminent deletion is guaranteed. But C++ gives us as programmers a lot of power to handle memory 
+                ourselves -- you might guess that we have the ability to tell the compiler to steal from an lvalue, 
+                trusting us that the lvalue won't be used again (at least not until it's reinitialized). This can be 
+                done using <code>std::move</code>.
+            </p>
+
+            <p>
+                The function <code>std::move</code> can be included via <code>#include &lt;utility></code>. It 
+                casts an lvalue to an rvalue reference, so that you can steal resources from it. The name is a bit 
+                of a misnomer -- <code>std::move</code> doesn't move anything itself, only give permission to 
+                move resources. 
+            </p>
+
+            <p>
+                Warning: 
+                There's a different <code>std::move</code> defined in the <code>algorithm</code> header. It's fine to 
+                include both headers at once, because the two <code>std::move</code> functions take different arguments, 
+                so the compiler can distinguish them. But if you're ever confused why <code>std::move</code> isn't working 
+                even though <code>std::move</code> exists, check whether you included <code>algorithm</code> instead of 
+                <code>utility</code>.
+            </p>
+
+            <p>
+                We can demonstrate this using our <code>Polynomial</code> class. (Make sure you've copied the new code 
+                into <code>polynomial.h</code> and <code>polynomial.cpp</code>.)
+            </p>
+
+            <code-box data-codeId="stdMoveExample"><pre>#include &lt;iostream>
+#include &lt;utility>
+#include "polynomial.h"
+
+int main() {
+    Polynomial f({1, 5, 9});
+    Polynomial g({2, 6});
+    std::cout << f.eval(10) << std::endl; // 159
+    f = std::move(g);
+    std::cout << f.eval(10) << std::endl; // 26
+    std::cout << g.eval(10) << std::endl; // 0
+    return 0;
+}</pre></code-box>
+
+
+
+        </div> <!-- /.content -->
+        <script type="text/javascript" src="../codeblock.js"></script>
+    </body>
+</html>

@@ -1,2 +1,5 @@
 test.cpp
 test.exe
+polynomial.cpp
+polynomial.o
+polynomial.h
