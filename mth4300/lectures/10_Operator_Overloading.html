@@ -1,0 +1,296 @@
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Lecture 10: Operator Overloading</title>
+        <link rel="stylesheet" href="../style.css">
+    </head>
+    <body>
+        <div class="top-bar"><a href="../mth4300.html">🏠 Back to Math 4300 homepage</a>
+        </div>
+        <div class="content">
+            <h1>Lecture 10: Operator Overloading</h1>
+
+            <p>
+               So far, we've added a bunch of technical memory-management methods to our <code>Polynomial</code>
+               class, but we haven't added most of the operations that we would like to be able to do with 
+               polynomials, such as addition, subtraction, and multiplication. There's a reason for that. 
+            </p>
+            <p>
+               Suppose you have three <code>Polynomial</code>s, <code>f</code>, <code>g</code>, and 
+               <code>h</code>, and you want to calculate <code>f * g + h</code>. If you were going to do that 
+               with material that we've covered so far, you might define methods <code>Polynomial::add</code> 
+               and <code>Polynomial::multipliy</code> and then write something like 
+               <code>f.multiply(g).add(h)</code>. But that's annoying to type and hard to read: we would like 
+               to be able to write <code>f * g + h</code> in our code. That's where operator overloading comes 
+               in.
+            </p>
+            <p>
+                Recall that <i>overloading</i> refers to the idea that we can have multiple functions with 
+                the same name, distinguished by the types of their arguments. Well, addition is a function,
+                so we can overload it too. (We sometimes don't think of it as a function because we write 
+                things like "a+b" instead of "+(a, b)," but it is a function: it accepts two arguments and 
+                returns a result.) In particular, if we define a version of the addition operator that 
+                accepts two <code>Polynomial</code> objects as arguments, then we'll be able to use 
+                <code>+</code> to add <code>Polynomial</code> objects.
+            </p>
+            <p>
+                We've already seen an example of operator overloading: the copy assignment operator and 
+                move assignment operators both overload the operator <code>=</code>. Recall that the 
+                way we accomplished that was by defining a function <code>operator=</code> as a member 
+                function within our class. We'll overload other operators in basically the same way: 
+                name the function <code>operator</code> plug the symbol that you're trying to overload.
+            </p>
+
+            <p>
+                We'll continue using <code>Polynomial</code> for the examples in this lecture. For your 
+                convenience, the code is provided below (and consolidated into one file) for you to copy:
+            </p>
+
+            <code-box data-codeId="polynomialAtStartOfLecture"><pre>// polynomial.h: 
+#pragma once
+
+#include &lt;vector>
+
+class Polynomial {
+public:
+    Polynomial(const std::vector&lt;int>& coefficients);
+    Polynomial(const Polynomial& other);
+    Polynomial(Polynomial&& other) noexcept;
+    Polynomial& operator=(const Polynomial& other);
+    Polynomial& operator=(Polynomial&& other) noexcept;
+    ~Polynomial();
+    int eval(int n) const;
+private:
+    int degree_;
+    int* coefficients_;
+};
+
+// polynomial.cpp:
+
+#include &lt;vector>
+#include &lt;numeric>
+//#include "polynomial.h" // Not used in the in-class version which puts everything in one file
+
+// Copy the given coefficients vector into coefficients_, while also removing 
+// any leading zeros so that degree_ is calculated correctly.
+Polynomial::Polynomial(const std::vector&lt;int>& coefficients) {
+    int i;
+    for (i=0; i < coefficients.size(); ++i) {
+        if (coefficients[i] != 0) {
+            break;
+        }
+    }
+    degree_ = coefficients.size() - i - 1;
+    coefficients_ = new int[degree_ + 1];
+    for (int j = i; j < coefficients.size(); ++j) {
+        coefficients_[j-i] = coefficients[j];
+    }
+}
+
+// Copy constructor
+Polynomial::Polynomial(const Polynomial& other)
+    : degree_(other.degree_), coefficients_(new int[degree_ + 1]) {
+    std::copy(&other.coefficients_, &other.coefficients_ + degree_ + 1, &coefficients_);
+}
+
+// Move constructor
+Polynomial::Polynomial(Polynomial&& other) noexcept
+    : degree_(other.degree_), coefficients_(other.coefficients_) {
+    other.degree_ = -1; 
+    other.coefficients_ = nullptr;
+}
+
+// Copy assignment operator
+Polynomial& Polynomial::operator=(const Polynomial& other) {
+    if (this == &other) {return *this;}
+    delete[] coefficients_;
+    degree_ = other.degree_;
+    coefficients_ = new int[degree_ + 1];
+    std::copy(&other.coefficients_, &other.coefficients_ + degree_ + 1, &coefficients_);
+    return *this;
+}
+
+// Move assignment operator
+Polynomial& Polynomial::operator=(Polynomial&& other) noexcept {
+    if (this == &other) return *this;
+    delete[] coefficients_;
+    degree_ = other.degree_;
+    coefficients_ = other.coefficients_;
+    other.degree_ = -1;
+    other.coefficients_ = nullptr;
+    return *this;
+}
+
+Polynomial::~Polynomial() {
+    delete[] coefficients_;
+}
+
+int Polynomial::eval(int n) const {
+    auto f = [n](int acc, int val) { return acc * n + val; };
+    return std::accumulate(coefficients_, coefficients_ + degree_ + 1, 0, f);
+}
+            </pre></code-box>
+
+            <h2>How to overload operators</h2>
+
+            <p>
+                Before we start overloading some more operators, there's one more technicality that we 
+                need to discuss: where do we define our overloaded operators? 
+            </p>
+            <p>
+                For example, we've seen that when you overload the assignment operator, you define the 
+                function as a member function of your class, e.g., <code>Polynomial::operator=</code>. 
+                Specifically, when you overload an operator, the overloaded operator is defined as a member 
+                function of the left argument, e.g., when we were overloading <code>f = g</code> by defining 
+                <code>Polynomial::operator=(Polynomial&& other)</code>, <code>f</code> was the object pointed 
+                to by <code>this</code>, and <code>g</code> was <code>other</code>.
+            </p>
+            <p>
+                But for some operators, this wouldn't make sense. Suppose you tried to overload the 
+                <code><<</code> operator, so that you could write code like <code>std::cout << f</code> 
+                and print your polynomial to standard output. Since <code>std::cout</code> is the left 
+                argument, if we tried to define <code>operator<<</code> as a member function of a class, 
+                it would need to be a member of <code>std::cout</code>'s class (which is <code>std::ostream</code>).
+                Of course, you can't modify the code for <code>std::ostream</code>, so this is impossible. 
+            </p>
+
+            <p>
+                Unfortunately, things now get a little complicated: some overloaded operators must be member functions, 
+                some must be non-member functions, and some can be defined either way (though there are style 
+                guidelines that you should prefer one or the other). Specifically:
+            </p>
+
+            <ul>
+                <li>
+                    Must be a member function: <code>=</code> (assignment), <code>[]</code> (subscript), 
+                    <code>()</code> (function call), <code>-></code> (member access).
+                </li>
+                <li>
+                    Should be a member function: Operators that are bound tightly to a single object, such as 
+                    unary operators such as <code>!</code> and <code>++</code> and compound assignment operators 
+                    such as <code>+=</code>. (Note that you must overload <code>+=</code> separately even if 
+                    you already overloaded <code>+</code>. In fact, it's recommended that you overload <code>+=</code> 
+                    first and then use it to define <code>+</code>.)
+                </li>
+                <li>
+                    Should be a non-member function: Symmetric binary operators, such as <code>+</code>, <code>-</code>,
+                    <code>*</code>, <code>==</code>, <code>!=</code>.
+                </li>
+                <li>
+                    Must be a non-member function: Stream I/O operations (<code><<</code> and <code>>></code>).
+                </li>
+            </ul>
+
+            <h2><code>friend</code></h2>
+
+            <p>
+                The discussion in the previous section raises a new problem. For example, we said that we wanted to 
+                overload the <code>+</code> operator using a non-member function. But how are we going to do that? 
+                For example, calculating the sum of two polynomials requires us to know their coefficients, but 
+                the <code>coefficients_</code> array is <code>private</code>, so a non-member function can't 
+                access it. (In theory, we could solve this by making the implementation details <code>public</code>, 
+                but we don't necessarily want to do that.)
+            </p>
+
+            <p>
+                The answer is that we can declare a non-member function as a <code>friend</code> of our class: a 
+                friend function has access to the private attributes of the class, as if it were a member function. 
+                Basically, you declare the function in the <code>public</code> section of the class as if it were 
+                a member function, but with the keyword <code>friend</code> at the beginning. We'll see an example 
+                soon, but first lets add one new feature to our <code>Polynomial</code> class.
+            </p>
+
+            <h2><code>coefficient</code></h2>
+
+            <p>
+                Let's define a method <code>coefficient</code> that returns the coefficient of x^n in our 
+                <code>Polynomial</code>.
+            </p>
+            <p>
+                Aside: I considered implementing this as an overload of <code>operator[]</code>, so that <code>f[n]</code>
+                represents the coefficient of x^n in <code>f</code>. This saves us a little typing over needing to 
+                write out <code>f.coefficient(n)</code>, but on the other hand, <code>f[n]</code> looks a 
+                lot like <code>f(n)</code>, so it might cause more confusion than it's worth. Perhaps it's better to do 
+                accept a little more typing in return for readable code.
+            </p>
+
+            <p>
+                Add the following (<code>public</code>) declaration to the <code>Polynomial</code> class:
+            </p>
+
+            <code-box data-codeId="coefficientDeclaration"><pre>int coefficient(int i) const;</pre></code-box>
+
+            <p>
+                and the following definition:
+            </p>
+
+            <code-box data-codeId="coefficientDefinition"><pre>int Polynomial::coefficient(int i) const {
+    return (i < 0 || i > degree_) ? 0 : coefficients_[i];
+}</pre></code-box>
+
+            <p>
+                Besides providing a <code>public</code> method so that users of our <code>Polynomial</code> 
+                class can check the coefficients of a <code>Polynomial</code>, this will be a convenience 
+                for us even while we're working within the class. We now have a bounds-checked coefficient 
+                function, so that we don't need to add manual bounds-checking when accessing coefficients. 
+                Now we'll use it to define addition.
+            </p>
+
+            <h2>Overloading the addition operators</h2>
+
+            <p>
+                Now we're ready to define addition of polynomials. As mentioned above, it's good form to 
+                start by overloading the <code>+=</code> operator. We'll need the <code>std::max</code> 
+                function in order to do that, so add <code>#include &lt;algorithm></code> at the top of
+                your <code>polynomial.cpp</code>.
+            </p>
+
+            <p>
+                Now add the following public declaration in <code>polynomial.h</code>:
+            </p>
+
+            <code-box data-codeId="addAssignmentDeclaration"><pre>Polynomial& operator+=(const Polynomial& other);</pre></code-box>
+
+            <p>
+                And add the following definition in <code>polynomial.cpp</code>:
+            </p>
+
+            <code-box data-codeId="addAssignmentDeclaration"><pre>Polynomial& Polynomial::operator+=(const Polynomial& other) {
+    int newDegree = std::max(this->degree_, other.degree_);
+    while (newDegree > -1 && this->coefficient(newDegree) + other.coefficient(newDegree) == 0) {
+        --newDegree;
+    }
+    int* newCoefficients = new int[newDegree + 1];
+    for (int i = 0; i <= newDegree; ++i) {
+        newCoefficients[i] = this->coefficient(i) + other.coefficient(i);
+    }
+    delete[] coefficients_;
+    coefficients_ = newCoefficients;
+    degree_ = newDegree;
+    return *this;
+}</pre><code-box>
+
+            <p>
+                The declaration should be largely as you expect. As mentioned above, we overload <code>+=</code> as a member 
+                function. Of course, we pass <code>other</code> as a constant reference, because we don't want to make an 
+                unnecessary copy of <code>other</code>, but we also don't want to modify it. Notice that we return 
+                <code>this*</code>; as we saw with the assignment operator, this supports operator chaining. 
+            </p>
+
+            <p>
+                We haven't mentioned this before, but the <code>+=</code> operator can be chained: you can write 
+                <code>a += b += c</code> to mean "First add <code>c</code> to <code>b</code>, and then add the new 
+                value of <code>b</code> to <code>a</code>." You should never do this: it's much clearer to simply 
+                write <code>b := c; a := b;</code> as two separate lines. But your overloaded <code>+=</code> 
+                should support it correctly even though it's generally bad style.
+            </p>
+
+            <p>
+                Now, define <code>operator+</code>
+            </p>
+
+        </div> <!-- /.content -->
+        <script type="text/javascript" src="../codeblock.js"></script>
+    </body>
+</html>

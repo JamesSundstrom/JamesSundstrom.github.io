@@ -538,11 +538,75 @@ int main() {
     std::cout << f.eval(10) << std::endl; // 159
     f = std::move(g);
     std::cout << f.eval(10) << std::endl; // 26
-    std::cout << g.eval(10) << std::endl; // 0
+    std::cout << g.eval(10) << std::endl; // 0 (though we shouldn't use g until it's reinitialized)
     return 0;
 }</pre></code-box>
 
+            <h2>The Rule of 0/3/5</h2>
 
+            <p>
+                We've now seen that there are five special member functions that handle resource 
+                management for a class:
+            </p>
+
+            <ol>
+                <li>Destructor</li>
+                <li>Copy constructor</li>
+                <li>Copy assigment operator</li>
+                <li>Move constructor</li>
+                <li>Move assignment operator</li>
+            </ol>
+
+            <p>
+                The <b>Rule of Five</b> states that if your class implements one of these, then it 
+                should implement all five of them. This should make some intuitive sense; if your class 
+                has resources that need to be managed, then it needs all of the resource-management 
+                member functions. (The <b>Rule of Three</b> was an earlier version, before the 
+                move constructor and move assignment operator were introduced, but you may still see 
+                it mentioned occasionally.)
+            </p>
+
+            <p>
+                An even more modern approach is the <b>Rule of Zero</b>, which says that you should 
+                write your code in such a way that you don't need any of these. For example, if you 
+                need to store a list of data, store it in a <code>std::array</code> or <code>std::vector</code> 
+                rather than a C-style array. Since the standard library containers clean up after 
+                themselves automatically, you won't need to write resource-management code yourself. 
+                (Indeed, that's why I used a C-style array for the coefficient array in <code>Polynomial</code>, 
+                because I wanted to demonstrate all the Rule of Five functions, and they would have been 
+                unnecessary if we'd used a standard library container.)
+            </p>
+
+            <p>
+                However, avoiding C-style arrays isn't enough to completely avoid the need for the Rule of 
+                Five, because there are other reasons why you might need resource management. As we've 
+                seen, any time you use <code>new</code> to allocate memory on the heap, you become 
+                responsible for later using <code>delete</code> to free it. Even if you avoid C-style 
+                arrays (as you should), you'll still need to deal with that.
+            </p>
+
+            <p>
+                (As I've mentioned previously, modern C++ provides "smart pointers" which handle 
+                memory management for you. Once you learn about those, you can almost always follow 
+                the Rule of Zero by using them. But we probably won't cover them in this course, 
+                unless there's substantial interest in the topic.)
+            </p>
+            
+            <h2 id="LinkedListExercise">
+                Linked List Exercise
+                <span style="font-weight: normal; font-size: 1rem;">
+                    (<a href="09_Object_Oriented_Programming_Part_2_Solutions.html#LinkedListExercise">Solution</a>)
+                </span>
+            </h2>
+
+            <p>
+                In Lecture 08, there was an exercise that asked you to create a Linked List class. That was before we 
+                covered copy constructors, so the 
+                <a href="08_Object_Oriented_Programming_Solutions.html#LinkedListExercise" target="_blank">solution</a>
+                provided there has a destructor, but none of the other Rule of Five functions. Add the rest of them 
+                now. (You should start by copying the code from the provided solution so you don't need to redo the 
+                whole exercise.)
+            </p>
 
         </div> <!-- /.content -->
         <script type="text/javascript" src="../codeblock.js"></script>
