@@ -105,7 +105,7 @@ public:
         delete oldHead;
         return val;
     }
-    bool isEmpty() {return head_ == nullptr;}
+    bool isEmpty() const {return head_ == nullptr;}
 private:
     struct ListNode {
         int val;
