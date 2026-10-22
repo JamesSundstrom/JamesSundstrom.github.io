@@ -287,8 +287,21 @@ int Polynomial::eval(int n) const {
             </p>
 
             <p>
-                Now, define <code>operator+</code>
+                Now, define <code>operator+</code>. First, add this as a <code>public</code> declaration in 
+                <code>polynomial.h</code>:
             </p>
+
+            <code-box data-codeId="addOperatorDeclaration"><pre>friend Polynomial operator+(Polynomial f, const Polynomial g);</pre></code-box>
+
+            <p>
+                And add the definition to <code>polynomial.cpp</code>:
+            </p>
+
+            <code-box data-codeId="addOperatorDefinition"><pre>Polynomial operator+(Polynomial f, const Polynomial& g) {
+    f += g; 
+    return f;
+}</pre></code-box>
+
 
         </div> <!-- /.content -->
         <script type="text/javascript" src="../codeblock.js"></script>
