@@ -1,0 +1,139 @@
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Lecture 09 Solutions</title>
+        <link rel="stylesheet" href="../style.css">
+    </head>
+    <body>
+        <div class="top-bar"><a href="../mth4300.html">🏠 Back to Math 4300 homepage</a>
+        </div>
+        <div class="content">
+            <h1>Lecture 09 Solutions</h1>
+            
+            <h2 id="LinkedListExercise">
+                Linked List Exercise
+                <span style="font-weight: normal; font-size: 1rem;">
+                    (<a href="09_Object_Oriented_Programming_Part_2.html#LinkedListExercise">Back to lecture</a>)
+                </span>
+            </h2>
+
+            <p>
+                In Lecture 08, there was an exercise that asked you to create a Linked List class. That was before we 
+                covered copy constructors, so the 
+                <a href="08_Object_Oriented_Programming_Solutions.html#LinkedListExercise" target="_blank">solution</a>
+                provided there has a destructor, but none of the other Rule of Five functions. Add the rest of them 
+                now. (You should start by copying the code from the provided solution so you don't need to redo the 
+                whole exercise.)
+            </p>
+
+            <p>
+                <b>Answer:</b> 
+            </p>
+
+            <code-box data-codeId="linkedListExerciseSolution"><pre>class LinkedList {
+public:
+    LinkedList();
+    LinkedList(int val);
+    ~LinkedList();
+    LinkedList(const LinkedList& other);
+    LinkedList& operator=(const LinkedList& other);
+    LinkedList(LinkedList&& other) noexcept;
+    LinkedList& operator=(LinkedList&& other) noexcept;
+    void insertAtHead(int val);
+    int pop();
+    bool isEmpty() const;
+private:
+    struct ListNode {
+        int val;
+        ListNode* next;
+    };
+    ListNode* head_;
+};
+
+LinkedList::LinkedList() : head_(nullptr) {}
+
+LinkedList::LinkedList(int val) : head_(new ListNode{val, nullptr}) {}
+
+LinkedList::~LinkedList() {
+    while (head_) {
+        ListNode* next = head_->next;
+        delete head_;
+        head_ = next;
+    }
+}
+
+LinkedList::LinkedList(const LinkedList& other) {
+    if (other.isEmpty()) {
+        head_ = nullptr;
+        return;
+    }
+    head_ = new ListNode{other.head_->val, nullptr};
+    ListNode* ptr = other.head_;
+    ListNode* copyPtr = head_;
+    while (ptr->next) {
+        ListNode* nextNode = new ListNode{ptr->next->val, nullptr};
+        copyPtr->next = nextNode;
+        ptr = ptr->next;
+        copyPtr = copyPtr->next;
+    }
+}
+
+LinkedList& LinkedList::operator=(const LinkedList& other) {
+    if (this == &other) {return *this;}
+    while (head_) {
+        ListNode* next = head_->next;
+        delete head_;
+        head_ = next;
+    }
+    if (other.isEmpty()) {
+        return *this;
+    }
+    head_ = new ListNode{other.head_->val, nullptr};
+    ListNode* ptr = other.head_;
+    ListNode* copyPtr = head_;
+    while (ptr->next) {
+        ListNode* nextNode = new ListNode{ptr->next->val, nullptr};
+        copyPtr->next = nextNode;
+        ptr = ptr->next;
+        copyPtr = copyPtr->next;
+    }
+    return *this;
+}
+
+LinkedList::LinkedList(LinkedList&& other) noexcept : head_(other.head_) {
+    other.head_ = nullptr;
+}
+
+LinkedList& LinkedList::operator=(LinkedList&& other) noexcept {
+    if (this == &other) return *this;
+    while (head_) {
+        ListNode* next = head_->next;
+        delete head_;
+        head_ = next;
+    }
+    head_ = other.head_;
+    other.head_ = nullptr;
+    return *this;
+}
+
+void LinkedList::insertAtHead(int val) {
+    head_ = new ListNode{val, head_};
+}
+
+int LinkedList::pop() {
+    int val = head_->val;
+    ListNode* oldHead = head_;
+    head_ = head_->next;
+    delete oldHead;
+    return val;
+}
+
+bool LinkedList::isEmpty() const {
+    return head_ == nullptr;
+}</pre></code-box>
+
+        </div> <!-- /.content -->
+        <script type="text/javascript" src="../codeblock.js"></script>
+    </body>
+</html>

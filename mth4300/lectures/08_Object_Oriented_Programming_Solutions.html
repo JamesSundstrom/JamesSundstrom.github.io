@@ -35,6 +35,9 @@
                     A struct <code>ListNode</code> which stores an <code>int</code> and a pointer to the next <code>ListNode</code>.
                 </li>
                 <li>
+                    A constructor that takes no argument, and constructs a new empty linked list.
+                </li>
+                <li>
                     A constructor that takes as argument an <code>int</code>, and constructs a new linked list consisting of a single node storing that <code>int</code> 
                     as its data.
                 </li>
@@ -87,8 +90,9 @@
                     <code>LinkedList</code> class doesn't have access to the details of how we implemented the linked list.
                 </p>
 
-                <code-box data-codeId="linkedListExerciseSolution"><pre>class LinkedList {
+                <code-box data-codeId="linkedListExerciseSolution"><pre></pre>class LinkedList {
 public:
+    LinkedList() : head_(nullptr) {}
     LinkedList(int val) : head_(new ListNode{val, nullptr}) {}
     ~LinkedList() {
         while (head_) {
