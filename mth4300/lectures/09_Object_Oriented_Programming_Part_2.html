@@ -114,7 +114,7 @@ Polynomial::Polynomial(const std::vector&lt;int>& coefficients) {
 // Copy constructor
 Polynomial::Polynomial(const Polynomial& other)
     : degree_(other.degree_), coefficients_(new int[degree_ + 1]) {
-    std::copy(&other.coefficients_, &other.coefficients_ + degree_ + 1, &coefficients_);
+    std::copy(other.coefficients_, other.coefficients_ + degree_ + 1, coefficients_);
 }
 
 // Copy assignment
@@ -123,7 +123,7 @@ Polynomial& Polynomial::operator=(const Polynomial& other) {
     delete[] coefficients_;
     degree_ = other.degree_;
     coefficients_ = new int[degree_ + 1];
-    std::copy(&other.coefficients_, &other.coefficients_ + degree_ + 1, &coefficients_);
+    std::copy(other.coefficients_, other.coefficients_ + degree_ + 1, coefficients_);
     return *this;
 }
 

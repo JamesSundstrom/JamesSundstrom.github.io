@@ -39,7 +39,7 @@
                 move assignment operators both overload the operator <code>=</code>. Recall that the 
                 way we accomplished that was by defining a function <code>operator=</code> as a member 
                 function within our class. We'll overload other operators in basically the same way: 
-                name the function <code>operator</code> plug the symbol that you're trying to overload.
+                name the function <code>operator</code> plus the symbol that you're trying to overload.
             </p>
 
             <p>
@@ -91,7 +91,7 @@ Polynomial::Polynomial(const std::vector&lt;int>& coefficients) {
 // Copy constructor
 Polynomial::Polynomial(const Polynomial& other)
     : degree_(other.degree_), coefficients_(new int[degree_ + 1]) {
-    std::copy(&other.coefficients_, &other.coefficients_ + degree_ + 1, &coefficients_);
+    std::copy(other.coefficients_, other.coefficients_ + degree_ + 1, coefficients_);
 }
 
 // Move constructor
@@ -107,7 +107,7 @@ Polynomial& Polynomial::operator=(const Polynomial& other) {
     delete[] coefficients_;
     degree_ = other.degree_;
     coefficients_ = new int[degree_ + 1];
-    std::copy(&other.coefficients_, &other.coefficients_ + degree_ + 1, &coefficients_);
+    std::copy(other.coefficients_, other.coefficients_ + degree_ + 1, coefficients_);
     return *this;
 }
 
@@ -178,7 +178,8 @@ int Polynomial::eval(int n) const {
                     <code>*</code>, <code>==</code>, <code>!=</code>.
                 </li>
                 <li>
-                    Must be a non-member function: Stream I/O operations (<code><<</code> and <code>>></code>).
+                    Must be a non-member function: Stream I/O operations (<code><<</code> and <code>>></code>), and other 
+                    operators where your class is not the left argument.
                 </li>
             </ul>
 
@@ -187,10 +188,10 @@ int Polynomial::eval(int n) const {
             <p>
                 The discussion in the previous section raises a new problem. For example, we said that we wanted to 
                 overload the <code>+</code> operator using a non-member function. But how are we going to do that? 
-                For example, calculating the sum of two polynomials requires us to know their coefficients, but 
+                Calculating the sum of two polynomials requires us to know their coefficients, but 
                 the <code>coefficients_</code> array is <code>private</code>, so a non-member function can't 
                 access it. (In theory, we could solve this by making the implementation details <code>public</code>, 
-                but we don't necessarily want to do that.)
+                but we don't want to do that -- remember that we had good reasons for keeping them private.)
             </p>
 
             <p>
@@ -212,7 +213,7 @@ int Polynomial::eval(int n) const {
                 represents the coefficient of x^n in <code>f</code>. This saves us a little typing over needing to 
                 write out <code>f.coefficient(n)</code>, but on the other hand, <code>f[n]</code> looks a 
                 lot like <code>f(n)</code>, so it might cause more confusion than it's worth. Perhaps it's better to do 
-                accept a little more typing in return for readable code.
+                accept a little extra typing in exchange for more readable code.
             </p>
 
             <p>
