@@ -343,7 +343,7 @@ const int& Polynomial::operator[](size_t i) const {
                 We haven't mentioned this before, but the <code>+=</code> operator can be chained: you can write 
                 <code>a += b += c</code> to mean "First add <code>c</code> to <code>b</code>, and then add the new 
                 value of <code>b</code> to <code>a</code>." You should never do this: it's much clearer to simply 
-                write <code>b := c; a := b;</code> as two separate lines. But your overloaded <code>+=</code> 
+                write <code>b += c; a += b;</code> as two separate lines. But your overloaded <code>+=</code> 
                 should support it correctly even though it's generally bad style.
             </p>
 
@@ -352,7 +352,7 @@ const int& Polynomial::operator[](size_t i) const {
                 <code>polynomial.h</code>:
             </p>
 
-            <code-box data-codeId="addOperatorDeclaration"><pre>friend Polynomial operator+(Polynomial f, const Polynomial g);</pre></code-box>
+            <code-box data-codeId="addOperatorDeclaration"><pre>Polynomial operator+(Polynomial f, const Polynomial g);</pre></code-box>
 
             <p>
                 And add the definition to <code>polynomial.cpp</code>:
@@ -586,7 +586,7 @@ std::cout << std::boolalpha << (h == f * g) << std::endl;</pre></code-box>
 Polynomial(int c);
 
 // In polynomial.cpp:
-Polynomial::Polynomial(int c) : Polynomial(std::vector<int>{c}) {}</pre></code-box>
+Polynomial::Polynomial(int c) : Polynomial(std::vector&lt;int>{c}) {}</pre></code-box>
 
             <p>
                 This uses a trick that we haven't seen before. (You won't be required to remember it for this course, 
@@ -628,12 +628,12 @@ std::cout &lt;&lt; (5 * f - 2) &lt;&lt; std::endl;</pre></code-box>
 
             <code-box data-codeId="currentVersionOfPolynomialH"><pre>#pragma once
 
-#include <vector>
-#include <ostream>
+#include &lt;vector>
+#include &lt;ostream>
 
 class Polynomial {
 public:
-    Polynomial(const std::vector<int>& coefficients);
+    Polynomial(const std::vector&lt;int>& coefficients);
     Polynomial(int c);
     Polynomial(const Polynomial& other);
     Polynomial(Polynomial&& other) noexcept;
@@ -661,14 +661,14 @@ private:
                 <code>polynomial.cpp</code>:
             </p>
 
-            <code-box data-codeId="currentVersionOfPolynomialCpp"><pre>#include <vector>
-#include <algorithm>
-#include <numeric>
+            <code-box data-codeId="currentVersionOfPolynomialCpp"><pre>#include &lt;vector>
+#include &lt;algorithm>
+#include &lt;numeric>
 #include "polynomial.h"
 
 // Copy the given coefficients vector into coefficients_, while also removing 
 // any leading zeros so that degree_ is calculated correctly.
-Polynomial::Polynomial(const std::vector<int>& coefficients) {
+Polynomial::Polynomial(const std::vector&lt;int>& coefficients) {
     int i;
     for (i=0; i < coefficients.size(); ++i) {
         if (coefficients[i] != 0) {
@@ -683,11 +683,11 @@ Polynomial::Polynomial(const std::vector<int>& coefficients) {
 }
 
 Polynomial operator*(int c, Polynomial const& f) {
-    return f * Polynomial(std::vector<int>{c});
+    return f * Polynomial(std::vector&lt;int>{c});
 }
 
 // Construct a constant polynomial
-Polynomial::Polynomial(int c) : Polynomial(std::vector<int>{c}) {}
+Polynomial::Polynomial(int c) : Polynomial(std::vector&lt;int>{c}) {}
 
 // Copy constructor
 Polynomial::Polynomial(const Polynomial& other)
