@@ -352,7 +352,7 @@ const int& Polynomial::operator[](size_t i) const {
                 <code>polynomial.h</code>:
             </p>
 
-            <code-box data-codeId="addOperatorDeclaration"><pre>Polynomial operator+(Polynomial f, const Polynomial g);</pre></code-box>
+            <code-box data-codeId="addOperatorDeclaration"><pre>friend Polynomial operator+(Polynomial f, const Polynomial g);</pre></code-box>
 
             <p>
                 And add the definition to <code>polynomial.cpp</code>:
