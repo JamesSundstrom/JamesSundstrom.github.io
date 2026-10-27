@@ -623,6 +623,34 @@ std::cout &lt;&lt; (5 * f - 2) &lt;&lt; std::endl;</pre></code-box>
                 used when called explicitly. (You won't be required to know <code>explicit</code> for this course.)
             </p>
 
+            <h2>Overloading <code>operator()</code></h2>
+
+            <p>
+                Overloading <code>operator()</code> allows us to call an object as a function. Naturally, we would 
+                like to be able to use a <code>Polynomial</code> as a function: we already have the <code>eval</code> 
+                method which does that, but we'd like to be able to use standard mathematical notation also.
+            </p>
+
+            <p>
+                Add this declaration in <code>polynomial.h</code>:
+            </p>
+
+            <code-box data-codeId="declareFunctionCallOperator">int operator()(int n) const;</code-box>
+
+            <p>
+                And add this definition in <code>polynomial.cpp</code>:
+            </p>
+
+            <code-box data-codeId="defineFunctionCallOperator"><pre>int Polynomial::operator()(int n) const {
+    return eval(n);
+}</pre></code-box>
+
+            <p>
+                Arguably, we could remove <code>eval</code> entirely, now that we have another notation for the 
+                same thing, but we'll leave it in so that our updated <code>Polynomial</code> class still 
+                works with any code written for the earlier version. 
+            </p>
+
             <h2>Our <code>Polynomial</code> class</h2>
 
             <p>
@@ -657,6 +685,7 @@ public:
     friend Polynomial operator*(Polynomial f, Polynomial const& g);
     friend bool operator==(const Polynomial& f, const Polynomial& g);
     friend std::ostream& operator<<(std::ostream& os, const Polynomial& f);
+    int operator()(int n) const;
     int eval(int n) const;
     int coefficient(int i) const;
 private:
@@ -838,6 +867,10 @@ std::ostream& operator<<(std::ostream& os, const Polynomial& f) {
         }
     }
     return os;
+}
+
+int Polynomial::operator()(int n) const {
+    return eval(n);
 }
 
 int Polynomial::eval(int n) const {
