@@ -75,8 +75,8 @@ class Polynomial {
 public:
     Polynomial(const std::vector&lt;int>& coefficients);
     Polynomial(const Polynomial& other);
-    Polynomial& operator=(const Polynomial& other);
     ~Polynomial();
+    Polynomial& operator=(const Polynomial& other);
     int eval(int n) const;
 private:
     int degree_;
@@ -117,6 +117,10 @@ Polynomial::Polynomial(const Polynomial& other)
     std::copy(other.coefficients_, other.coefficients_ + degree_ + 1, coefficients_);
 }
 
+Polynomial::~Polynomial() {
+    delete[] coefficients_;
+}
+
 // Copy assignment
 Polynomial& Polynomial::operator=(const Polynomial& other) {
     if (this == &other) {return *this;}
@@ -125,10 +129,6 @@ Polynomial& Polynomial::operator=(const Polynomial& other) {
     coefficients_ = new int[degree_ + 1];
     std::copy(other.coefficients_, other.coefficients_ + degree_ + 1, coefficients_);
     return *this;
-}
-
-Polynomial::~Polynomial() {
-    delete[] coefficients_;
 }
 
 int Polynomial::eval(int n) const {

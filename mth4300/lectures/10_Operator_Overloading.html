@@ -57,9 +57,9 @@ public:
     Polynomial(const std::vector&lt;int>& coefficients);
     Polynomial(const Polynomial& other);
     Polynomial(Polynomial&& other) noexcept;
+    ~Polynomial();
     Polynomial& operator=(const Polynomial& other);
     Polynomial& operator=(Polynomial&& other) noexcept;
-    ~Polynomial();
     int eval(int n) const;
 private:
     int degree_;
@@ -101,6 +101,10 @@ Polynomial::Polynomial(Polynomial&& other) noexcept
     other.coefficients_ = nullptr;
 }
 
+Polynomial::~Polynomial() {
+    delete[] coefficients_;
+}
+
 // Copy assignment operator
 Polynomial& Polynomial::operator=(const Polynomial& other) {
     if (this == &other) {return *this;}
@@ -120,10 +124,6 @@ Polynomial& Polynomial::operator=(Polynomial&& other) noexcept {
     other.degree_ = -1;
     other.coefficients_ = nullptr;
     return *this;
-}
-
-Polynomial::~Polynomial() {
-    delete[] coefficients_;
 }
 
 int Polynomial::eval(int n) const {
@@ -175,7 +175,7 @@ int Polynomial::eval(int n) const {
                 </li>
                 <li>
                     Should be a non-member function: Symmetric binary operators, such as <code>+</code>, <code>-</code>,
-                    <code>*</code>, <code>==</code>, <code>!=</code>.
+                    <code>*</code>.
                 </li>
                 <li>
                     Must be a non-member function: Stream I/O operations (<code><<</code> and <code>>></code>), and other 
@@ -202,40 +202,100 @@ int Polynomial::eval(int n) const {
                 soon, but first lets add one new feature to our <code>Polynomial</code> class.
             </p>
 
-            <h2><code>coefficient</code></h2>
+            <h2>Overloading the subscript operator</h2>
 
             <p>
-                Let's define a method <code>coefficient</code> that returns the coefficient of x^n in our 
-                <code>Polynomial</code>.
+                Currently, <code>coefficients_</code> is private. But it's not hard to imagine situations where a 
+                user might want to access a specific coefficient, either to read the value or to edit it. Let's 
+                overload the subscript operator, so that the coefficient of x<sup>n</sup> in <code>f</code> is 
+                given by <code>f[n]</code>.
             </p>
             <p>
-                Aside: I considered implementing this as an overload of <code>operator[]</code>, so that <code>f[n]</code>
-                represents the coefficient of x^n in <code>f</code>. This saves us a little typing over needing to 
-                write out <code>f.coefficient(n)</code>, but on the other hand, <code>f[n]</code> looks a 
-                lot like <code>f(n)</code>, so it might cause more confusion than it's worth. Perhaps it's better to do 
-                accept a little extra typing in exchange for more readable code.
+                Aside: Is this actually a good idea? Or should we define something like <code>f.coefficient(n)</code>
+                instead? You might notice that <code>f[n]</code> looks a lot like <code>f(n)</code>, so this notation 
+                could potentially cause more confusion than it's worth. In the real world, we might well decide that 
+                the benefit of <code>f[n]</code> being easier to type is outweighed by the drawback of being harder 
+                to read; after all, professional programmers spend much more time reading code than writing it. But 
+                for this in-class example, we want to see how to overload the subscript operator, so we'll just do 
+                it and not worry about whether it's a good idea.   
+            </p>
+                
+            <p> 
+                In <code>polynomial.h</code>, add two new declarations:
+            </p>
+
+            <code-box data-codeId="subscriptOperatorDeclarations"><pre>int& operator[](size_t i);
+const int& operator[](size_t i) const;</pre></code-box>
+
+            <p>
+                We have a const and a non-const version of the operator. The non-const version returns a 
+                reference, so that it can be used as an lvalue. For example, <code>f[2] = 3</code> 
+                will change the x<sup>2</sup> coefficient of <code>f</code> to 3 (assuming that <code>f</code> 
+                has degree at least 2, so that there is an x<sup>2</sup> coefficient to change). But then 
+                that can't be used with a <code>const Polynomial</code>, so we also need a version that 
+                returns a constant reference to cover that case. This technique of writing two overloads of 
+                <code>operator[]</code> is the standard way of doing it.
             </p>
 
             <p>
-                Add the following (<code>public</code>) declaration to the <code>Polynomial</code> class:
+                Now add the following definitions to <code>polynomial.cpp</code>:
+            </p>
+
+            <code-box data-codeId="subscriptOperatorDefinitions"><pre>int& Polynomial::operator[](size_t i) {
+    return coefficients_[degree_ - i];
+}
+const int& Polynomial::operator[](size_t i) const {
+    return coefficients_[degree_ - i];
+}</pre></code-box>
+
+            <p>
+                Remember that <code>coefficients_</code> stored the coefficients in reverse order, hence the 
+                need for <code>degree_ - i</code> above.
+            </p>
+
+            <p>
+                Notice that we do <b>not</b> perform any bounds-checking when using <code>operator[]</code>. 
+                This is fairly traditional, to be consistent with the behavior of the standard library 
+                containers. Of course, you can add bounds checking if you prefer (and there are situations 
+                where that might be appropriate). If <code>operator[]</code> is not bounds-checked, then it's 
+                also fairly standard to add a <code>.at()</code> method that is bounds-checked (again, just 
+                like the standard containers).
+            </p>
+
+
+            <p>
+                But in our case, <code>.at()</code> is not a great name; let's call it <code>.coefficient()</code> 
+                instead. Also, instead of throwing an exception on out-of-bounds access, let's simply return 0 
+                instead. After all, a general-purpose container like <code>std::vector</code>, can't really do 
+                anything sensible when faced with an out-of-bounds index, but there is a sensible behavior for 
+                <code>Polynomial</code>: if you're asked for the x<sup>-1</sup> or x<sup>9</sup> coefficient of 
+                a degree-8 polynomial, you can simply say that they're 0.
+            </p>
+
+            <p>
+                Add the following declaration to <code>polynomial.h</code>:
             </p>
 
             <code-box data-codeId="coefficientDeclaration"><pre>int coefficient(int i) const;</pre></code-box>
 
             <p>
-                and the following definition:
+                Add the following definition to <code>polynomial.cpp</code>:
             </p>
 
             <code-box data-codeId="coefficientDefinition"><pre>int Polynomial::coefficient(int i) const {
-    return (i < 0 || i > degree_) ? 0 : coefficients_[i];
+    return (i < 0 || i > degree_) ? 0 : coefficients_[degree_ - i];
 }</pre></code-box>
 
             <p>
-                Besides providing a <code>public</code> method so that users of our <code>Polynomial</code> 
-                class can check the coefficients of a <code>Polynomial</code>, this will be a convenience 
-                for us even while we're working within the class. We now have a bounds-checked coefficient 
-                function, so that we don't need to add manual bounds-checking when accessing coefficients. 
-                Now we'll use it to define addition.
+                Note that this time, we decided not to return a reference; since we allowed out-of-bounds 
+                indices, it wouldn't make any sense to return a reference. Also, we allowed the argument 
+                to be an <code>int</code> rather than an unsigned type; we're performing bounds-checking 
+                anyway, so there's no harm in allowing negative arguments. 
+            </p>
+
+            <p>
+                Next, we'll define polynomial addition. This method will make it a little easier to do so, 
+                since we won't need to manually check bounds.
             </p>
 
             <h2>Overloading the addition operators</h2>
@@ -264,13 +324,13 @@ int Polynomial::eval(int n) const {
     }
     int* newCoefficients = new int[newDegree + 1];
     for (int i = 0; i <= newDegree; ++i) {
-        newCoefficients[i] = this->coefficient(i) + other.coefficient(i);
+        newCoefficients[newDegree - i] = this->coefficient(i) + other.coefficient(i);
     }
     delete[] coefficients_;
     coefficients_ = newCoefficients;
     degree_ = newDegree;
     return *this;
-}</pre><code-box>
+}</pre></code-box>
 
             <p>
                 The declaration should be largely as you expect. As mentioned above, we overload <code>+=</code> as a member 
@@ -303,6 +363,508 @@ int Polynomial::eval(int n) const {
     return f;
 }</pre></code-box>
 
+            <p>
+                This definition might look a little funny at first, but notice that <code>f</code> is being passed by 
+                value. Therefore <code>f += g</code> modifies the copy of <code>f</code>, while the original 
+                <code>f</code> is (correctly) left alone.
+            </p>
+
+
+            <h2>Overloading some more arithmetic operators</h2>
+
+            <p>
+                Now that we've overloaded the addition operator, we can overload subtraction and multiplication in the 
+                same way. Naturally, the code for overloading subtraction looks extremely similar to the code for 
+                overloading addition, while the code for polynomial multiplication is a little more complicated.
+            </p>
+
+            <p>
+                Add the following declarations to <code>polynomial.h</code>:
+            </p>
+
+            <code-box data-codeId="subMulDeclaration"><pre>Polynomial& operator-=(const Polynomial& other);
+friend Polynomial operator-(Polynomial f, Polynomial const& g);
+Polynomial& operator*=(const Polynomial& other);
+friend Polynomial operator*(Polynomial f, Polynomial const& g);</pre></code-box>
+
+            <p>
+                Add the following definitions to <code>polynomial.cpp</code>:
+            </p>
+
+            <code-box data-codeId="subMulDefinition"><pre>Polynomial& Polynomial::operator-=(const Polynomial& other) {
+    int newDegree = std::max(this->degree_, other.degree_);
+    while (newDegree > -1 && this->coefficient(newDegree) - other.coefficient(newDegree) == 0) {
+        --newDegree;
+    }
+    int* newCoefficients = new int[newDegree + 1];
+    for (int i = 0; i <= newDegree; ++i) {
+        newCoefficients[newDegree - i] = this->coefficient(i) - other.coefficient(i);
+    }
+    delete[] coefficients_;
+    coefficients_ = newCoefficients;
+    degree_ = newDegree;
+    return *this;
+}
+
+Polynomial operator-(Polynomial f, const Polynomial& g) {
+    f -= g; 
+    return f;
+}
+
+Polynomial& Polynomial::operator*=(const Polynomial& other) {
+    int newDegree = this->degree_ + other.degree_;
+    int* newCoefficients = new int[newDegree + 1]();
+    for (int i = 0; i <= newDegree; ++i) {
+        newCoefficients[degree_ - i] = 0; // coefficient of x^i
+        for (int k = 0; k <= i; ++k) {
+            newCoefficients[degree_ - i] += this->coefficient(k) * other.coefficient(i - k);
+        }
+    }
+    delete[] coefficients_;
+    coefficients_ = newCoefficients;
+    degree_ = newDegree;
+    return *this;
+}
+
+Polynomial operator*(Polynomial f, const Polynomial& g) {
+    f *= g; 
+    return f;
+}</pre></code-box>
+
+            <h2>Overloading <code>==</code></h2>
+
+            <p>
+                Another natural thing that we'd like to be able to do with polynomials is check whether two polynomials 
+                are equal. To be able to do that, we need to override the <code>==</code> operator. 
+            </p>
+            <p>
+                Prior to C++20, it was considered best practice to make <code>operator==</code> a non-member function; 
+                since C++20, it is considered best to make it a member function. In this course, I'll make it a 
+                non-member function so that we don't need to specify the version of C++ that we're using when we 
+                compile; in your own code, you can do whatever you prefer.
+            </p>
+            <p>
+                Usually, you'll want <code>==</code> to have the default behavior, which is to return <code>true</code> 
+                if all the member attributes of the objects being compared are the same. In C++20 (or later), you can 
+                tell C++ to do this using the <code>default</code> keyword. (The <code>default</code> keyword is also 
+                useful to tell C++ to create a default constructor -- remember that C++ doesn't automatically create 
+                a default constructor if you have defined any constructor of your own.) Specifically, you would write:
+            </p>
+            <code-box data-codeId="C++20Default=="><pre>bool operator==(const Polynomial& other) const = default;</pre></code-box>
+            <p>
+                However, this would <b>not</b> result in the correct behavior for our <code>Polynomial</code> class, so 
+                we could not use <code>default</code> in this case. Can you see why?
+            </p>
+            
+            <p>
+                Here's the older style, which is what we'll add to our code:
+            </p>
+
+            <code-box data-codeId="operator=="><pre>// In polynomial.h: 
+friend bool operator==(const Polynomial& f, const Polynomial& g);
+
+// In polynomial.cpp:
+bool operator==(const Polynomial& f, const Polynomial& g) {
+    if (f.degree_ != g.degree_) {return false;}
+    for (int i = 0; i <= f.degree_; ++i) {
+        if (f.coefficients_[i] != g.coefficients_[i]) {return false;}
+    }
+    return true;
+}</pre></code-box>
+
+            <p>
+                Now we can test our code more easily. For example, if we want to test that multiplication works 
+                correctly, we can run the following code:
+            </p>
+
+            <code-box data-codeId="multiplicationTest"><pre>Polynomial f({2, -5}), g({1, 3, 4}), h({2, 1, -7, -20});
+std::cout << std::boolalpha << (h == f * g) << std::endl;</pre></code-box>
+
+            <p>
+                This prints <code>true</code>, because (2x-5)(x<sup>2</sup> + 3x + 4) = 2x<sup>3</sup> + x<sup>2</sup> - 7x - 20.
+            </p>
+
+            <h2>Overloading <code><<</code></h2>
+
+            <p>
+                We would like to be able to print a <code>Polynomial</code> conveniently, so next we'll overload the
+                <code><<</code> operator. (It's also possible to overload the <code>>></code> operator, but we won't 
+                bother with that for our <code>Polynomial</code> class; being able to consistently translate 
+                naturally-written user input into a <code>Polynomial</code> object would be fairly tricky.)
+            </p>
+
+            <p>
+                To be able to print objects in our class, we need to overload <code>operator<<</code>. The object that 
+                goes on the left side of the <code><<</code> operator has type <code>std::ostream</code>. (You'll need 
+                to add <code>#include &lt;ostream></code> in the header file to get access to <code>std::ostream</code>.)
+                Recall that the <code><<</code> operator returns a reference to the <code>std::ostream</code> to support 
+                chaining. Therefore the declaration in <code>polynomial.h</code> should look like this:
+            </p>
+
+            <code-box data-codeId="outputOverloadDeclaration"><pre>friend std::ostream& operator<<(std::ostream& os, const Polynomial& f);</pre></code-box>
+
+            <p>
+                The definition in <code>polynomial.cpp</code> will look like:
+            </p>
+
+            <code-box data-codeId="outputOverloadDefinition"><pre>std::ostream& operator<<(std::ostream& os, const Polynomial& f) {
+    if (f.degree_ == -1) { // Print the 0 polynomial correctly
+        os << '0';  
+        return os;
+    }
+    for (int d = f.degree_; d >= 0; --d) {
+        int coeff = f.coefficient(d);
+        if (coeff == 0) {continue;}
+        // Print coefficient
+        if (d == f.degree_) {
+            if (coeff == 1) {
+                if (d == 0) {os << '1';} 
+            } else if (coeff == -1) {
+                os << (d == 0 ? "-1" : "-");
+            } else {
+                os << coeff;
+            }
+        } else {
+            os << (coeff > 0 ? " + " : " - ");
+            if ((coeff != 1 && coeff != -1) || d == 0) {os << std::abs(coeff);} 
+        }
+        // Print power of x
+        if (d == 1) {
+            os << 'x';
+        } else if (d > 1) {
+            os << "x^" << d;
+        }
+    }
+    return os;
+}</pre></code-box>
+
+            <p>
+                Printing a nicely-formatted polynomial is a little bit tricky, because there are lots of edge cases to 
+                consider. We need to handle negative coefficients nicely, by printing them as subtraction rather than as 
+                adding a negative. E.g., we print things like "4x^2 - 1" rather than "4x^2 + -1". But then the handling 
+                of negative coefficients needs a special case for the leading term, so that we don't turn "-5x^2" into 
+                "- 5x^2". We need to be careful not to print zero coefficients, so that we don't print things 
+                like "4x^2 + 0x - 1". But then the zero polynomial needs its own special handling, so that it doesn't 
+                print as an empty string. We also need to simplify the degree-0 and degree-1 terms, so that we get 
+                "5x + 3" rather than "5x^1 + 3x^0". We need special handling for coefficients of 1 and -1, so that we don't 
+                print things like "1x^3 - 1x^2"; that special handling needs its own special handling, so that we 
+                do print the "1" if it's the constant term.
+            </p>
+
+            <p>
+                It's a good exercise to read through this code on your own time and try to understand why it's designed 
+                the way it is. But the point of this lesson isn't about how to convert a polynomial to a string; it's 
+                about how to overload the <code>&lt;&lt;</code> operator. That part is fairly simple: we first provide the 
+                code that writes to the output stream, and then end with <code>return os;</code>.
+            </p>
+
+            <h2>Letting <code>Polynomial</code> handle constants</h2>
+
+            <p>
+                Now that we can add, subtract, and multiply polynomials using the usual operators, any code that we write 
+                with the <code>Polynomial</code> class will be much easier to read. But we've only defined operations between 
+                two polynomials; what if we want to be able to write something like <code>2 * f</code>?
+            </p>
+
+            <p>
+                One possible solution is that we could add another overload to the multiplication operator:
+            </p>
+
+            <code-box data-codeId="scalarMultiplicationOverloadDeclaration">friend Polynomial operator*(int c, Polynomial const& f);</code-box>
+
+            <p>
+                But it would take a bit of work to cover all the operations, with the <code>int</code> on the left or the right. 
+                Fortunately, there's an easier way.
+            </p>
+
+            <p>
+                We'll add another overload to the constructor, which takes as argument an <code>int</code> and constructs 
+                the corresponding constant <code>Polynomial</code>:
+            </p>
+
+            <code-box data-codeId="constantPolynomialConstructor"><pre>// In polynomial.h: 
+Polynomial(int c);
+
+// In polynomial.cpp:
+Polynomial::Polynomial(int c) : Polynomial(std::vector<int>{c}) {}</pre></code-box>
+
+            <p>
+                This uses a trick that we haven't seen before. (You won't be required to remember it for this course, 
+                but you might want to -- it is a nice shortcut.) A constructor can call an already-defined constructor,
+                using syntax similar to a member initializer list. As with a member initializer list, we could have 
+                added code in the body of the new constructor, which would run after calling the old constructor. But 
+                in this case, we didn't need to.
+            </p>
+
+            <p>
+                Now we can write things like <code>Polynomial f(5)</code> to declare a constant polynomial, where 
+                before we would have needed to write <code>Polynomial f({5})</code>. But even better, this means that 
+                the compiler now knows how to convert an <code>int</code> to a <code>Polynomial</code>, and it's smart 
+                enough to do that in situations where it expects a <code>Polynomial</code> but receives an int. In 
+                particular, we can now add/subtract/multiply a <code>Polynomial</code> and an <code>int</code>, without 
+                needing to define a lot of extra overrides. For example, the below code will print <code>20x-7</code>:
+            </p>
+
+            <code-box data-codeId="scalarOperationsExample"><pre>Polynomial f({4, -1});
+std::cout &lt;&lt; (5 * f - 2) &lt;&lt; std::endl;</pre></code-box>
+
+            <p>
+                Note: What if you don't want the compiler to automatically cast operator arguments like that? For 
+                example, you might prefer that your code only compiles if the types match up correctly as-written, 
+                rather than have possible bugs hiding behind implicit conversions. You can put the <code>explicit</code> 
+                keyword before the constructor declaration to tell the compiler that the constructor should only be 
+                used when called explicitly. (You won't be required to know <code>explicit</code> for this course.)
+            </p>
+
+            <h2>Our <code>Polynomial</code> class</h2>
+
+            <p>
+                For your convenience, here's all the code for <code>Polynomial</code> that we've written so far.
+            </p>
+
+            <p>
+                <code>polynomial.h</code>:
+            </p>
+
+            <code-box data-codeId="currentVersionOfPolynomialH"><pre>#pragma once
+
+#include <vector>
+#include <ostream>
+
+class Polynomial {
+public:
+    Polynomial(const std::vector<int>& coefficients);
+    Polynomial(int c);
+    Polynomial(const Polynomial& other);
+    Polynomial(Polynomial&& other) noexcept;
+    ~Polynomial();
+    Polynomial& operator=(const Polynomial& other);
+    Polynomial& operator=(Polynomial&& other) noexcept;
+    int& operator[](size_t i);
+    const int& operator[](size_t i) const;
+    Polynomial& operator+=(const Polynomial& other);
+    friend Polynomial operator+(Polynomial f, Polynomial const& g);
+    Polynomial& operator-=(const Polynomial& other);
+    friend Polynomial operator-(Polynomial f, Polynomial const& g);
+    Polynomial& operator*=(const Polynomial& other);
+    friend Polynomial operator*(Polynomial f, Polynomial const& g);
+    friend bool operator==(const Polynomial& f, const Polynomial& g);
+    friend std::ostream& operator<<(std::ostream& os, const Polynomial& f);
+    int eval(int n) const;
+    int coefficient(int i) const;
+private:
+    int degree_;
+    int* coefficients_;
+};</pre></code-box>
+
+            <p>
+                <code>polynomial.cpp</code>:
+            </p>
+
+            <code-box data-codeId="currentVersionOfPolynomialCpp"><pre>#include <vector>
+#include <algorithm>
+#include <numeric>
+#include "polynomial.h"
+
+// Copy the given coefficients vector into coefficients_, while also removing 
+// any leading zeros so that degree_ is calculated correctly.
+Polynomial::Polynomial(const std::vector<int>& coefficients) {
+    int i;
+    for (i=0; i < coefficients.size(); ++i) {
+        if (coefficients[i] != 0) {
+            break;
+        }
+    }
+    degree_ = coefficients.size() - i - 1;
+    coefficients_ = new int[degree_ + 1];
+    for (int j = i; j < coefficients.size(); ++j) {
+        coefficients_[j-i] = coefficients[j];
+    }
+}
+
+Polynomial operator*(int c, Polynomial const& f) {
+    return f * Polynomial(std::vector<int>{c});
+}
+
+// Construct a constant polynomial
+Polynomial::Polynomial(int c) : Polynomial(std::vector<int>{c}) {}
+
+// Copy constructor
+Polynomial::Polynomial(const Polynomial& other)
+    : degree_(other.degree_), coefficients_(new int[degree_ + 1]) {
+    std::copy(other.coefficients_, other.coefficients_ + degree_ + 1, coefficients_);
+}
+
+// Move constructor
+Polynomial::Polynomial(Polynomial&& other) noexcept
+    : degree_(other.degree_), coefficients_(other.coefficients_) {
+    other.degree_ = -1; 
+    other.coefficients_ = nullptr;
+}
+
+Polynomial::~Polynomial() {
+    delete[] coefficients_;
+}
+
+// Copy assignment operator
+Polynomial& Polynomial::operator=(const Polynomial& other) {
+    if (this == &other) {return *this;}
+    delete[] coefficients_;
+    degree_ = other.degree_;
+    coefficients_ = new int[degree_ + 1];
+    std::copy(other.coefficients_, other.coefficients_ + degree_ + 1, coefficients_);
+    return *this;
+}
+
+// Move assignment operator
+Polynomial& Polynomial::operator=(Polynomial&& other) noexcept {
+    if (this == &other) return *this;
+    delete[] coefficients_;
+    degree_ = other.degree_;
+    coefficients_ = other.coefficients_;
+    other.degree_ = -1;
+    other.coefficients_ = nullptr;
+    return *this;
+}
+
+int& Polynomial::operator[](size_t i) {
+    return coefficients_[degree_ - i];
+}
+const int& Polynomial::operator[](size_t i) const {
+    return coefficients_[degree_ - i];
+}
+
+Polynomial& Polynomial::operator+=(const Polynomial& other) {
+    int newDegree = std::max(this->degree_, other.degree_);
+    while (newDegree > -1 && this->coefficient(newDegree) + other.coefficient(newDegree) == 0) {
+        --newDegree;
+    }
+    int* newCoefficients = new int[newDegree + 1];
+    for (int i = 0; i <= newDegree; ++i) {
+        newCoefficients[newDegree - i] = this->coefficient(i) + other.coefficient(i);
+    }
+    delete[] coefficients_;
+    coefficients_ = newCoefficients;
+    degree_ = newDegree;
+    return *this;
+}
+
+Polynomial operator+(Polynomial f, const Polynomial& g) {
+    f += g; 
+    return f;
+}
+
+Polynomial& Polynomial::operator-=(const Polynomial& other) {
+    int newDegree = std::max(this->degree_, other.degree_);
+    while (newDegree > -1 && this->coefficient(newDegree) - other.coefficient(newDegree) == 0) {
+        --newDegree;
+    }
+    int* newCoefficients = new int[newDegree + 1];
+    for (int i = 0; i <= newDegree; ++i) {
+        newCoefficients[newDegree - i] = this->coefficient(i) - other.coefficient(i);
+    }
+    delete[] coefficients_;
+    coefficients_ = newCoefficients;
+    degree_ = newDegree;
+    return *this;
+}
+
+Polynomial operator-(Polynomial f, const Polynomial& g) {
+    f -= g; 
+    return f;
+}
+
+Polynomial& Polynomial::operator*=(const Polynomial& other) {
+    int newDegree = this->degree_ + other.degree_;
+    int* newCoefficients = new int[newDegree + 1];
+    for (int i = 0; i <= newDegree; ++i) {
+        newCoefficients[newDegree - i] = 0; // coefficient of x^i
+        for (int k = 0; k <= i; ++k) {
+            newCoefficients[newDegree - i] += this->coefficient(k) * other.coefficient(i - k);
+        }
+    }
+    delete[] coefficients_;
+    coefficients_ = newCoefficients;
+    degree_ = newDegree;
+    return *this;
+}
+
+Polynomial operator*(Polynomial f, const Polynomial& g) {
+    f *= g; 
+    return f;
+}
+
+bool operator==(const Polynomial& f, const Polynomial& g) {
+    if (f.degree_ != g.degree_) {return false;}
+    for (int i = 0; i <= f.degree_; ++i) {
+        if (f.coefficients_[i] != g.coefficients_[i]) {return false;}
+    }
+    return true;
+}
+
+std::ostream& operator<<(std::ostream& os, const Polynomial& f) {
+    if (f.degree_ == -1) { // Print the 0 polynomial correctly
+        os << '0';  
+        return os;
+    }
+    for (int d = f.degree_; d >= 0; --d) {
+        int coeff = f.coefficient(d);
+        if (coeff == 0) {continue;}
+        // Print coefficient
+        if (d == f.degree_) {
+            if (coeff == 1) {
+                if (d == 0) {os << '1';} 
+            } else if (coeff == -1) {
+                os << (d == 0 ? "-1" : "-");
+            } else {
+                os << coeff;
+            }
+        } else {
+            os << (coeff > 0 ? " + " : " - ");
+            if ((coeff != 1 && coeff != -1) || d == 0) {os << std::abs(coeff);} 
+        }
+        // Print power of x
+        if (d == 1) {
+            os << 'x';
+        } else if (d > 1) {
+            os << "x^" << d;
+        }
+    }
+    return os;
+}
+
+int Polynomial::eval(int n) const {
+    auto f = [n](int acc, int val) { return acc * n + val; };
+    return std::accumulate(coefficients_, coefficients_ + degree_ + 1, 0, f);
+}
+
+int Polynomial::coefficient(int i) const {
+    return (i < 0 || i > degree_) ? 0 : coefficients_[degree_ - i];
+}</pre></code-box>
+
+            <h2>LeetCode Exercises</h2>
+
+            <p>
+                These exercises aren't about operator overloading; they're just an opportunity to practice defining classes.
+            </p>
+
+            <ul>
+                <li>
+                    <a href="https://leetcode.com/problems/design-neighbor-sum-service/" target="_blank">
+                        3242. Design Neighbor Sum Service
+                    </a> 
+                </li>
+                <li>
+                    <a href="https://leetcode.com/problems/design-an-ordered-stream/" target="_blank">
+                        1656. Design an Ordered Stream
+                    </a> 
+                </li>
+                <li>
+                    <a href="https://leetcode.com/problems/design-twitter/" target="_blank">
+                        355. Design Twitter
+                    </a>
+                </li>
+            </ul>
 
         </div> <!-- /.content -->
         <script type="text/javascript" src="../codeblock.js"></script>
