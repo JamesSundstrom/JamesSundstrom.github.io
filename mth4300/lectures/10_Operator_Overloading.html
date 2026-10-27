@@ -369,6 +369,13 @@ const int& Polynomial::operator[](size_t i) const {
                 <code>f</code> is (correctly) left alone.
             </p>
 
+            <p>
+                You might wonder why we had to declare <code>operator+</code> as a friend, when it doesn't access any 
+                private attributes of the <code>Polynomial</code> class. This is needed to make implicit conversions 
+                (which we'll talk about below) work correctly. You don't need to worry about the details; just remember 
+                that it's generally a good idea to declare <code>operator+</code> as a friend.
+            </p>
+
 
             <h2>Overloading some more arithmetic operators</h2>
 
