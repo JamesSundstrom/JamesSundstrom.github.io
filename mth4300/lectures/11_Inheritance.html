@@ -1,0 +1,620 @@
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Lecture 11: Inheritance</title>
+        <link rel="stylesheet" href="../style.css">
+    </head>
+    <body>
+        <div class="top-bar"><a href="../mth4300.html">🏠 Back to Math 4300 homepage</a>
+        </div>
+        <div class="content">
+            <h1>Lecture 11: Inheritance</h1>
+
+            <p>
+                Before we get to the main lecture on inheritance, there are a couple more C++ 
+                keywords that are worth discussing. 
+            </p>
+
+            <h2><code>static</code> and <code>constexpr</code></h2>
+
+            <p>
+                As you may already know from Python, sometimes we have attributes/methods that we want to 
+                assign to a class as a whole, rather than having a separate value for each instance of the 
+                class. These are called <i>static</i> members.
+            </p>
+            <p>
+                For example, a <code>CustomerAccount</code> class might keep track of how much money 
+                a customer owes your business, and the business might charge a late fee to clients who haven't 
+                paid by a certain date. Assume that every customer is charged an extra 10% for any fees that 
+                are unpaid by the end of the month. Since the 10% is the same for every account, it makes sense 
+                that it should be defined once for the entire class, rather than being an attribute of each 
+                instance, so it's conceptually clearer for it to be declared as a static variable. There's also 
+                a practical reason why it must be static; if you declare a non-static attribute as a constant, 
+                then the compiler won't define a default <code>operator=</code> for you. (The default behavior 
+                would be to reassign each member variable, which it can't do if one of the member variables is 
+                declared as <code>const</code>.) Therefore, if we try to declare the late fee as a non-static 
+                constant, the below code doesn't compile:
+            </p>
+
+            <wrong-code-box data-codeId="customerAccountWithNonstaticLateFee"><pre>class CustomerAccount {
+public:
+    double balance = 0;
+    void charge(double amt) {balance += amt;}
+    void receivePayment(double amt) {balance -= amt;}
+    void applyLateFee() {if (balance > 0) balance *= 1 + LateFee;}
+private:
+    const double LateFee{0.10};
+};
+
+int main() {
+    CustomerAccount acct1, acct2;
+    acct2 = acct1; // operator= is undefined!
+}</pre></wrong-code-box>
+
+            <p>
+                Declaring <code>LateFee</code> as <code>static</code> solves this problem, but then it 
+                creates another problem:
+            </p>
+
+            <wrong-code-box data-codeId="customerAccountWithStaticConstLateFee"><pre>class CustomerAccount {
+public:
+    double balance = 0;
+    void charge(double amt) {balance += amt;}
+    void receivePayment(double amt) {balance -= amt;}
+    void applyLateFee() {if (balance > 0) balance *= 1 + LateFee;}
+private:
+    static const double LateFee{0.10};
+};</pre></wrong-code-box>
+
+            <p>
+                C++ doesn't allow you to initialize non-integral types as <code>static const</code> inside a class. 
+                One solution is to move the initialization outside the class: write 
+                <code>static const double LateFee;</code> inside the class, and 
+                <code>const double CustomerAccount::LateFee = 0.10;</code> outside the class. But this is inelegant. 
+                C++11 introduced a better solution: use <code>constexpr</code> instead of <code>const</code>. 
+                Declaring a variable as <code>constexpr</code> means not only that it's constant, but that its value 
+                can be determined at compile time. C++ allows non-integral types to be <code>static constexpr</code>, 
+                so the below code works:
+            </p>
+
+            <code-box data-codeId="customerAccountWithStaticConstexprLateFee"><pre>class CustomerAccount {
+public:
+    double balance = 0;
+    void charge(double amt) {balance += amt;}
+    void receivePayment(double amt) {balance -= amt;}
+    void applyLateFee() {if (balance > 0) balance *= 1 + LateFee;}
+private:
+    static constexpr double LateFee{0.10};
+};</pre></code-box>
+
+            <h2>Inheritance</h2>
+
+            <p>
+                You should already be familiar with the basic idea of <i>inheritance</i> from Python: 
+                inheritance represents the "is a" relationship between classes. That is, the <i>derived</i> 
+                class is a specific type of the <i>base</i> class. One of the classic examples: suppose you 
+                have an <code>Animal</code> class and a <code>Dog</code> class. The <code>Dog</code> class 
+                could inherit from the <code>Animal</code> class, because a dog is a type of animal.
+            </p>
+
+            <p>
+                One benefit of inheritance is that it avoids code reuse. If you have behaviors that 
+                are common to every animal, they can be defined in the <code>Animal</code> class, and 
+                then the <code>Dog</code> class automatically inherits those behaviors, so that you 
+                don't need to rewrite all of that code in the <code>Dog</code> class.
+            </p>
+
+            <p>
+                Another benefit is polymorphism: if you have a function that accepts an <code>Animal</code> 
+                as its argument, then it can also accept a <code>Dog</code>, <code>Cat</code>, <code>Bird</code>, 
+                etc.
+            </p>
+
+            <h2>Example: <code>Employee</code></h2>
+
+            <p>
+                Consider the following class, which represents a salaried employee at a company that pays its 
+                employees weekly:
+            </p>
+
+            <code-box data-codeId="initialSalariedEmployeeDefinition"><pre>#include &lt;string>
+
+class SalariedEmployee {
+public:
+    Employee(std::string name, double salary) : 
+        name_(name), weeklySalary_(salary) {}
+    double getThisWeeksPay() const {return weeklySalary_;}
+    void pay() const {std::cout << "Paid $" << getThisWeeksPay() << " to " << name_ << std::endl;}
+    void endWeek() {pay();}
+    void raise(double r) {weeklySalary_ += r;}
+private:
+    std::string name_;
+    double weeklySalary_;
+};</pre></code-box>
+
+            <p>
+                This is fairly reasonable for a generic class representing any salaried employee. The 
+                one thing that might confuse you is why we have separate <code>pay()</code> and 
+                <code>endWeek()</code> methods, when <code>endWeek()</code> simply invokes 
+                <code>pay()</code> anyway. Right now, the only thing that we need to do 
+                for employees at the end of the week is pay them, but you could imagine that in the future 
+                we might have multiple weekly tasks we need to perform for each employee. Our code will 
+                be easier to maintain if we plan ahead for that future now, by recognizing that the 
+                function we call at the end of the week won't always just be the <code>pay()</code> 
+                function, and making it a separate function to start.
+            </p>
+
+            <p>
+                Next, we might have other needs for specific types of employees. For example, we might 
+                want a class for salespeople which tracks their sales:
+            </p>
+
+            <code-box data-codeId="initialSalesEmployeeDefinition"><pre>class SalesEmployee : public SalariedEmployee {
+public:
+    SalesEmployee(std::string name, double salary) : SalariedEmployee(name, salary) {}
+    void makeSale(double amt) {weeklySales_ += amt;}
+    double weeklySales() const {return weeklySales_;}
+    void endWeek() {pay(); weeklySales_ = 0;}
+private:
+    double weeklySales_{0};
+};</pre></code-box>
+
+            <p>
+                This is a very basic example of inheritance. Notice how it works:
+            </p>
+
+            <ul>
+                <li>
+                    The code <code>class SalesEmployee : public SalariedEmployee</code> says that 
+                    <code>SalesEmployee</code> inherits from <code>SalariedEmployee</code>. The use of <code>public</code> 
+                    means that anything that was a public attribute/method of the base class will continue to be 
+                    public in the derived class. (Similarly, anything that was private will continue to be private. Anything 
+                    that was protected -- which we'll discuss soon -- will continue to be protected.)
+                </li>
+                <li>
+                    Note that we can define a constructor for <code>SalesEmployee</code> easily, by callng a constructor 
+                    of <code>SalariedEmployee</code>. In this case, we didn't need to include initialize <code>weeklySales_</code> 
+                    explicitly in the constructor, because it already has a default value of 0. But if we needed to explicitly initialize 
+                    any attributes of the base class, we could have done that after the base class initializer, using the usual 
+                    member initializer list syntax. (As usual, if we wanted our <code>SalesEmployee</code> constructor to 
+                    do more after the member initializers finished, we could also have put more code 
+                    inside the braces where we currently have an empty function body.)
+                </li>
+                <li>
+                    Of course, we were able to add additional attributes/methods that the base class lacked; in this case, 
+                    we added the ability to track sales. That's the point of inheritance: a derived class inherits the 
+                    behavior of its base class, but also has appropriate behavior specific to its type.
+                </li>
+                <li>
+                    We were also able to <i>override</i> the <code>endWeek()</code> method, because there are two things 
+                    that need to happen to a <code>SalesEmployee</code> at the end of a week: they need to get paid, and 
+                    their weekly sales need to be reset to 0. This is a very valuable ability: the fact that we can 
+                    override methods of the base class means that we can take advantage of inheritance even when the 
+                    methods of the base class aren't 100% what we want in the derived class. (Technically, we didn't 
+                    override the method -- we hid it by creating another function with the same name. We'll see a little 
+                    bit later what the distinction between the two concepts is, and how hiding when you mean to override 
+                    can lead to subtle bugs. But before we can talk about that, we'll need to talk about some other 
+                    stuff first.)
+                </li>
+            </ul>
+
+            <p>
+                If you want, you can check that the below code prints what you expect. In particular, note that the 
+                last line says that Bob's weekly sales are 0, because the compiler correctly used the <code>endWeek()</code> 
+                method for <code>SalesEmployee</code> (which resets the weekly sales), rather than the <code>endWeek()</code> 
+                method for <code>SalariedEmployee</code>.
+            </p>
+
+            <code-box data-codeId="firstDemonstrationOfSalesEmployee"><pre>#include &lt;iostream>
+#include &lt;string>
+
+class SalariedEmployee {
+public:
+    SalariedEmployee(std::string name, double salary) : 
+        name_(name), weeklySalary_(salary) {}
+    double getThisWeeksPay() const {return weeklySalary_;}
+    void pay() const {std::cout << "Paid $" << getThisWeeksPay() << " to " << name_ << std::endl;}
+    void endWeek() {pay();}
+    void raise(double r) {weeklySalary_ += r;}
+private:
+    std::string name_;
+    double weeklySalary_;
+};
+
+class SalesEmployee : public SalariedEmployee {
+public:
+    SalesEmployee(std::string name, double salary) : SalariedEmployee(name, salary) {}
+    void makeSale(double amt) {weeklySales_ += amt;}
+    double weeklySales() const {return weeklySales_;}
+    void endWeek() {pay(); weeklySales_ = 0;}
+private:
+    double weeklySales_{0};
+};
+
+int main() {
+    SalesEmployee bob("Bob", 1500);
+    bob.endWeek();                                                  // Paid $1500 to Bob
+    std::cout << "Bob's sales: " << bob.weeklySales() << std::endl; // Bob's sales: 0
+    bob.makeSale(10000); 
+    std::cout << "Bob's sales: " << bob.weeklySales() << std::endl; // Bob's sales: 10000
+    bob.raise(200);
+    bob.endWeek();                                                  // Paid $1700 to Bob
+    std::cout << "Bob's sales: " << bob.weeklySales() << std::endl; // Bob's sales: 0
+}</pre></code-box>
+
+            <p>
+                But what if that's not how we want the <code>SalesEmployee</code> class to behave? 
+                For example, maybe salespeople get paid a commission (a percentage of their sales)? 
+                In that case, we will also need to override the behavior of <code>getThisWeeksPay()</code>:
+            </p>
+
+            <code-box data-codeId="firstCommissionedSalesEmployee"><pre>class SalesEmployee : public SalariedEmployee {
+public:
+    SalesEmployee(std::string name, double salary) : SalariedEmployee(name, salary) {}
+    void makeSale(double amt) {weeklySales_ += amt;}
+    double weeklySales() const {return weeklySales_;}
+    void endWeek() {pay(); weeklySales_ = 0;}
+    double getThisWeeksPay() const {return weeklySalary_ + commission_ * weeklySales_;}
+private:
+    static constexpr double commission_{0.10};
+    double weeklySales_{0};
+};</pre></code-box>
+
+            <p>
+                If you try to replace the previous definition of <code>SalesEmployee</code> with this one, the 
+                code won't compile. The problem is that <code>weeklySalary_</code> is a <code>private</code> 
+                member of <code>SalariedEmployee</code>, which means that it can't be accessed outside of
+                <code>SalariedEmployee</code>. You might have expected that <code>SalesEmployee</code> could 
+                access private members of <code>SalariedEmployee</code>, since it inherits from 
+                <code>SalariedEmployee</code>, but that's not how C++ works. If you want members of the 
+                base class to be accessible to derived classes while still being inaccessible to the outside 
+                world, you need something else:
+            </p>
+
+            <h2><code>protected</code></h2>
+
+            <p>
+                The level between <code>public</code> and <code>private</code> is <code>protected</code>: it 
+                means that the attribute is accessible to derived classes, but otherwise inaccessible outside 
+                the class. That's exactly what we need to solve the problem we had above. Edit the above code 
+                so that <code>weeklySalary_</code> is <code>protected</code> instead of <code>private</code>:
+            </p>
+
+            <wrong-code-box data-codeId="demonstrateMissingVirtualBug"><pre>#include &lt;iostream>
+#include &lt;string>
+
+class SalariedEmployee {
+public:
+    SalariedEmployee(std::string name, double salary) : 
+        name_(name), weeklySalary_(salary) {}
+    double getThisWeeksPay() const {return weeklySalary_;}
+    void pay() const {std::cout << "Paid $" << getThisWeeksPay() << " to " << name_ << std::endl;}
+    void endWeek() {pay();}
+    void raise(double r) {weeklySalary_ += r;}
+private:
+    std::string name_;
+protected:
+    double weeklySalary_;
+};
+
+class SalesEmployee : public SalariedEmployee {
+public:
+    SalesEmployee(std::string name, double salary) : SalariedEmployee(name, salary) {}
+    void makeSale(double amt) {weeklySales_ += amt;}
+    double weeklySales() const {return weeklySales_;}
+    void endWeek() {pay(); weeklySales_ = 0;}
+    double getThisWeeksPay() const {return weeklySalary_ + commission_ * weeklySales_;}
+private:
+    static constexpr double commission_{0.10};
+    double weeklySales_{0};
+};
+
+int main() {
+    SalesEmployee bob("Bob", 1500);
+    bob.makeSale(10000);
+    std::cout << bob.getThisWeeksPay() << std::endl; // 2500                (correct)
+    bob.endWeek();                                   // Paid $1500 to Bob   (oops)
+}</pre></wrong-code-box>
+
+            <p>
+                This compiles, and it might even look right, but if you run the code, it will pay Bob $1500 rather than 
+                the $2500 he's owed.
+            </p>
+
+        <p>
+            When we call <code>bob.getThisWeeksPay()</code>, it correctly returns 2500, but then 
+            the <code>endWeek()</code> method pays Bob the wrong amount anyway!
+            The problem is that <code>endWeek()</code> calls the <code>pay()</code> method from 
+            <code>SalariedEmployee</code>, which in turn calls the <code>getThisWeeksPay()</code>. 
+            But since <code>pay()</code> comes from <code>SalariedEmployee</code>, the <code>getThisWeeksPay()</code>
+            that it calls is the <code>SalariedEmployee</code> version, even though we intended for that version 
+            to be overridden. 
+        </p>
+
+        <p>
+            A similar issue arises if we try to use a <code>SalariedEmployee*</code> to point to a 
+            <code>SalesEmployee</code> object. This is legal, because a <code>SalesEmployee</code> is 
+            a type of <code>SalariedEmployee</code>. But when we do that, the compiler decides which 
+            version of <code>getThisWeeksPay()</code> to use for <code>ptr->getThisWeeksPay()</code> based 
+            on the type of the pointer, so it uses the <code>SalariedEmployee</code> version, which isn't 
+            what we want.
+        </p>
+
+        <code-box data-codeId="demonstrateMissingVirtualBugWithPointer"><pre>int main() {
+    SalesEmployee bob("Bob", 1500);
+    bob.makeSale(10000);
+    SalariedEmployee* ptr = &bob;
+    std::cout << ptr->getThisWeeksPay() << std::endl; // Prints 1500 rather than 2500
+}</pre></code-box>
+
+        <p>
+            You might feel that this example is a little artificial -- why did we use a 
+            <code>SalariedEmployee*</code> to point to something that we know is a <code>SalesEmployee</code>? 
+            The below is another version of the same issue, which might feel more natural: what if we want to 
+            put all the employees into a single vector? When we loop over that vector, the loop variable 
+            <code>employee</code> must be a <code>SalariedEmployee</code>, so <code>employee.endWeek()</code> 
+            will always call the <code>SalariedEmployee</code> version. Not only does the system pay Bob the 
+            wrong amount, but it also fails to reset his weekly sales at the end of the week.
+        </p>
+
+        <code-box data-codeId="demonstrateMissingVirtualBugWithVector"><pre>int main() {
+    SalariedEmployee alice("Alice", 2000);
+    SalesEmployee bob("Bob", 1500);
+    bob.makeSale(10000);
+    std::vector&lt;SalariedEmployee> employees = {alice, bob};
+    for (auto employee : employees) {
+        employee.endWeek();
+    }
+    std::cout << bob.weeklySales() << std::endl; // Prints 10000
+}</pre></code-box>
+
+        <p>
+            This is the subtlety I mentioned earlier, about how we were actually hiding methods rather than 
+            overriding them. With hidden methods, the compiler chooses at compile time which method to use 
+            based on the declared type of the object, rather than choosing at runtime based on the actual 
+            type. If you want to override instead (which you usually will), you will need:
+        </p>
+
+        <h2><code>virtual</code></h2>
+
+        <p>
+            When declaring a method that you intend to override later, you should declare it as 
+            <code>virtual</code>. Declaring a method as <code>virtual</code> tells the compiler that it should 
+            resolve the function call at runtime based on the actual type of the object, rather than basing it 
+            on the declared type. This solves the problem that we had above: if we have a <code>SalesEmployee</code> 
+            object and we attempt to call its <code>endWeek()</code> method, we will always get <code>SalesEmployee::endWeek()</code>,
+            regardless of whether the variable that we used to access the object was a <code>SalesEmployee</code>, 
+            <code>SalariedEmployee*</code>, or <code>SalariedEmployee</code>.
+        </p>
+
+        <p>
+            You can run the below code and check that it works correctly now. If you want, you can also experiment with the 
+            other situations that were a problem before we started using <code>virtual</code>, and check that they 
+            also work correctly.
+        </p>
+
+        <code-box data-codeId="correctedCommissionWithVirtual"><pre>#include &lt;iostream>
+#include &lt;string>
+
+class SalariedEmployee {
+public:
+    SalariedEmployee(std::string name, double salary) : 
+        name_(name), weeklySalary_(salary) {}
+    virtual double getThisWeeksPay() const {return weeklySalary_;}
+    void pay() const {std::cout << "Paid $" << getThisWeeksPay() << " to " << name_ << std::endl;}
+    virtual void endWeek() {pay();}
+    void raise(double r) {weeklySalary_ += r;}
+private:
+    std::string name_;
+protected:
+    double weeklySalary_;
+};
+
+class SalesEmployee : public SalariedEmployee {
+public:
+    SalesEmployee(std::string name, double salary) : SalariedEmployee(name, salary) {}
+    void makeSale(double amt) {weeklySales_ += amt;}
+    double weeklySales() const {return weeklySales_;}
+    void endWeek() {pay(); weeklySales_ = 0;}
+    double getThisWeeksPay() const {return weeklySalary_ + commission_ * weeklySales_;}
+private:
+    static constexpr double commission_{0.10};
+    double weeklySales_{0};
+};
+
+int main() {
+    SalesEmployee bob("Bob", 1500);
+    bob.makeSale(10000); 
+    bob.endWeek();                                                  // Paid $2500 to Bob
+    std::cout << "Bob's sales: " << bob.weeklySales() << std::endl; // Bob's sales: 0
+}</pre></code-box>
+
+            <h2><code>override</code></h2>
+
+            <p>
+                The <code>override</code> keyword tells the compiler that the method you're declaring is 
+                supposed to override a virtual method. As we saw above, it's not strictly necessary -- 
+                the override will still happen even with the keyword. But it is considered best practice. 
+                It you make a typo in the overriding method, so that it's declared slightly differently 
+                and it doesn't actually override the original, having the <code>override</code> keyword in 
+                place helps you catch the bug. The compiler will refuse to compile the code if something 
+                that's supposed to be an override isn't actually overriding anything.
+            </p>
+            
+            <p>
+                Thus, we should replace the declarations of <code>endWeek()</code> and <code>getThisWeeksPay()</code> 
+                in <code>SalesEmployee</code> with the following:
+            </p>
+
+            <code-box data-codeId="usingOverrideCorrectly"><pre>void endWeek() override {pay(); weeklySales_ = 0;}
+double getThisWeeksPay() const override {return weeklySalary_ + commission_ * weeklySales_;}</pre></code-box>
+
+            <h2>Virtual destructors</h2>
+
+            <p>
+                We've just seen that methods that might be overridden should be declared as virtual. A subtle 
+                point worth noting is that this applies to destructors too. Suppose you wrote code like this:
+            </p>
+
+            <code-box data-codeId="virtualDestructorExplanation"><pre>Base* b = new Derived;
+delete b;</pre></code-box>
+
+            <p>
+                If the destructor for <code>Base</code> wasn't declared as virtual, then this will call that
+                destructor, rather than the <code>Derived</code> destructor. This leads to undefined behavior. 
+            </p>
+
+            <p>
+                Therefore, if there's any chance of this situation arising (where a derived class is 
+                referenced polymorphically by a base pointer), you should declare the destructor of the 
+                base class as virtual. This shouldn't be too much trouble, because you can simply declare 
+                it as <code>default</code>.
+            </p>
+
+            <p>
+                This triggers other Rule of Five issues. When you define a destructor explicitly (even if 
+                you do so using <code>default</code>), the compiler no longer automatically generated 
+                move methods, so if you want those, you need to redefine them yourself (which again, 
+                you could do using <code>default</code>). But the copy operators can also lead to annoying 
+                issues -- if you copy an object of a derived class into a variable of the base class, that 
+                loses information (this is called <i>slicing</i>) and may lead to undesired behavior. For that 
+                reason, it's sometimes suggested that, when using polymorphism, you delete the other four 
+                Rule of Five methods. You can do that using <code>delete</code>, just like you would 
+                use <code>default</code>.
+            </p>
+
+            <p>
+                Again, you can skip all of this if you're certain that your derived class will never be 
+                accessed via a base pointer. In this course, you can usually skip it. I won't penalize 
+                you for skipping a virtual destructor unless it's actually necessary to make existing 
+                code work correctly.
+            </p>
+
+            <p>
+                For the rest of this lesson, we'll ignore these issues, both because I don't want to get 
+                into them in this course, and simply so that they don't distract from the main point of  
+                the lesson. Here's our new code:
+            </p>
+
+            <code-box data-codeId="employeesWithVirtualDestructor"><pre>#include <iostream>
+#include <string>
+
+class SalariedEmployee {
+public:
+    SalariedEmployee(std::string name, double salary) : 
+        name_(name), weeklySalary_(salary) {}
+    virtual ~SalariedEmployee() = default;
+    virtual double getThisWeeksPay() const {return weeklySalary_;}
+    void pay() const {std::cout << "Paid $" << getThisWeeksPay() << " to " << name_ << std::endl;}
+    virtual void endWeek() {pay();}
+    void raise(double r) {weeklySalary_ += r;}
+private:
+    std::string name_;
+protected:
+    double weeklySalary_;
+};
+
+class SalesEmployee : public SalariedEmployee {
+public:
+    SalesEmployee(std::string name, double salary) : SalariedEmployee(name, salary) {}
+    void makeSale(double amt) {weeklySales_ += amt;}
+    double weeklySales() const {return weeklySales_;}
+    void endWeek() override {pay(); weeklySales_ = 0;}
+    double getThisWeeksPay() const override {return weeklySalary_ + commission_ * weeklySales_;}
+private:
+    static constexpr double commission_{0.10};
+    double weeklySales_{0};
+};</pre></code-box>
+
+        <h2>Pure Virtual Functions and Abstract Classes</h2>
+
+        <p>
+            What if our company also has employees that are paid hourly wages? We could create a new class 
+            <code>Employee</code>, and have <code>SalariedEmployee</code> and <code>WageEmployee</code> 
+            both inherit from that. The code might look something like this:
+        </p>
+
+        <code-box data-codeId="addingBaseEmployeeClass"><pre>#include &lt;iostream>
+#include &lt;string>
+
+class Employee {
+public:
+    Employee(std::string name) : name_(name) {}
+    virtual ~Employee() = default;
+    virtual double getThisWeeksPay() const = 0;
+    void pay() const {std::cout << "Paid $" << getThisWeeksPay() << " to " << name_ << std::endl;}
+    virtual void endWeek() {pay();}
+    virtual void raise(double r) = 0;
+private:
+    std::string name_;
+};
+
+class WageEmployee : public Employee {
+public:
+    WageEmployee(std::string name, double wage) : 
+        Employee(name), hourlyWage_(wage) {}
+    void work(double hours) {hoursWorked_ += hours;}
+    double getThisWeeksPay() const override {return hoursWorked_ * hourlyWage_;}
+    void endWeek() override {pay(); hoursWorked_ = 0;}
+    void raise(double r) override {hourlyWage_ += r;}
+private:
+    double hoursWorked_{0};
+    double hourlyWage_;
+};
+
+class SalariedEmployee : public Employee {
+public:
+    SalariedEmployee(std::string name, double salary) : 
+        Employee(name), weeklySalary_(salary) {}
+    virtual ~SalariedEmployee() = default;
+    virtual double getThisWeeksPay() const override {return weeklySalary_;}
+    void raise(double r) override {weeklySalary_ += r;}
+protected:
+    double weeklySalary_;
+};
+
+class SalesEmployee : public SalariedEmployee {
+public:
+    SalesEmployee(std::string name, double salary) : SalariedEmployee(name, salary) {}
+    void makeSale(double amt) {weeklySales_ += amt;}
+    double weeklySales() const {return weeklySales_;}
+    void endWeek() override {pay(); weeklySales_ = 0;}
+    double getThisWeeksPay() const override {return weeklySalary_ + commission_ * weeklySales_;}
+private:
+    static constexpr double commission_{0.10};
+    double weeklySales_{0};
+};</pre></code-box>
+
+            <p>
+                This code introduces a few new concepts that we haven't discussed before:
+            </p>
+
+            <ul>
+                <li>
+                    Now, <code>SalesEmployee</code> inherits from <code>SalariedEmployee</code>, which inherits 
+                    from <code>Employee</code>. This means that transitively, <code>SalesEmployee</code> inherits 
+                    from <code>Employee</code> as well. (This should make intuitive sense. Inheritance represents 
+                    an "is a" relationship: if every A is a B and every B is a C, then certainly every A is a C.) 
+                    We can write code like <code>Employee* p = new SalesEmployee("Bob", 1500);</code> and it will 
+                    compile.
+                </li>
+                <li>
+                    Notice the declaration <code>virtual double getThisWeeksPay() const = 0;</code>. The 
+                    "<code>= 0</code>" means that this is a <i>pure virtual</i> function; it has no definition. 
+                    Therefore, derived classes must provide their own implementation.
+                </li>
+                <li>
+                    Since <code>Employee</code> has a pure virtual function, it is an <i>abstract</i> class. An 
+                    abstract class cannot be instatiated directly, since that would create an instance with an 
+                    undefined method. It can only be instantiated indirectly, by instantiating a derived class 
+                    which implements all the pure virtual methods.
+                </li>
+            </ul>
+
+            
+
+        </div> <!-- /.content -->
+        <script type="text/javascript" src="../codeblock.js"></script>
+    </body>
+</html>
