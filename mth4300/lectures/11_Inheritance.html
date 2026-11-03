@@ -683,7 +683,7 @@ class Drawing {
 public:
     Drawing(std::string bg_color) : bg_color_(bg_color), shapes_() {}
     void drawShape(Shape* shape) {shapes_.push_front(shape);}
-    std::string getColor(double x, double y) {
+    std::string getColor(double x, double y) const {
         for (const Shape* shape : shapes_) {
             if (shape->contains(x, y)) return shape->color();
         }
