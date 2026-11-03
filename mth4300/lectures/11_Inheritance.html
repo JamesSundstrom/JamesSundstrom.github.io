@@ -612,7 +612,108 @@ private:
                 </li>
             </ul>
 
-            
+            <h2 id="ShapeExercise">
+                <code>Shape</code> Exercise
+                <span style="font-weight: normal; font-size: 1rem;">
+                    (<a href="11_Inheritance_Solutions.html#ShapeExercise">Solution</a>)
+                </span>
+            </h2>
+
+            <p>
+                In this exercise, we'll define a class to represent shapes, for use in a drawing program. Each 
+                shape will have a color (which, for simplicity, we'll represent by a string). Since we don't know 
+                how to draw pictures with C++, we'll represent the ability to draw by a method <code>getColor(x, y)</code> 
+                that returns the color of the pixel at coordinates (x, y). If there are multiple shapes that contain 
+                the point (x, y), then the point has the color of the most-recently drawn shape (i.e., new shapes are 
+                drawn on top of existing shapes).
+            </p>
+
+            <p>
+                Below, I'll provide the code for the <code>Drawing</code> class, along with some testing code that you 
+                can use. You'll need to write the code for shapes. Specifically, you should create the following classes, 
+                taking advantage of inheritance to avoid code reuse as much as possible:
+            </p>
+
+            <ul>
+                <li>
+                    An abstract class <code>Shape</code> which has a constructor which takes one argument, a string 
+                    containing the name of the shape's color. The class should have a method <code>color()</code> 
+                    that returns the shape's color, and a pure virtual method <code>contains(x, y)</code> that returns 
+                    <code>true</code>/<code>false</code> depending whether the shape contains the given point. 
+                </li>
+                <li>
+                    A class <code>Rectangle</code> that inherits from <code>Shape</code>. It should have a constructor 
+                    <code>Rectangle(std::string color, double left, double right, double bottom, double top)</code> 
+                    that takes as arguments the rectangle's color, as well as the coordinates of its edges.
+                </li>
+                <li>
+                    A class <code>Square</code> that inherits from <code>Rectangle</code>. It should have a constructor
+                    <code>Square(std::string color, double left, double bottom, double side_length)</code> that takes 
+                    as arguments the square's color, the coordinates of its bottom-left corner, and its side length.
+                </li>
+                <li>
+                    A class <code>Circle</code> that inherits from <code>Shape</code>. It should have a constructor 
+                    <code>Circle(std::string color, double x, double y, double r)</code> that takes as arguments the 
+                    circle's color, the coordinates of its center, and its radius.
+                </li>
+            </ul>
+
+            <p>
+                If you have done this correctly, then the code provided below should print "<code>All tests passed</code>." 
+                If you finish early (or want to practice more on your own time), try to add more features: you could implement 
+                other shapes, or the ability to rearrange the order of shapes within a <code>Drawing</code> after they've 
+                been drawn, or give shapes the ability to be partially transparent (which would require you to represent 
+                color by numeric RGB values rather than by a string).
+            </p>
+
+            <p>
+                The test code provided below makes this drawing:
+            </p>
+
+            <center><img src="lec11_drawing.png" alt="The drawing represented by the test code"></center>
+
+            <p></p>
+
+            <code-box data-codeId="shapeExerciseTestCode"><pre>#include &lt;cassert>
+#include &lt;iostream>
+#include &lt;string>
+#include &lt;list>
+
+class Drawing {
+public:
+    Drawing(std::string bg_color) : bg_color_(bg_color), shapes_() {}
+    void drawShape(Shape* shape) {shapes_.push_front(shape);}
+    std::string getColor(double x, double y) {
+        for (const Shape* shape : shapes_) {
+            if (shape->contains(x, y)) return shape->color();
+        }
+        return bg_color_;
+    }
+private:
+    std::string bg_color_;
+    std::list&lt;Shape*> shapes_;
+};
+
+int main() {
+    Rectangle rectangle("blue", 0.5, 2, -3, 4);
+    Circle circle("green", 0, 1, 2);
+    Square square("red", -3, -2.5, 4.5);
+
+    Drawing drawing("white");
+    drawing.drawShape(&rectangle);
+    drawing.drawShape(&circle);
+    drawing.drawShape(&square);
+    assert(drawing.getColor(0, 0) == "red");
+    assert(drawing.getColor(1.4, 2.1) == "green");
+    assert(drawing.getColor(1.75, -0.75) == "blue");
+    assert(drawing.getColor(0.47, 2.98) == "white");
+    std::cout << "All tests passed" << std::endl;
+    return 0;
+}
+
+</pre></code-box>
+
+
 
         </div> <!-- /.content -->
         <script type="text/javascript" src="../codeblock.js"></script>

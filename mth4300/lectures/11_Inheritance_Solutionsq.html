@@ -1,0 +1,108 @@
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Lecture 11 Solutions</title>
+        <link rel="stylesheet" href="../style.css">
+    </head>
+    <body>
+        <div class="top-bar"><a href="../mth4300.html">🏠 Back to Math 4300 homepage</a>
+        </div>
+        <div class="content">
+            <h1>Lecture 11 Solutions</h1>
+
+
+            <h2 id="ShapeExercise">
+                <code>Shape</code> Exercise
+                <span style="font-weight: normal; font-size: 1rem;">
+                    (<a href="11_Inheritance.html#ShapeExercise">Back to lecture</a>)
+                </span>
+            </h2>
+
+            <code-box data-codeId="shapeExerciseSolution"><pre>#include &lt;cassert>
+#include &lt;iostream>
+#include &lt;string>
+#include &lt;list>
+
+class Shape {
+public:
+    Shape(std::string color) : color_(color) {}
+    std::string color() const {return color_;}
+    virtual bool contains(double x, double y) const = 0;
+private:
+    std::string color_;
+};
+
+class Rectangle : public Shape {
+public:
+    Rectangle(std::string color, double left, double right, double bottom, double top) : 
+        Shape(color), left_(left), right_(right), bottom_(bottom), top_(top) {}
+    bool contains(double x, double y) const override 
+        {return left_ <= x && x <= right_ && bottom_ <= y && y <= top_;}
+private:
+    double left_;
+    double right_;
+    double bottom_;
+    double top_;
+};
+
+class Square : public Rectangle {
+public:
+    Square(std::string color, double left, double bottom, double side_length) :
+        Rectangle(color, left, left + side_length, bottom, bottom + side_length) {}
+};
+
+class Circle : public Shape {
+public:
+    Circle(std::string color, double x, double y, double r) :
+        Shape(color), x_(x), y_(y), r_(r) {}
+    bool contains(double x, double y) const override {
+        double dx{x - x_}, dy{y - y_};
+        return dx*dx + dy*dy <= r_ * r_;
+    }
+private:
+    double x_;
+    double y_;
+    double r_;
+};
+
+class Drawing {
+public:
+    Drawing(std::string bg_color) : bg_color_(bg_color), shapes_() {}
+    void drawShape(Shape* shape) {shapes_.push_front(shape);}
+    std::string getColor(double x, double y) {
+        for (const Shape* shape : shapes_) {
+            if (shape->contains(x, y)) return shape->color();
+        }
+        return bg_color_;
+    }
+private:
+    std::string bg_color_;
+    std::list&lt;Shape*> shapes_;
+};
+
+int main() {
+    Rectangle rectangle("blue", 0.5, 2, -3, 4);
+    Circle circle("green", 0, 1, 2);
+    Square square("red", -3, -2.5, 4.5);
+
+    Drawing drawing("white");
+    drawing.drawShape(&rectangle);
+    drawing.drawShape(&circle);
+    drawing.drawShape(&square);
+    assert(drawing.getColor(0, 0) == "red");
+    assert(drawing.getColor(1.4, 2.1) == "green");
+    assert(drawing.getColor(1.75, -0.75) == "blue");
+    assert(drawing.getColor(0.47, 2.98) == "white");
+    std::cout << "All tests passed" << std::endl;
+    return 0;
+}
+
+</pre></code-box>
+
+
+
+        </div> <!-- /.content -->
+        <script type="text/javascript" src="../codeblock.js"></script>
+    </body>
+</html>
