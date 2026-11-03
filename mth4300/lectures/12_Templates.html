@@ -1,0 +1,513 @@
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Lecture 12: Templates</title>
+        <link rel="stylesheet" href="../style.css">
+    </head>
+    <body>
+        <div class="top-bar"><a href="../mth4300.html">🏠 Back to Math 4300 homepage</a>
+        </div>
+        <div class="content">
+            <h1>Lecture 12: Templates</h1>
+
+            <h2>Motivation</h2>
+
+            <p>
+                Often, we write boilerplate code that is applicable to many different data types. 
+                For example, the <code>max</code> function which returns the maximum of two 
+                values is relevant to any type that has a comparator, and the exact same 
+                code works for every such type:
+            </p>
+
+            <code-box data-codeId="maxLineOfCode">return (x > y) ? x : y;</code-box>
+
+            <p>
+                It would be nice to be able to write this code once and have it work for 
+                any type, rather than needing to write a separate <code>max</code> function for 
+                every type. 
+            </p>
+
+            <p>
+                Similarly, there are classes that are designed to interact with other classes. For 
+                example, <code>std::vector</code> can create a vector of <code>int</code>s, or of
+                <code>std::string</code>s, or even of a class that you created yourself.
+            </p>
+
+            <p>
+                Templates allow us to create a class or function that works polymorphically with 
+                many different types, without needing to rewrite the code for each type we want to
+                work with. Instead, we provide a placeholder (usually denoted <code>T</code>) for the 
+                type, and the compiler generates code that replaces <code>T</code> with whatever 
+                types the class/function is used with.
+            </p>
+
+            <h2>Function Templates</h2>
+
+            <p>
+                A function template can be parametrized by one or more types. Before declaring the 
+                function, you use the <code>template</code> keyword followed by the type parameter 
+                list. The parameter list is written between angle brackets. (This is easy to remember -- 
+                the brackets for declaring the type parameters are the same as you're used to when 
+                declaring a parametrized type, e.g., <code>std::vector<&lt;int></code>.) Usually the 
+                parameters will be types, so you declare them using the <code>typename</code> keyword. 
+                (You can use <code>class</code> instead of <code>typename</code>, but <code>typename</code> 
+                is considered better style.) For example, below is our example for calculating the maximum. 
+                (It would be better style to name it <code>max</code>, since that's how programmers usually 
+                refer to the maximum function, but in this case what would have collided with a built-in 
+                <code>max</code> function.)
+            </p>
+
+            <code-box data-codeId="maxExample"><pre>#include &lt;iostream>
+#include &lt;string>
+
+template &lt;typename T>
+T maximum(T x, T y) {
+    return (x > y) ? x : y;
+}
+
+int main() {
+    std::string dog{"dog"}, cat{"cat"};
+    std::cout << maximum(3, 4) << std::endl;         // 4
+    std::cout << maximum(3.14, 2.72) << std::endl;   // 3.14
+    std::cout << maximum(cat, dog) << std::endl;     // dog
+    return 0;
+}</pre></code-box>
+
+            <p>
+                Aside: Why was it important that we declared <code>std::string</code> variables rather than calling
+                <code>maximum("cat", "dog")</code> directly?
+            </p>
+
+            <p>
+                Of course, you  wouldn't generally write the above code yourself, because you can get the 
+                <code>std::max</code> function from the <code>&lt;algorithm></code> header.
+            </p>
+
+            <p>
+                As we saw above, we were able to simply write <code>maximum</code>, not <code>maximum&lt;int></code>; 
+                the compiler is able to deduce the relevant type by looking at the arguments to the function. If the 
+                two arguments to <code>maximum</code> were different types, then the code would not compile, because 
+                the compiler could not determine what <code>T</code> represents:
+            </p>
+
+            <wrong-code-box data-codeId="maxWithConflictingTypesExample"><pre>#include &lt;iostream>
+
+template &lt;typename T>
+T maximum(T x, T y) {
+    return (x > y) ? x : y;
+}
+
+int main() {
+    std::cout << maximum(3, 5.5) << std::endl; // Does not compile!
+    return 0;
+}</pre></wrong-code-box>
+
+            <p>
+                This example might seem silly to you. We should be able to determine the maximum of 3 and 5.5,
+                because C++ normally lets us compare an <code>int</code> to a <code>double</code>, by casting 
+                the <code>int</code> to a <code>double</code>. However, template type deduction does not 
+                perform implicit conversions for us. If we want to find the maximum of 3 and 5.5, we have two options. 
+                We could cast the <code>int</code> to a <code>double</code> before passing it into the function, so 
+                that the function receives two <code>double</code>s and everything works as usual. Alternatively,
+                we could explicitly tell the compiler what <code>T</code> to use, by providing it inside 
+                angle brackets (exactly as we do for parametrized types like <code>std::vector&lt;int></code>). Now 
+                the compiler knows that <code>maximum&lt;double></code> is supposed to take <code>double</code>s as 
+                arguments, so when it receives an <code>int</code> instead it can perform implicit type conversion 
+                as usual:
+            </p>
+
+            <code-box data-codeId="maxWithConflictingTypesExampleFixed"><pre>#include &lt;iostream>
+
+template &lt;typename T>
+T maximum(T x, T y) {
+    return (x > y) ? x : y;
+}
+
+int main() {
+    std::cout << maximum&lt;double>(3, 5.5) << std::endl; // 5.5
+    return 0;
+}</pre></code-box>
+
+
+            <h2 id="shareExercise">
+                <code>share</code> Exercise
+                <span style="font-weight: normal; font-size: 1rem;">
+                    (<a href="12_Templates_Solutions.html#shareExercise">Solution</a>)
+                </span>
+            </h2>
+
+            <p>
+                Define a function template <code>share(x, y)</code> which accepts references to
+                <code>x</code> and <code>y</code> and modifies the values stored there so that both 
+                are equal to <code>(x + y) / 2</code>, i.e., they now share equally. (If <code>x</code> 
+                and <code>y</code> were integral types  and <code>x+y</code> was odd, then in the course 
+                of sharing whatever it is that we're sharing, we've actually lost one. That's okay -- 
+                that's just the cost of sharing fairly.)
+            </p>
+
+            <p>
+                If your function works correctly, the below test code should print <code>4 4 9 9 2.9 2.9</code>:
+            </p>
+
+            <code-box data-codeId="shareExerciseTestCode"><pre>#include &lt;iostream>
+
+int main() {
+    int a{2}, b{7}, c{13}, d{5};
+    double x{3.1}, y{2.7};
+    share(a, b);
+    share(c, d);
+    share(x, y);
+    std::cout << a << ' ' << b << ' ' << c << ' ' << d << ' ' << x << ' ' << y << std::endl;
+    return 0;
+}</pre></code-box>
+
+            <h2>Class templates</h2>
+
+            <p>
+                You can parametrize a class using the exact same syntax as we used to parametrize 
+                a function. The biggest difference is that, when a parametrized class is used, 
+                the parameter must always be provided inside angle brackets. (For a function, the 
+                parameter can usually be inferred by the compiler from the parameters, but that 
+                may not be the case for a class.)
+            </p>
+
+            <p>
+                For example, we've been working on the example of a <code>Polynomial</code> class. 
+                So far, our polynomial has always had <code>int</code> coefficients, but that's 
+                not how polynomials work in math. Why can't we have a polynomial with real 
+                coefficients, or complex coefficients, or even more exotic coefficients?
+            </p>
+
+            <p>
+                We could turn our <code>Polynomial</code> class into a template which is parametrized 
+                by the type of the coefficients. Before we do that, there's one technical detail we 
+                need to be aware of:
+            </p>
+
+
+            <h2>Templates and <code>.h</code> files</h2>
+
+            <p>
+                One somewhat unfortunate downside of using templates is that we can no longer separate 
+                declaration and implementation into <code>.h</code> and <code>.cpp</code> files. Since 
+                the template is merely a blueprint from which the compiler will generate code for each 
+                needed <code>T</code>, the compiler needs to have access to the full implementation; we 
+                cannot simply provide it with the declaration in a <code>.h</code> file and link the 
+                <code>.cpp</code> file later.
+            </p>
+
+            <p>
+                This means that we have to put the entire class definition inside the <code>.h</code> 
+                file, so that the compiler has access to it when compiling anything that includes the 
+                <code>.h</code> file. 
+            </p>
+
+            <h2><code>polynomial.h</code></h2>
+
+            <p>Here's our new <code>polynomial.h</code>, with all the definitions now moved here:</p>
+
+            <code-box data-codeId="polynomialHTemplateVersion"><pre>#pragma once
+
+#include &lt;vector>
+#include &lt;ostream>
+#include &lt;algorithm>
+#include &lt;numeric>
+
+template &lt;typename T>
+class Polynomial {
+public:
+    Polynomial(const std::vector&lt;T>& coefficients);
+    Polynomial(T c);
+    Polynomial(const Polynomial& other);
+    Polynomial(Polynomial&& other) noexcept;
+    ~Polynomial();
+    Polynomial& operator=(const Polynomial& other);
+    Polynomial& operator=(Polynomial&& other) noexcept;
+    T& operator[](size_t i);
+    const T& operator[](size_t i) const;
+    Polynomial& operator+=(const Polynomial& other);
+    friend Polynomial operator+(Polynomial f, const Polynomial& g) {
+        f += g; 
+        return f;
+    }
+    Polynomial& operator-=(const Polynomial& other);
+    friend Polynomial operator-(Polynomial f, const Polynomial& g) {
+        f -= g; 
+        return f;
+    }
+    Polynomial& operator*=(const Polynomial& other);
+    friend Polynomial operator*(Polynomial f, const Polynomial& g) {
+        f *= g; 
+        return f;
+    }
+    friend bool operator==(const Polynomial& f, const Polynomial& g) {
+        if (f.degree_ != g.degree_) {return false;}
+        for (int i = 0; i <= f.degree_; ++i) {
+            if (f.coefficients_[i] != g.coefficients_[i]) {return false;}
+        }
+        return true;
+    }
+    friend std::ostream& operator<<(std::ostream& os, const Polynomial& f) {
+        if (f.degree_ == -1) { // Print the 0 polynomial correctly
+            os << '0';  
+            return os;
+        }
+        for (int d = f.degree_; d >= 0; --d) {
+            T coeff = f.coefficient(d);
+            if (coeff == T(0)) {continue;}
+            // Print coefficient
+            if (d == f.degree_) {
+                if (coeff == T(1)) {
+                    if (d == 0) {os << '1';} 
+                } else if (coeff == -1) {
+                    os << (d == 0 ? "-1" : "-");
+                } else {
+                    os << coeff;
+                }
+            } else {
+                os << (coeff > 0 ? " + " : " - ");
+                if ((coeff != 1 && coeff != -1) || d == 0) {os << std::abs(coeff);} 
+            }
+            // Print power of x
+            if (d == 1) {
+                os << 'x';
+            } else if (d > 1) {
+                os << "x^" << d;
+            }
+        }
+        return os;
+    }
+    T operator()(T n) const;
+    T eval(T n) const;
+    T coefficient(int i) const;
+private:
+    int degree_;
+    T* coefficients_;
+};
+
+// Copy the given coefficients vector into coefficients_, while also removing 
+// any leading zeros so that degree_ is calculated correctly.
+template &lt;typename T>
+Polynomial&lt;T>::Polynomial(const std::vector&lt;T>& coefficients) {
+    int i;
+    for (i=0; i < coefficients.size(); ++i) {
+        if (coefficients[i] != 0) {
+            break;
+        }
+    }
+    degree_ = coefficients.size() - i - 1;
+    coefficients_ = new T[degree_ + 1];
+    for (int j = i; j < coefficients.size(); ++j) {
+        coefficients_[j-i] = coefficients[j];
+    }
+}
+
+// Construct a constant polynomial
+template &lt;typename T>
+Polynomial&lt;T>::Polynomial(T c) : Polynomial(std::vector&lt;T>{c}) {}
+
+// Copy constructor
+template &lt;typename T>
+Polynomial&lt;T>::Polynomial(const Polynomial& other)
+    : degree_(other.degree_), coefficients_(new T[degree_ + 1]) {
+    std::copy(other.coefficients_, other.coefficients_ + degree_ + 1, coefficients_);
+}
+
+// Move constructor
+template &lt;typename T> 
+Polynomial&lt;T>::Polynomial(Polynomial&& other) noexcept
+    : degree_(other.degree_), coefficients_(other.coefficients_) {
+    other.degree_ = -1; 
+    other.coefficients_ = nullptr;
+}
+
+template &lt;typename T> 
+Polynomial&lt;T>::~Polynomial() {
+    delete[] coefficients_;
+}
+
+// Copy assignment operator
+template &lt;typename T> 
+Polynomial&lt;T>& Polynomial&lt;T>::operator=(const Polynomial& other) {
+    if (this == &other) {return *this;}
+    delete[] coefficients_;
+    degree_ = other.degree_;
+    coefficients_ = new T[degree_ + 1];
+    std::copy(other.coefficients_, other.coefficients_ + degree_ + 1, coefficients_);
+    return *this;
+}
+
+// Move assignment operator
+template &lt;typename T> 
+Polynomial&lt;T>& Polynomial&lt;T>::operator=(Polynomial&lt;T>&& other) noexcept {
+    if (this == &other) return *this;
+    delete[] coefficients_;
+    degree_ = other.degree_;
+    coefficients_ = other.coefficients_;
+    other.degree_ = -1;
+    other.coefficients_ = nullptr;
+    return *this;
+}
+
+template &lt;typename T> 
+T& Polynomial&lt;T>::operator[](size_t i) {
+    return coefficients_[degree_ - i];
+}
+template &lt;typename T>
+const T& Polynomial&lt;T>::operator[](size_t i) const {
+    return coefficients_[degree_ - i];
+}
+
+template &lt;typename T> 
+Polynomial&lt;T>& Polynomial&lt;T>::operator+=(const Polynomial&lt;T>& other) {
+    int newDegree = std::max(this->degree_, other.degree_);
+    while (newDegree > -1 && this->coefficient(newDegree) + other.coefficient(newDegree) == 0) {
+        --newDegree;
+    }
+    T* newCoefficients = new T[newDegree + 1];
+    for (int i = 0; i <= newDegree; ++i) {
+        newCoefficients[newDegree - i] = this->coefficient(i) + other.coefficient(i);
+    }
+    delete[] coefficients_;
+    coefficients_ = newCoefficients;
+    degree_ = newDegree;
+    return *this;
+}
+
+template &lt;typename T> 
+Polynomial&lt;T>& Polynomial&lt;T>::operator-=(const Polynomial&lt;T>& other) {
+    int newDegree = std::max(this->degree_, other.degree_);
+    while (newDegree > -1 && this->coefficient(newDegree) - other.coefficient(newDegree) == 0) {
+        --newDegree;
+    }
+    T* newCoefficients = new T[newDegree + 1];
+    for (int i = 0; i <= newDegree; ++i) {
+        newCoefficients[newDegree - i] = this->coefficient(i) - other.coefficient(i);
+    }
+    delete[] coefficients_;
+    coefficients_ = newCoefficients;
+    degree_ = newDegree;
+    return *this;
+}
+
+template &lt;typename T> 
+Polynomial&lt;T>& Polynomial&lt;T>::operator*=(const Polynomial&lt;T>& other) {
+    int newDegree = this->degree_ + other.degree_;
+    T* newCoefficients = new T[newDegree + 1];
+    for (int i = 0; i <= newDegree; ++i) {
+        newCoefficients[newDegree - i] = 0; // coefficient of x^i
+        for (int k = 0; k <= i; ++k) {
+            newCoefficients[newDegree - i] += this->coefficient(k) * other.coefficient(i - k);
+        }
+    }
+    delete[] coefficients_;
+    coefficients_ = newCoefficients;
+    degree_ = newDegree;
+    return *this;
+}
+
+template &lt;typename T> 
+T Polynomial&lt;T>::operator()(T n) const {
+    return eval(n);
+}
+
+template &lt;typename T> 
+T Polynomial&lt;T>::eval(T n) const {
+    auto f = [n](T acc, T val) { return acc * n + val; };
+    return std::accumulate(coefficients_, coefficients_ + degree_ + 1, T(0), f);
+}
+
+template &lt;typename T> 
+T Polynomial&lt;T>::coefficient(int i) const {
+    return (i < 0 || i > degree_) ? 0 : coefficients_[degree_ - i];
+}</pre></code-box>
+
+            <p>
+                If you want to test that it works, you can run the following code:
+            </p>
+
+            <code-box data-codeId="polynomialTemplateTestCode"><pre>#include &lt;iostream>
+#include "polynomial.h"
+
+int main() {
+    Polynomial&lt;double> f({1.5, 3.7, 2.8});
+    Polynomial&lt;double> g({2, 10});
+    std::cout << f + g << std::endl;  // 1.5x^2 + 5.7x + 12.8
+    std::cout << f - g << std::endl;  // 1.5x^2 + 1.7x - 7.2
+    std::cout << f * g << std::endl;  // 3x^3 + 22.4x^2 + 42.6x + 28
+    std::cout << 10 * f << std::endl; // 15x^2 + 37x + 28
+    std::cout << f[1] << std::endl;   // 3.7
+    std::cout << f(100) << std::endl; // 15372.8
+    return 0;
+}</pre></code-box>
+
+            <p>
+                On a surface level, transforming <code>Polynomial</code> into a template class wasn't too 
+                complicated: we just had to turn every <code>int</code> into <code>T</code>. (Well, not 
+                quite all -- we had to be careful not to do that to a non-coefficient <code>int</code>, 
+                such as an index.) But there are several things worth noting:
+            </p>
+
+            <ul>
+                <li>
+                    When we use the scope resolution operator <code>::</code> to provide definitions 
+                    outside the class declaration, we now need to write <code>Polynomial&lt;T></code> 
+                    on the left instead of simply <code>Polynomial</code>. (We also need to preface 
+                    each definition with "<code>template &lt;typename T></code>" -- the compiler still
+                    needs to be told that this is a template.)
+                </li>
+                <li>
+                    On the other hand, when we're inside the class declaration we can still simply 
+                    write <code>Polynomial</code> and the compiler understands that this is 
+                    <code>Polynomial&lt;T></code>.
+                </li>
+                <li>
+                    The definitions of the friend functions are moved inside the class declaration. This 
+                    is the easiest way to make friend functions that have the correct template behavior.
+                </li>
+                <li>
+                    Updating the <code>eval()</code> method required some care, because we needed to 
+                    change the accumulator's starting value of <code>0</code> to <code>T(0)</code>. When 
+                    it was left as <code>0</code>, the compiler was interpreting that as an int, and when 
+                    I tried to use <code>eval()</code> with a <code>Polynomial&lt;double></code>, it would 
+                    round all the coefficients down to integers, giving the wrong answer.
+                </li>
+            </ul>
+
+            <h2>Other parameters</h2>
+
+            <p>
+                You can also parametrize with things other than <code>typename</code>s. For example, you could use 
+                an <code>int</code> as a parameter, as we saw with <code>std::array&lt;int, 3></code>. If you were 
+                creating your own <code>Array</code> class, you could parametrize it as:
+            </p>
+
+            <code-box data-codeId="arrayExample"><pre>template &lt;typename T, int N>
+class Array {
+    // Your code here
+}</pre></code-box>
+
+            <h2 id="inventoryExercise">
+                <code>Inventory</code> Exercise
+                <span style="font-weight: normal; font-size: 1rem;">
+                    (<a href="12_Templates_Solutions.html#inventoryExercise">Solution</a>)
+                </span>
+            </h2>
+
+            <p>
+                Define a template class <code>Inventory&lt;T></code> that keeps track of how much of a 
+                single item a store has in stock. It should have a constructor which starts the inventory 
+                at 0, and methods <code>.buy()</code> and <code>.sell()</code> that raise/lower your 
+                inventory respectively. Most items will be tracked by integers, but some items (e.g., 
+                liquids, such as gasoline) will be tracked by real numbers, so a template method allows 
+                us to use the same class for both.
+            </p>
+            
+
+
+
+        </div> <!-- /.content -->
+        <script type="text/javascript" src="../codeblock.js"></script>
+    </body>
+</html>

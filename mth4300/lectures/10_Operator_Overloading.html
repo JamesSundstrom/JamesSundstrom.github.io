@@ -718,10 +718,6 @@ Polynomial::Polynomial(const std::vector&lt;int>& coefficients) {
     }
 }
 
-Polynomial operator*(int c, Polynomial const& f) {
-    return f * Polynomial(std::vector&lt;int>{c});
-}
-
 // Construct a constant polynomial
 Polynomial::Polynomial(int c) : Polynomial(std::vector&lt;int>{c}) {}
 
