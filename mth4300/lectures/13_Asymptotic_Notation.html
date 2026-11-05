@@ -1,0 +1,241 @@
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Lecture 13: Asymptotic Notation</title>
+        <link rel="stylesheet" href="../style.css">
+    </head>
+    <body>
+        <script>
+            window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']]
+            }
+            };
+        </script>
+        <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+        <div class="top-bar"><a href="../mth4300.html">🏠 Back to Math 4300 homepage</a>
+        </div>
+        <div class="content">
+            <h1>Lecture 13: Asymptotic Notation</h1>
+
+            <h2>Motivation</h2>
+
+            <p>
+                When we write algorithms in computer science, there are two measurements that we often care about:
+                how much time the program takes to run, and how much memory it needs. More precisely, we're generally 
+                interested in the runtime and memory as a "function" of the size of the input. Of course, it won't be 
+                a true function in the mathematical sense because there's isn't a well-defined output for each input -- 
+                inputs of the same size could take different amounts of time to run. But thinking of it as a function 
+                won't do any harm.
+            </p>
+
+            <p>
+                For example, suppose I give you a <code>std::vector</code> of length $N$ and ask you whether it contains 
+                a particular value. The runtime could be extremely fast -- maybe the value we're looking for is
+                the first entry in the vector. But the worst-case scenario is if the value isn't in the vector. 
+                Then we need to check every single entry before we can be sure that it isn't present, which requires 
+                $N$ checks.
+            </p>
+
+            <p>
+                We could also ask how long it takes to sort a vector of length $N$, or how long it takes to crack 
+                an encryption where the key has length $N$. In all of these cases, we're interested in understanding 
+                the performance of our program as a "function" of $N$.
+            </p>
+
+            <p>
+                But we cannot calculate the exact amount of time or memory required. For example, the amount of time 
+                that a program takes to run will depend on many factors, such as the machine that is running it, 
+                what other programs are running at the same time, what optimizations the compiler made, and even 
+                a bit of luck. For example, our vector-search algorithm above requires $N$ comparisons in the 
+                worst-case scenario, but how long each of those comparisons takes will depend on how fast your 
+                computer is. (It will also depend on exactly what's being compared: checking whether two strings 
+                are equal is more complicated than checking whether two characters are equal.) For that reason, 
+                we'll usually speak in terms of the number of computations required rather than the number of 
+                seconds required.
+            </p>
+
+            <p>
+                Fortunately, we don't really care about the exact numbers. To see why, suppose we write two 
+                different versions of a program, one of which takes twice as long to run as the other version. 
+                Twice as long sounds like a pretty difference. But in the grand scheme of things, it probably 
+                isn't. Maybe both programs are fast enough that they appear essentially instantaneous to humans,
+                so it doesn't matter which one is faster. Even if the faster program takes a day to run, so the 
+                slower program takes two days, that might be okay -- if it's okay to wait one day for 
+                your results, there's a decent chance that it's okay to wait two days. For example, if you're 
+                a spy agency trying to crack somebody's encryption to read their emails, it probably won't make 
+                a huge difference whether that takes one day or two. Somebody trying to keep their email secure 
+                doesn't really gain much security by switching to an encryption key that takes twice as long to 
+                crack; they want a key that takes many, many times longer.
+            </p>
+
+            <p>
+                In other words, if one algorithm requires $N^2$ computations, and the other algorithm 
+                requires $2N^2$ computations, we want to think of those algorithms as requiring 
+                essentially the same amount of time. On the other hand, if one algorithm requires $N^2$ 
+                computations and the other requires $N^3$ computations, then the latter takes $N$ times 
+                as long. For example, if $N=1000$, then the slower algorithm takes 1000x as long to run. 
+                And $N=1000$ isn't even particularly large in a lot of applications: a real-world dataset could 
+                easily contain millions of data points, where the slower algorithm might take 1,000,000x as long.
+            </p>
+
+            <p>
+                So that's the problem we want to solve. We want to understand how much time/memory our programs 
+                will require as a "function" of $N$, and we want to be able to write our answer in a way that looks 
+                at the "big picture" of how the performance depends on $N$, without getting bogged down in 
+                relatively minor details like constant factors, so that $N^2$ and $2N^2$ are "basically
+                the same," whereas $N^2$ and $N^3$ are meaningfully different. Fortunately, mathematicians 
+                have a notation that does exactly this.
+            </p>
+
+            <h2>Big-$O$ Notation</h2>
+
+            <p>
+                <b>Definition:</b> We write $f(x) = O(g(x))$ (pronounced "$f$ equals big-$O$ of $g$") to mean that 
+                there exists a constant $C$ such that, for all sufficiently large $x$, $|f(x)| \le Cg(x)$.
+            </p>
+
+            <p>
+                The idea behind this notation is that $f$ will usually be a complicated function that we're trying 
+                to study, while $g$ will be a simpler function that we understand well. Thus, the big-$O$ notation 
+                allows us to "replace" the original, complicated function with something easier to understand. 
+                Theoretically, it's perfectly legal to write $f(x) = O(g(x))$ where $f$ is a simple function and 
+                $g$ is a complicated function, but in practice there's virtually never any reason to do that.
+            </p>
+
+            <p>
+                First, notice that this definition does what we wanted in terms of ignoring minor details like 
+                constant factors. For example, it's true that $2N^2 = O(N^2)$, because the 
+                above definition is satisfied with $C=2$. Realistically, the number of computations required for 
+                an algorithm won't usually come out to a nice simple formula like $2N^2$; maybe it'll be 
+                something like $2N^2 + 5N + 3$. Big-O notation handles that nicely too. We can see that 
+                $2N^2 + 5N + 3 = O(N^2)$, using a constant $C=10$:
+            </p>
+
+            \[2N^2 + 5N + 3 \leq 2N^2 + 5N^2 + 3N^2 = 10N^2. \]
+
+            <p>
+                Pedantic point: The above inequality isn't true when $N=0$. Fortunately, we don't really care about that in 
+                computer science. We can assume that any reasonable algorithm will be fine for small inputs, so 
+                we only worry about large inputs. We don't need to care that, when $N=0$, an algorithm that requires $2N^2 + 5N + 3$ 
+                computations will be slower than an algorithm that requires $10N^2$ computations, because 
+                either algorithm is essentially instantaneous when it's given an input of size 0. This is why our 
+                definition of big-$O$ notation only required that $|f(x)| \le Cg(x)$ for sufficiently large $x$; we can ignore 
+                small values of $x$ (or in this case, $N$) to focus on the important details.
+            </p>
+
+            <p>
+                So now we've seen that big-$O$ notation is powerful enough to let us abstract away minor details by writing things like 
+                $2N^2 + 5N + 3 = O(N^2)$. But now we have to worry about the opposite problem: what if it's too powerful, and it lets 
+                us abstract away details that actually matter? For example, we said above that an algorithm requiring $N^3$ steps is, 
+                in a meaningful way, worse than an algorithm that requires $N^2$ steps, so we do <b>not</b> want $N^3 = O(N^2)$ to be true. 
+                Let's make sure that's the case:
+            </p>
+
+            <p>
+                Proof that $N^3 \neq O(N^2)$: In order for $N^3 = O(N^2)$ to be true, there would need to be some constant $C$ such that 
+                $N^3 \leq CN^2$ for all large $N$. Dividing by $N^2$, this is equivalent to the claim that $N \leq C$ for all large $N$. 
+                But obviously that's nonsense: in fact, $N > C$ for all large $N$.
+            </p>
+
+            <p>
+                There's a detail here that can be a little bit confusing: $N^3 \neq O(N^2)$, but it <i>is</i> true that $N^2 = O(N^3)$. 
+                (Indeed, we can check that the definition is satisfied with $C=1$, because $N^2 \leq N^3$ for all $N\geq 1$.)
+                At first, this might seem like a problem with the notation: we wanted $N^2$ and $N^3$ to be "different," but now we're 
+                allowed to say that $N^2 = O(N^3)$. But actually, that's not a problem. Big-$O$ notation was never meant to say that 
+                $f$ and $g$ are the same. Remember that the definition of $O$ used a  $\leq$ for the comparison; saying that 
+                $f(x) = O(g(x))$ says only that that $f$ isn't "too big" compared to $g$, but there's nothing preventing $f$ from 
+                being much smaller. If you're writing a program and you realize that you need an algorithm that takes $O(N^3)$ steps 
+                to solve a certain problem in order for your program to run quickly enough, you're not going to be upset if someone 
+                gives you an algorithm that takes $N^2$ steps. Of course, we wouldn't go out of our way to write something like 
+                $2N^2 + 5N + 3 = O(N^3)$, because $2N^2 + 5N + 3 = O(N^2)$ is more informative.
+                <!-- (We'll make that statement mathematically precise below.) -->
+                But we don't need to be upset about the fact that $2N^2 + 5N + 3 = O(N^3)$ is true. 
+            </p>
+
+            <p>
+                Hopefully, you're now convinced that big-$O$ notation does what we wanted. Next, we want to develop some intuition 
+                for how it works. Previously, we proved that $2N^2 + 5N + 3 = O(N^2)$ by writing out the inequality 
+                $2N^2 + 5N + 3 \leq 2N^2 + 5N^2 + 3N^2 = 10N^2$, but you can imagine that this would get tedious very quickly for 
+                more complicated functions. Fortunately, once you develop a little intuition for big-$O$ notation, you almost never 
+                need to write out inequalities and find $C$ explicitly. 
+            </p>
+
+            <p>
+                The key intuition behind big-$O$ notation is that it captures the order of growth of the function. In other words, 
+                we use big-$O$ notation to describe how fast a function grows by comparing it to a simpler function whose growth is 
+                well-understood. As such, if our function contains multiple terms, we (almost always) need only look at the term 
+                that grows the fastest. For example, in $2N^2 + 5N + 3$, we know that $N^2$ grows much faster than $N$ or than $3$ 
+                (which doesn't grow at all), so we can intuitively predict that the $2N^2$ term will be relevant, while the $5N+3$ 
+                will not. If you have good intuition about the growth rates of different functions, you can generally predict which 
+                term will be important.
+            </p>
+
+            <p>
+                For example, we know that if $d > e$, then $N^d$ grows faster than $N^e$. Hence if $f(N)$ is a polynomial, the 
+                leading term (i.e., highest-degree term) of $f(N)$ is the fastest-growing, so it will be the term that's relevant 
+                if we want to use big-$O$ notation to talk about $f$:
+            </p>
+
+            <p>
+                <b>Theorem:</b> If $f(N)$ is a polynomial of degree $d$, then $f(N) = O(N^d)$.
+            </p>
+
+            <h2 id="bigOExercises">
+                Big-$O$ Exercises
+                <span style="font-weight: normal; font-size: 1rem;">
+                    (<a href="13_Asymptotic_Notation_Solutions.html#bigOExercises">Solutions</a>)
+                </span>
+            </h2>
+
+            <ol>
+                <li>What does it mean to say that a function's runtime is $O(1)$?</li>
+                <li>True or false? If $f(x) = O(g(x))$ and $g(x) = O(h(x))$, then $f(x) = O(h(x))$.</li>
+                <li>
+                    Find the smallest value of $a$ which makes the following statements true:
+                    <ol>
+                        <li>
+                            $2N^4 + 100N^3 + 5N^2 + 32 = O(N^a)$
+                        </li>
+                        <li>
+                            $5N(\sqrt{N} + 3) = O(N^a)$
+                        </li>
+                        <li>
+                            $\sqrt{9N^6 + 25N^2 + 16} = O(N^a)$
+                        </li>
+                    </ol>
+                </li>
+                <li>
+                    Choose the simplest function $g$ that makes the following statements true:
+                    <ol>
+                        <li>
+                            $13 + 5\sqrt{N} + 2N = O(g(N))$
+                        </li>
+                        <li>
+                            $2^N + 3^N + N^5 + 100N + 22 = O(g(N))$
+                        </li>
+                        <li>
+                            $4^N + N! = O(g(N))$
+                        </li>
+                    </ol>
+                </li>
+                <li>
+                    Are the following statements true or false? Explain.
+                    <ol>
+                        <li>$\log_2 N = O(\ln N)$</li>
+                        <li>$e^{N^2 + N} = O(e^{N^2})$</li>
+                        <li>$N^3 \log N = O(N^3)$</li>
+                        <li>$N^3 \log N = O(N^{3.1})$</li>
+                    </ol>
+                </li>
+
+            </ol>
+
+
+            
+
+        </div> <!-- /.content -->
+        <script type="text/javascript" src="../codeblock.js"></script>
+    </body>
+</html>
