@@ -488,6 +488,28 @@ class Array {
     // Your code here
 }</pre></code-box>
 
+            <h2>Multiple parameters</h2>
+
+            <p>
+                As the previous example illustrates, you're also allowed to create a template with multiple 
+                parameters. Most often, the parameters will be two different typenames, so the line declaring 
+                it as a template will look something like <code>template &lt;typename T, typename U></code>.
+            </p>
+
+            <p>
+                A great example of a multi-parameter class is one you already know from Python: a dictionary. 
+                (In case you've forgotten dictionaries: a dictionary stores keys, and associates a value to each key. 
+                It's like an array, except that instead of using integers as indices, you can use other types instead.)
+                This is naturally a two-parameter class: one parameter for the type of the keys, and one for the type 
+                of the values. In one of the exercises below, you'll create a crude dictionary class.
+            </p>
+
+            <p> 
+                Note: The C++ standard library has a dictionary type called <code>std::unordered_map</code>. We'll 
+                discuss C++ maps later, when you learn a much more efficient way to implement them than the 
+                silly method we'll use below.
+            </p>
+
             <h2 id="inventoryExercise">
                 <code>Inventory</code> Exercise
                 <span style="font-weight: normal; font-size: 1rem;">
@@ -503,6 +525,69 @@ class Array {
                 liquids, such as gasoline) will be tracked by real numbers, so a template method allows 
                 us to use the same class for both.
             </p>
+
+            <p>
+                Of course, you could simply make a non-template<code>Inventory</code> class that always 
+                uses a <code>double</code> to represent the inventory level, and trust that, if the 
+                inventory should be an integer, anyone using the code will only provide integer values. 
+                But that loses the benefit of type-checking -- it's helpful to be able to tell the 
+                compiler that values will always be integers, so that it can detect the error immediately 
+                if a non-integer is provided by mistake.
+            </p>
+
+
+            <h2 id="dictionaryExercise">
+                <code>Dictionary</code> Exercise
+                <span style="font-weight: normal; font-size: 1rem;">
+                    (<a href="12_Templates_Solutions.html#dictionaryExercise">Solution</a>)
+                </span>
+            </h2>
+
+            <p>
+                Define a class <code>Dictionary</code> that takes two parameters as described above; the 
+                first parameter should be the type of the keys, and the second parameter should be the 
+                type of the values. You need only define one public method: <code>operator[]</code>. 
+                (If it receives an argument which is not currently included in the dictionary as a key, 
+                it should handle that by creating a new key-value pair in the dictionary using that key 
+                and a default-constructed value. E.g., if the values are <code>int</code>s, it would 
+                create a new entry with value <code>0</code>.)
+            </p>
+
+            <p>
+                Perhaps the simplest way to implement a dictionary is to keep two lists: a list of 
+                keys, and a list of values, in the same order. When you're asked to look up a key, 
+                you can find its index in the first list, and then use the index to loop up the 
+                corresponding value in the second list. 
+            </p>
+
+            <p>
+                This is definitely NOT how dictionaries are implemented in the real world -- it's 
+                wildly inefficient, because if it's asked about a key that's not in the dictionary, 
+                it needs to search through every single key to reach the conclusion that the key 
+                isn't present. As mentioned above, I'll show you a much better way to implement 
+                dictionaries later.
+            </p>
+
+            <p>
+                You may use the below code to test that your <code>Dictionary</code> class works. If 
+                you finish early, you can try adding additional methods, such as a <code>delete()</code> 
+                method to remove a key from the dictionary.
+            </p>
+
+            <code-box data-codeId-"dictionaryTestCode"><pre>#include &lt;iostream>
+#include &lt;string> 
+
+int main() {
+    const std::string GW{"George Washington"}, AL{"Abraham Lincoln"}, GC{"Grover Cleveland"};
+    Dictionary&lt;std::string, int> votes;
+    votes[GW] = 7;
+    votes[AL] = 7;
+    ++votes[AL];
+    std::cout << GW << ": " << votes[GW] << std::endl; // George Washington: 7
+    std::cout << AL << ": " << votes[AL] << std::endl; // Abraham Lincoln: 8
+    std::cout << GC << ": " << votes[GC] << std::endl; // Grover Cleveland: 0
+    return 0;
+}</pre></code-box>
             
 
 

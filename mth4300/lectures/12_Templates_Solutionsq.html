@@ -27,6 +27,54 @@ void share(T& x, T& y) {
 }</pre></code-box>
 
 
+            <h2 id="inventoryExercise">
+                <code>Inventory</code> Exercise
+                <span style="font-weight: normal; font-size: 1rem;">
+                    (<a href="12_Templates.html#inventoryExercise">Back to lecture</a>)
+                </span>
+            </h2>
+
+            <p>Solution to be added.</p>
+
+
+            <h2 id="dictionaryExercise">
+                <code>Dictionary</code> Exercise
+                <span style="font-weight: normal; font-size: 1rem;">
+                    (<a href="12_Templates.html#dictionaryExercise">Back to lecture</a>)
+                </span>
+            </h2>
+
+            <code-box data-codeId="dictionaryExerciseSolution"><pre>#include &lt;vector>
+#include &lt;algorithm>
+
+template &lt;typename Key, typename Value>
+class Dictionary {
+public:
+    Value& operator[](Key key) {
+        int index = getIndex(key);
+        if (index != -1) return values[index];
+        insert(key, Value());
+        return values.back();
+    }
+    void print() const { // Not part of the exercise, but included for easier testing.
+        for (size_t i = 0; i < keys.size(); ++i) {
+            std::cout << keys[i] << ": " << values[i] << std::endl;
+        }
+    }
+private:
+    std::vector&lt;Key> keys{};
+    std::vector&lt;Value> values{};
+    int getIndex(Key key) const {
+        auto it = std::find(keys.begin(), keys.end(), key);
+        if (it == keys.end()) return -1;
+        return it - keys.begin();
+    }
+    void insert(Key key, Value value) {
+        keys.push_back(key);
+        values.push_back(value);
+    }
+};</pre></code-box>
+
 
         </div> <!-- /.content -->
         <script type="text/javascript" src="../codeblock.js"></script>
