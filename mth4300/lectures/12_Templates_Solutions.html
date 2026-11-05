@@ -34,7 +34,15 @@ void share(T& x, T& y) {
                 </span>
             </h2>
 
-            <p>Solution to be added.</p>
+            <code-box data-codeId="inventoryExerciseSolution"><pre>template &lt;typename T>
+class Inventory {
+public: 
+    void buy(T amt) {amt_in_stock_ += amt;}
+    void sell(T amt) {amt_in_stock_ -= amt;}
+    T amount() const {return amt_in_stock_;}
+private:
+    T amt_in_stock_ = 0;
+};</pre></code-box>
 
 
             <h2 id="dictionaryExercise">
@@ -50,26 +58,21 @@ void share(T& x, T& y) {
 template &lt;typename Key, typename Value>
 class Dictionary {
 public:
-    Value& operator[](Key key) {
+    Value& operator[](const Key& key) {
         int index = getIndex(key);
         if (index != -1) return values[index];
         insert(key, Value());
         return values.back();
     }
-    void print() const { // Not part of the exercise, but included for easier testing.
-        for (size_t i = 0; i < keys.size(); ++i) {
-            std::cout << keys[i] << ": " << values[i] << std::endl;
-        }
-    }
 private:
     std::vector&lt;Key> keys{};
     std::vector&lt;Value> values{};
-    int getIndex(Key key) const {
+    int getIndex(const Key& key) const {
         auto it = std::find(keys.begin(), keys.end(), key);
         if (it == keys.end()) return -1;
         return it - keys.begin();
     }
-    void insert(Key key, Value value) {
+    void insert(const Key& key, Value value) {
         keys.push_back(key);
         values.push_back(value);
     }

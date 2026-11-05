@@ -182,6 +182,12 @@
                 <b>Theorem:</b> If $f(N)$ is a polynomial of degree $d$, then $f(N) = O(N^d)$.
             </p>
 
+            <p>
+                <b>Proof:</b> We know from Calc I that $\lim_{N\to\infty} f(N)/N^d$ exists; denote the limit by $L$. This means 
+                that $f(N)/N^d \approx L$ for all large $N$, so $\lvert f(N) \rvert/N^d \lt \lvert L\rvert + 1$, which proves that 
+                $f(N) = O(N^d)$ using the constant $C = \lvert L \rvert + 1$.
+            </p>
+
             <h2 id="bigOExercises">
                 Big-$O$ Exercises
                 <span style="font-weight: normal; font-size: 1rem;">
@@ -229,10 +235,37 @@
                         <li>$N^3 \log N = O(N^{3.1})$</li>
                     </ol>
                 </li>
-
             </ol>
 
+            <h2>Applying big-$O$ notation to computer programs</h2>
 
+            <p>
+                Now let's start trying to use big-$O$ notation to analyze real algorithms. We'll start with an 
+                extremely basic one: if you're given a <code>std::vector&lt;int></code> of length $N$ and you 
+                want to check whether a given value appears in the vector, how would you express the runtime 
+                of that algorithm in big-$O$ notation?
+            </p>
+
+            <p>
+                Answer: $O(N)$. Obviously the worst-case scenario is if you need to check every single 
+                entry in the vector, i.e., you need to make $N$ checks. The actual number of instructions 
+                executed by the computer will be greater than $N$; there's going to be an iterator that 
+                keeps track of where we are in the vector, which will also need to be updated every iteration. 
+                But if each iteration involves $c$ steps, the total number of steps will be $cN$, which is 
+                still $O(N)$. In practice, we don't bother saying all that when we're analyzing the runtime of 
+                the algorithm, you can just say that the runtime is obviously $O(N)$, without including an 
+                explanation of how iteration works and why it doesn't affect the big-$O$ notation. 
+            </p>
+
+            <p>
+                Suppose we're given a <code>std::vector&lt;double></code> representing stock prices, and we want 
+                to determine what were the best time to buy and sell that stock, assuming you could only buy once.
+                How long does it take to solve that problem?
+            </p>
+
+            <p>
+                Answer: $O(N)$. 
+            </p>
             
 
         </div> <!-- /.content -->
