@@ -258,13 +258,416 @@
             </p>
 
             <p>
-                Suppose we're given a <code>std::vector&lt;double></code> representing stock prices, and we want 
+                Consider the following function, which attempts to whether a target number can be written as 
+                the sum of any two numbers in a vector of length $N$ (allowing the same number to be repeated twice). 
+                How would you write its runtime in big-$O$ notation?
+            </p>
+
+            <code-box data-codeId="simpleIsSumExample"><pre>#include &lt;vector>
+bool isSum(int target, std::vector&lt;int> v) {
+    for (int a : v) {
+        for (int b : v) {
+            if (a + b == target) {return true;}
+        }
+    }
+    return false;
+}</pre></code-box>
+
+            <p>
+                If <code>target</code> is not in the vector, then this code runs through all pairs of <code>a</code> and <code>b</code>. 
+                Since there are $N$ values of <code>a</code> and $N$ values of <code>b</code>, there are $N^2$ pairs. Therefore this 
+                algorithm is $O(N^2)$.
+            </p>
+
+            <p>
+                You might object that this algorithm can be improved: we're running through all pairs, but that's not really necessary. 
+                Since addition is commutative, it's a waste of time to check <code>a + b</code> and later check <code>b + a</code> again.
+                We can write a more efficient algorithm by only looking at pairs <code>v[i], v[j]</code> with <code>i >= j</code>. 
+                What can we say about the runtime for this algorithm?
+            </p>
+
+            <code-box data-codeId="fasterIsSumExample"><pre>#include &lt;vector>
+bool isSum(int target, std::vector&lt;int> v) {
+    for (int i = 0; i < v.size(); ++i) {
+        for (int j = 0; j <= i; ++j) {
+            if (v[i] + v[j] == target) {return true;}
+        }
+    }
+    return false;
+}</pre></code-box>
+
+            <p>
+                When <code>i</code> is 0, we consider one <code>j</code> value (0). When <code>i</code> is 1, we have two <code>j</code> 
+                values (0 and 1). Continuing in this fashion, we see that each <code>i</code> contributes <code>i+1</code> pairs, so the 
+                total number of pairs we need to check in this algorithm is $1+2+\dotsb+N=N(N+1)/2$. This is an improvement over $N^2$, 
+                but still a $O(N^2)$ algorithm.
+            </p>
+
+            <p>
+                You might be wondering how we knew that $1+2+\dotsb+N=N(N+1)/2$. This is a finite arithmetic series, so if you remember 
+                the formula for the sum of an arithmetic series, you could solve the problem that way. Alternatively, note that 
+            </p>
+            \[
+                2(1+2+\dotsb+N) = (1+2+\dotsb+N) + (N+(N-1)+\dotsb+1) = (1+N) + (2+N-1) + \dotsb + (N+1) = N(N+1).
+            \]
+            
+            <p>
+                Fortunately, you don't need to know this exact formula; you only need to know the fact that $1+2+\dotsb+N=O(N^2)$. 
+                One way to see this is to imagine drawing $1+2+\dotsb+N$ dots in a triangular array; thus the total number of dots is 
+                approximately the area of a triangle with base $N$ and height $N$, which gives us a quick way to estimate that 
+                $1+2+\dotsb+N$ is approximately proportional to $N^2$, since area is proportional to the square of side length.
+                But sums like this come up fairly often when we're analyzing algorithms with nested 
+                loops, so we'd like a quick way to estimate them in general. The following theorem gives us that:
+            </p>
+
+            <p>
+                <b>Theorem:</b> If $f$ is a polynomial of degree $d$, then $f(1) + f(2) + \dotsb + f(N)$ is a polynomial of 
+                degree $d+1$. Therefore, $f(1) + f(2) + \dotsb + f(N) = O(N^{d+1})$.
+            </p>
+
+            <p>
+                Similarly, if we wanted to modify the previous function to check whether the target is a sum of three numbers in 
+                the vector, that would be a $O(N^3)$ algorithm:
+            </p>
+
+            <code-box data-codeId="is3SumExample"><pre>#include &lt;vector>
+bool isSum(int target, std::vector&lt;int> v) {
+    for (int i = 0; i < v.size(); ++i) {
+        for (int j = 0; j <= i; ++j) {
+            for (int k = 0; k <= j; ++k)
+                if (v[i] + v[j] + v[k] == target) {return true;}
+        }
+    }
+    return false;
+}</pre></code-box>
+
+            <p>
+                The inner two loops check whether <code>target - v[i]</code> can be written in the form <code>v[j] + v[k]</code>,
+                with <code>k <= j <= i</code>. We saw above that this takes $O(i^2)$ time. Therefore, by the theorem, the whole 
+                algorithm takes time $O(1^2 + 2^2 + \dotsb + N^2) = O(N^3)$.
+            </p>
+
+            <p>
+                We could continue this pattern and see that the naive algorithm to check whether <code>target</code> can be 
+                written as a sum of $k$ numbers from a vector of length $N$ takes time $O(N^k)$. Can you think of an algorithm 
+                that would be more efficient?
+            </p>
+
+            <p>
+                What if we wanted to check whether a number can be written as a sum of 1, 2, or 3 entries in a vector? We could 
+                implement that simply by checking the cases 1, 2, and 3 separately:
+            </p>
+
+            <code-box data-codeId="sumOfAtMostThree"><pre>#include &lt;vector>
+bool isSumOfAtMostThree(int target, std::vector&lt;int> v) {
+    for (int i = 0; i < v.size(); ++i) {
+        if (v[i] == target) {return true;}
+    }
+    for (int i = 0; i < v.size(); ++i) {
+        for (int j = 0; j <= i; ++j) {
+            if (v[i] + v[j] == target) {return true;}
+        }
+    }
+    for (int i = 0; i < v.size(); ++i) {
+        for (int j = 0; j <= i; ++j) {
+            for (int k = 0; k <= j; ++k)
+                if (v[i] + v[j] + v[k] == target) {return true;}
+        }
+    }
+    return false;
+}</pre></code-box>
+
+            <p>
+                The first loop takes $O(N)$ steps, the second (nested) loop takes $O(N^2)$ steps, and the third (nested) loop 
+                takes $O(N^3)$ steps. Therefore the total algorithm takes $O(N + N^2 + N^3) = O(N^3)$ steps.
+            </p>
+
+            <p>
+                This is an example of the general fact that if an algorithm consists of first running a subalgorithm that takes 
+                $O(f(N))$ steps followed by a subalgorithm that takes $O(g(N))$ steps, then the overall algorithm takes 
+                $O(f(N) + g(N))$ steps. Of course, that's fairly obvious. What's more interesting is to remember that you can 
+                then simplify $O(f(N) + g(N))$ to either $O(f(N))$ or $O(g(N))$, depending which function grows faster. 
+            </p>
+
+            <h2>Hidden loops</h2>
+
+            <p>
+                Don't forget that sometimes code can have "hidden" loops. How long would the following code take to determine 
+                whether a given number appears in an $M \times N$ matrix?
+            </p>
+
+            <code-box data-codeId="hiddenLoopExample"><pre>#include &lt;vector>
+#include &lt;algorithm>
+bool matrixContains(int target, std::vector<std::vector&lt;int>> mat) {
+    // Assume mat is as an M x N matrix
+    const int M = mat.size();
+    for (int i = 0; i < M; ++i) {
+        if (std::find(mat[i].begin(), mat[i].end(), target) != mat[i].end())
+            return true;
+    }
+    return false;
+}</pre></code-box>
+
+            <p>
+                It takes $O(MN)$ time to search the matrix. While the code may look like a single loop, it's actually a nested 
+                loop in disguise: for each <code>i</code>, <code>std::find</code> runs a loop that loops through each element in 
+                <code>mat[i]</code> to look for <code>target</code>. Since we have assumed that each row has $N$ elements, this 
+                takes $O(N)$ time. We need to call <code>std::find</code> $M$ times, so the total time required is $O(MN)$. Of course, 
+                this is unsurprising: the matrix has $MN$ elements, so of course checking them all takes $O(MN)$ time.
+            </p>
+
+            <p>
+                Note that this is our first example using big-$O$ notation with two independent variables. It means exactly what you 
+                expect, that there exists a constant $C$ such that the number of steps required is $\leq CMN$ for all large $M, N$.
+            </p>
+
+            <p>
+                This is also a good example of the general rule that when you have nested loops, the iteration counts multiply. If 
+                the outer loop runs through $M$ iterations and the inner loop runs through $N$ iterations, then the whole process 
+                requires $MN$ iterations.
+            </p>
+
+            <h2>Examples of other algorithms</h2>
+
+            <h2>Best time to buy/sell</h2>
+
+            <p>
+                Suppose we're given a <code>std::vector&lt;double></code> containing $N$ prices of a stock, and we want 
                 to determine what were the best time to buy and sell that stock, assuming you could only buy once.
                 How long does it take to solve that problem?
             </p>
 
             <p>
-                Answer: $O(N)$. 
+                Answer: It depends on the algorithm you use, but the best solution is $O(N)$. The naive solution 
+                would be to use a double loop to run through all possible pairs of times to buy and sell. There 
+                are $N(N-1)/2$ such pairs, which is $O(N^2)$. But there's a better algorithm, which allows us 
+                to find the answer while only looping through the list once. Start by guessing that you're going 
+                to buy at time 0. Loop through the list, looking at each subsequent time $t$ and seeing how much 
+                profit you would make by selling then. However, if the price at time $t$ is lower than the price 
+                at time 0, then it no longer makes sense to compare subsequent times with time 0; you make more 
+                profit by buying at time $t$ and selling at time $t+k$ than be buying at time 0. Instead, use 
+                time $t$ as your new "time 0" and proceed from there. This requires only one loop through the 
+                list, so it is $O(N)$.
+            </p>
+
+            <p>
+                This is a good illustration of how choosing your algorithm wisely can meaningfully change the 
+                time complexity of a given problem. A wise choice of algorithm can make the difference in 
+                whether a problem is practically solvable or not.
+            </p>
+
+            <h3>Generate all subsets</h3>
+
+            <p>
+                Suppose that I give you a set of $N$ numbers, and I ask you to generate all the subsets of that set. If you choose 
+                a sensible algorithm to generate them, then each subset can be generated relatively quickly, so the only real 
+                issue is the sheer number of subsets. In other words, the time required will be $O(\text{number of subsets})$. 
+                The number of subsets is $2^N$ because when we form a subset, for each of the $N$ numbers, we have two choices: 
+                include it or exclude it. Therefore generating all the subsets takes time $O(2^N)$. This grows extremely quickly, 
+                so any algorithm that involves generating all the subsets will not be practical unless $N$ is extremely small. 
+                If you encountered a problem that asks something about all subsets, you would probably need to come up with a 
+                more clever algorithm than brute force.
+            </p>
+
+            <h2>Generate all permutations</h2>
+
+            <p>
+                Suppose I give you a string of $N$ distinct characters, and I ask you to print all the permutations (rearrangements) 
+                of those characters. Similar to the previous example, this will be $O(\text{number of permutations})$. The number of 
+                permutations is $N!$ because there are $N$ choices for the first character, times $N-1$ choices for the second, times 
+                $N-2$ choices for the third, and so on. Thus, generating permutations is $O(N!)$. This grows even faster than $O(2^N)$, 
+                so you definitely would not want to use a $O(N!)$ algorithm unless $N$ was very small.
+            </p>
+
+            <h2>Search an unsorted vector</h2>
+
+            <p>
+                We mentioned above that <code>std::find</code> (indeed, any algorithm to search an unsorted vector of size $N$) will 
+                take time $O(N)$, because there's nothing to do but check all $N$ entries.
+            </p>
+
+            <h2>Search a sorted vector</h2>
+
+            <p>
+                If the vector is already sorted, then there's a faster algorithm to search it, called <i>binary search</i>. The 
+                idea is that we check the midpoint of the vector. If the value there is <code>target</code>, then we're done. 
+                Otherwise, because the vector is sorted, we need only check the remaining left/right half of the vector depending 
+                whether the value at the midpoint was greater/less than <code>target</code>. Thus, we've cut the problem in half 
+                with a single check! Now we can repeat the process with the leftover half: check its midpoint, and (if necessary) 
+                cut it in half again. Thus after 2 checks we're down to 1/4 the size of the original vector, after 3 checks we're 
+                down to 1/8 the original size, and after $k$ checks we're down to $1/2^k$ of the original size. Therefore we'll 
+                have the search narrowed down to a single element once $2^k \approx N$, i.e., $k \approx \log_2 N$. This proves that 
+                binary search takes time $O(\log N)$ to search a sorted vector. (Note that when we write a logarithm in big-$O$ 
+                notation, we don't need to specify the base, because all algorithms $\log_b$ with $b>1$ are constant multiples 
+                of each other thankes to the change-of-base formula.)
+            </p>
+
+            <p>
+                Here's the code for a binary search algorithm:
+            </p>
+
+            <code-box data-codeId="binarySearchAlgorithm"><pre>#include &lt;vector>
+
+// Search a sorted vector v for target. 
+// Return the index of v if found, otherwise return -1
+int binarySearch(int target, const std::vector&lt;int>& v) {
+    int lo = 0, hi = v.size() - 1;
+
+    while (lo <= hi) {
+        int m = lo + (hi - lo) / 2; // Calculate midpoint without overflow
+        if (v[m] == target)     {return m;}
+        else if (v[m] < target) {lo = m + 1;}
+        else                    {hi = m - 1;}
+    }
+    return -1;
+}</pre></code-box>
+
+            <p>
+                You should know how to code binary search yourself -- it's a classic test question for this type of course. But when 
+                you're writing code, you'll almost never write your own binary search, because the standard library already 
+                contains binary search functions in the <code>algorithm</code> header. Specifically, there's 
+                <code>std::binary_search</code> which returns a boolean telling you whether the target is in the vector. There's  
+                also <code>std::lower_bound</code>, which returns an iterator to the first element that is greater than or equal to the 
+                target. This is the one that you'll use if you want to find the actual index of the target (whether you need to know 
+                the index where it actually appears, or the index where it would appear if it were inserted in the appropriate, sorted 
+                place).
+            </p>
+
+            <p>
+                Above, we gave an explanation for why binary search takes $O(\log N)$ time. But we needed to do a little bit of math to 
+                solve that. In this case, we were lucky that the math wasn't too complicated, but we would like to have a shortcut for 
+                similar problems. Before we do that, we'll discuss some more background material first.
+            </p>
+
+            <h2>Different types of time complexity analysis</h2>
+
+            <p>
+                So far, we've largely been interested in analyzing the worst-case time complexity of algorithms. For example, if you're 
+                searching an unsorted vector for a given value, the worst-case number of checks is $N$, if the value isn't in the vector, 
+                so we say that the worst-case time complexity is $O(N)$. Of course, the best-case scenario is that the target value is the 
+                first entry in the vector and we find it immediately, so the best-case time complexity is $O(1)$. 
+            </p>
+
+            <p>
+                Naturally, it is very rare to care about the best-case time complexity. Somebody waiting for their computer to solve a 
+                problem won't feel better if you tell them that the computer would have solved it quickly if the data had been in one 
+                specific, best-case form. However, that doesn't mean that we only care about the worst-case either. In many situations, 
+                we might care more about the average complexity: we can accept that an algorithm will occasionally be slow, if it's 
+                balanced out by other situations where it's fast. (On the other hand, that's not always the case. For performance-critical 
+                software that needs to respond quickly in an emergency, we need to know that it will react in time every time, not 
+                just on average.)
+            </p>
+                
+            <p>
+                There are two subtly-different types of average complexity that we consider:
+            </p>
+
+            <p>
+                <b>Average-case time complexity</b> measures the expected running time of an operation when averaged across all 
+                possible sets of input data. For example, if we want to find the index of a value in an unsorted vector (and we 
+                know that the value is present), then on average we'll need to search half the vector before we find the target, 
+                so the average complexity is $N/2$. In big-$O$ notation, this is still $O(N)$, same as we got for the worst-case 
+                analysis.
+            </p>
+
+            <p>
+                <b>Amortized time complexity</b> measures the worst-case average cost per operation over a sequence of multiple 
+                operations. Note that this is different from average-case time complexity because it only considers sequences of 
+                operations that could actually occur, not randomly-chosen operations, and it provides a guarantee that the 
+                total cost in the long term will never be worse than the amortized time complexity. (With average-case time 
+                complexity, on the other hand, there's no such guarantee. You could get unlucky and have all your inputs be 
+                the "bad" cases.)
+            </p>
+
+            <p>
+                An excellent example of amortized time complexity is <code>std::vector::push_back</code>. Remember that 
+                <code>std::vector</code> stores its data in contiguous memory, like a C-style array. If the allocated 
+                memory had just enough memory to store the current data, then every time you tried to add a new entry 
+                to the vector, the program would need to more to a new, larger block of memory and copy all the data 
+                over to the new memory location. Naturally, this takes $O(N)$ time. But we want <code>push_back</code> 
+                to be efficient, so this is undesirable. Instead, the compiler allocates some extra, empty memory at  
+                the end of the vector, so that there's space to insert new elements at the end without needing to 
+                copy all the data. This makes <code>push_back</code> very fast: you simply copy the new data into the 
+                memory that's already sitting at the end of the vector waiting for your data, a $O(1)$ operation.
+                But if you insert enough new elements, eventually you'll run out of space anyway, triggering the 
+                expensive $O(N)$ copy operation. 
+            </p>
+
+            <p>
+                Thus, the worst-case time complexity of <code>push_back</code> must unavoidably by $O(N)$, because 
+                eventually we'll run out of memory and trigger the $O(N)$ copy. But, 
+                it would be nice if <code>std::vector</code> were designed so that the amortized time complexity is 
+                better than $O(N)$. If <code>std::vector</code> sets aside enough empty memory when it's allocated 
+                that it won't need to do the $O(N)$ copy too often, then the rare, expensive copy can be averaged with 
+                the usual cheap $O(1)$ insertion to make <code>push_back</code> fast on average.
+            </p>
+
+            <p>
+                So, if we were the designers of <code>std::vector</code> and we were allocating memory for a vector that 
+                currently holds $N$ entries, how much extra memory should we include at the end? If we tried to include 
+                memory for two extra entries, that wouldn't be good enough: the next two calls to <code>push_back</code> 
+                would take $O(1)$ time, but the third would take $O(N)$ time, for an average of $O((1+1+N)/3) = O(N)$. 
+                That's what we were trying to avoid.
+            </p>
+
+            <p>
+                Instead, we need to include a lot of extra memory, so that the worst-case scenario happens much more 
+                rarely. But we also don't want to take too much memory: if <code>std::vector</code> constantly claimed 
+                a lot of memory just to sit empty in case of insertions, we might risk running out of memory while a 
+                lot of memory sat empty. Thus, we have a tradeoff: we need to allocate enough memory to amortize the 
+                cost of <code>push_back</code>, without taking dramatically more than is needed to fulfill that goal.
+            </p>
+
+            <p>
+                It turns out that we can solve this problem with a fairly simple answer: when we allocate a new block 
+                of memory for a vector that currently has $N$ entries, we take enough memory for $2N$ entries. (In 
+                the real world, some implementations may use a number other than 2, e.g., 1.5. But 2 makes the math 
+                easy.) When we leave $N$ empty memory slots, we guarantee that the next $N$ insertions will be $O(1)$, 
+                and then the next after that will be $O(N)$. This gives us an amortized time complexity of 
+            </p>
+
+            \[O((1+1+\dotsb+1+1+N)/(N+1)) = O((2N+1)/(N+1)) = O(1).\]
+
+            <p>
+                Therefore, the amortized time complexity of <code>push_back</code> is $O(1)$. On average, each call to 
+                <code>push_back</code> takes constant time, even though there are occasional slow calls.
+            </p>
+
+            <h2>Other asymptotic notations</h2>
+
+            <p>
+                So far, big-$O$ notation has been perfect for our purposes. Saying that $f(N) = O(g(N))$ says that 
+                $\lvert f(N) \rvert \leq Cg(N)$, so we can use big-$O$ notation without worrying too much about the 
+                fact that our algorithms might have a best-case performance substantially better than $Cg(N)$. But it 
+                would also be nice to have a more-specific notation. For example, if $f(N) = O(N^2)$, then it's also 
+                true that $f(N) = O(N^3)$, but we wouldn't want to write the latter because it loses valuable information. 
+                Generally when we say that the time complexity of an algorithm is $O(N^3)$, that implies that the time 
+                complexity is not $O(N^2)$, or else we would have written that; nonetheless, it would be nice to have a 
+                notation that explicitly promises this.
+            </p>
+
+            <p>
+                The big-$\Theta$ notation does that for us. If we write $f(N) = \Theta(g(N))$, that means that there exist 
+                constants $c, C > 0$ such that $cg(N) \leq \lvert f(N) \rvert \leq Cg(N)$. Thus, $g(N)$ is a tight 
+                bound. In algorithmic terms the algorithm takes exactly $g(N)$ steps, up to a constant factor.
+            </p>
+
+            <p>
+                We'll usually use big-$O$ notation since, as we saw above, it captures the worst-case behavior that we 
+                generally care most about. But sometimes it's nice to have notation that states succinctly that a given 
+                bound is optimal.
+            </p>
+
+            <h2>The Master Theorem</h2>
+
+            <p>
+                We saw above that we could calculate the time-complexity of binary search by observing that it repeatedly 
+                cuts the search space into two halves, and then asks us to look at one of those halves. More generally, 
+                there are a lot of algorithms that cut a problem of size $N$ into $a$ subproblems of size $N/b$. If $T(N)$ is
+                the number of steps required to solve the problem, then it takes $aT(N/b)$ steps to solve all these subproblems. 
+                After that, it may take an additional $f(N)$ steps to recombine the answers to the subproblems into an answer to 
+                the original problem. Thus, we have $T(N) = aT(N/b) + f(N)$. The <i>master theorem</i> tells us how to determine 
+                the time complexity of such an algorithm.
             </p>
             
 
