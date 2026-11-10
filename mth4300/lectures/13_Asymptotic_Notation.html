@@ -398,7 +398,7 @@ bool isSumOfAtMostThree(int target, std::vector&lt;int> v) {
 
             <code-box data-codeId="hiddenLoopExample"><pre>#include &lt;vector>
 #include &lt;algorithm>
-bool matrixContains(int target, std::vector<std::vector&lt;int>> mat) {
+bool matrixContains(int target, std::vector&lt;std::vector&lt;int>> mat) {
     // Assume mat is as an M x N matrix
     const int M = mat.size();
     for (int i = 0; i < M; ++i) {
@@ -509,7 +509,7 @@ bool matrixContains(int target, std::vector<std::vector&lt;int>> mat) {
             <code-box data-codeId="binarySearchAlgorithm"><pre>#include &lt;vector>
 
 // Search a sorted vector v for target. 
-// Return the index of v if found, otherwise return -1
+// Return the index of target if found, otherwise return -1
 int binarySearch(int target, const std::vector&lt;int>& v) {
     int lo = 0, hi = v.size() - 1;
 
