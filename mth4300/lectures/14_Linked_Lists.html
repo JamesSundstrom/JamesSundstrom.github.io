@@ -1,0 +1,337 @@
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Lecture 14: Linked Lists, Stacks, and Queues</title>
+        <link rel="stylesheet" href="../style.css">
+    </head>
+    <body>
+        <script>
+            window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']]
+            }
+            };
+        </script>
+        <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+        <div class="top-bar"><a href="../mth4300.html">🏠 Back to Math 4300 homepage</a>
+        </div>
+        <div class="content">
+            <h1>Lecture 14 Linked Lists, Stacks, and Queues</h1>
+
+            <h2>Linked lists</h2>
+
+            <p>
+                We've already discussed the basic concept of a linked list: a list where each piece of data is contained in a node
+                that also holds a pointer to the next piece of data. This simple version can also be called a <i>singly-linked list</i> 
+                because the links only go in a single direction: forward. For some applications, that's good enough, but in other cases 
+                you might want to go backwards through the list also. In a <i>doubly-linked list</i>, each node carries a pointer to 
+                the previous and the next pieces of data, so you can easily navigate in either direction. However, you can't efficiently 
+                subscript into the list (i.e., use <code>v[i]</code> to access the <code>i</code><sup>th</sup> element). The only way 
+                to access the <code>i</code><sup>th</sup> element is to go through the list one-by-one: the data at index 0 links to 
+                the data at index 1, which links to the data at index 2, and so on. Therefore, it takes $O(i)$ time to access the 
+                $i$<sup>th</sup> entry, which in the worst case in $O(N)$ for a list of length $N$.
+            </p>
+
+            <p>
+                The <code>LinkedList</code> class that we created in Lecture 08 was fairly minimal: the <code>LinkedList</code> class 
+                itself only had one attribute, a pointer to the first <code>ListNode</code>. This means that it's fairly easy to 
+                insert an item at the beginning of the list, or to read existing data from the beginning of the list, but potentially
+                time-consuming to insert/read at the end of the list, because the only way to find the end of the list is to iterate 
+                through the entire list. If that's something that you need to be able to do efficiently, your <code>LinkedList</code> 
+                class could also hold a pointer to the last <code>ListNode</code>.
+            </p>
+
+            <p>
+                Conversely, some extremely simple linked list implementations don't provide a <code>LinkedList</code> class at all, 
+                only a <code>ListNode</code> class. (After all, our simple <code>LinkedList</code> class only held a pointer to 
+                the first <code>ListNode</code>, so why not skip the <code>LinkedList</code> class and just use the pointer directly?) 
+                This is generally how LeetCode handles linked lists.
+            </p>
+
+            <h2>Benefits/drawbacks of a linked list</h2>
+
+            <p>
+                You might wonder why we care about linked lists? Why not just use an array/vector, which gives us the convenient 
+                <code>v[i]</code> syntax? The major advantage of a linked list is that it allows for efficient insert/delete 
+                operations.
+            </p>
+
+            <p>
+                If you want to insert a new piece of data at the beginning of an array of size $N$, that's a $O(N)$ operation: all 
+                of the other data needs to be shifted one space over to make room for the new data. But in a linked list, insertion 
+                at the beginning (or end, assuming the linked list carries a pointer to the end) is a $O(1)$ operation: you just create 
+                the new node and update a couple pointers appropriately. Inserting at the end of a <code>std::vector</code> is an 
+                amortized $O(1)$ operation, but as we've seen, sometimes an individual insertion is $O(N)$. If you need a guarantee that the 
+                insertion will be fast every time, a linked list provides that.
+            </p>
+
+            <p>
+                A similar observation is true if you want to insert in the middle of the list. Doing that with an array requires moving 
+                (potentially) a lot of data, while doing that with a linked list only requires updating a few pointers. The downside with 
+                a linked list is that, if you want to insert at index $i$, that might be costly anyway, because it takes $O(i)$ steps just 
+                to find that part of the list. But if you already have a pointer to the location that you want to insert, then insertion 
+                anywhere in a linked list is $O(1)$.
+            </p>
+            
+            <p>
+                Another benefit of linked lists is that you can insert/delete data without invalidating existing iterators. In an array, if 
+                you have an iterator that points to the data at index 50, and then you insert/delete data at index 22, that moves all the 
+                subsequent data, so <code>arr[50]</code> no longer points to the same data. On the other hand, with a linked list, the 
+                iterator is effectively a pointer to the corresponding <code>ListNode</code>, so no matter what other data you 
+                insert/delete, the iterator will still point to the same data.
+            </p>
+
+            <p>
+                On the other hand, the main drawback of a linked list is lack of random access: you can't quickly access the 
+                <code>i</code><sup>th</sup> entry in a linked list. Another drawback is that a linked list uses extra memory 
+                compared to an array, since the linked list needs to store extra pointers. One final drawback is that a linked 
+                list doesn't store its data in continuous memory, so it takes longer for the hardware to work with a linked list 
+                than an array; in practice, this can sometimes cancel out the theoretical benefits of a linked list.
+            </p>
+
+            <h2><code>std::list</code></h2>
+
+            <p>
+                The standard library provides <code>std::list</code> (in the <code>list</code> header), which is a doubly-linked list 
+                that includes pointers to the beginning and end so that you can access either side easily. You can use the 
+                <code>.front()</code> and <code>.back()</code> methods to access the values in the front or the back, and 
+                <code>.push_front()</code>, <code>.pop_front()</code>, <code>.push_back()</code>, and <code>.pop_back()</code> 
+                to insert/remove (push/pop) data at the front or back. It also has <code>.begin()</code> and <code>.end()</code> 
+                methods that return iterators so it can be used with all the algorithms in the <code>algorithm</code> header. If you 
+                have an iterator into the list, then the <code>.insert()</code> and <code>.erase()</code> methods will insert/erase 
+                data there. (Remember that inserting at the <code>i</code><sup>th</sup> position is potentially inefficient if you 
+                need to start from the beginning, but extremely efficient if you already have an iterator pointing to the 
+                <code>i</code><sup>th</sup> position. That's why <code>.insert()</code> and <code>.erase()</code> take iterators as 
+                arguments.)
+            </p>
+            
+            <p>
+                You can see the documentation for <code>std::list</code> <a href="https://en.cppreference.com/cpp/container/list" target="_blank">here</a>.
+            </p>
+
+            <h2>LeetCode Exercises</h2>
+
+            <p>
+                LeetCode provides a lot of exercises about linked lists. I'll list a few here, but you can use the search to find 
+                more of them.
+            </p>
+            
+
+            <p>Easy:</p>
+            <ul>
+                <li>
+                    <a href="https://leetcode.com/problems/reverse-linked-list/" target="_blank">
+                        206. Reverse Linked List
+                    </a>
+                </li>
+                <li>
+                    <a href="https://leetcode.com/problems/linked-list-cycle/" target="_blank">
+                        141. Linked List Cycle
+                    </a>: To start, just write a working solution. But once you get it working, there's an extra 
+                    challenge at the bottom: can you write an algorithm that only uses $O(1)$ additional memory?
+                </li>
+            </ul>
+
+            <p>Medium:</p>
+            <ul>
+                <li>
+                    <a href="https://leetcode.com/problems/reverse-linked-list-ii/" target="_blank">
+                        92. Reverse Linked List II
+                    </a>
+                </li>
+                <li>
+                    <a href="https://leetcode.com/problems/flatten-a-multilevel-doubly-linked-list/" target="_blank">
+                        430. Flatten a Multilevel Doubly Linked List
+                    </a>
+                </li>
+            </ul>
+
+
+            <h2>Stacks</h2>
+
+
+            <p>
+                We've discussed stacks before: a <i>stack</i> is a LIFO (last in, first out) container, meaning that you 
+                can only directly access the most-recently added data. You can think of it as a stack of physical objects: 
+                the only one that's convenient to access is the top item.
+            </p>
+            <p>
+                As it turns out, there are many real-world problems where that's 
+                all you need. For example, the stack that C++ uses for memory management: if a function <code>f</code> 
+                calls a function <code>g</code> which calles a function <code>h</code>, then <code>h</code> needs to be 
+                resolved first, then <code>g</code>, then <code>f</code>, so it makes sense that the stack frames for 
+                these functions are stored in a stack. Another important application is the "undo" ability in an 
+                editing program. The program keeps track of all the edits that you've made. When you need to undo them, 
+                you undo the most-recent edit first, so it makes sense that the edits are tracked in a stack. (Then the 
+                undone edits can be stored in a separate "undo stack" in case you decide to redo them later.)
+            </p>
+
+            <p>
+                You may recall that our simple <code>LinkedList</code> class from Lecture 08 implemented a stack: we could 
+                only insert/remove data at the head, so the first accessible data was always the last data entered.
+                (While using a linked list to implement a stack is a classic textbook problem, it's actually not how 
+                stacks are usually implemented in real-world applications.)
+            </p>
+
+            <p> 
+                The core operations for a stack are:
+            </p>
+
+            <ul>
+                <li>
+                    <code>.push(value)</code>: Add a value to the top of the stack.
+                </li>
+                <li>
+                    <code>.top()</code>: Return the top value (without removing it).
+                </li>
+                <li>
+                    <code>.pop()</code>: Remove the top value from the stack (without returning it).
+                </li>
+                <li>
+                    <code>.empty()</code>: Return <code>true</code> or <code>false</code> depending whether the 
+                    stack is empty.
+                </li>
+            </ul>
+
+            <p>
+                A simple implementation of a stack is given below. (To keep it simple, we've skipped all the 
+                non-<code>delete</code> Rule of Five methods.)
+            </p>
+
+            <code-box data-codeId="stackImplementation"><pre>template &lt;typename T>
+class Stack {
+public: 
+    Stack() : capacity_(16), size_(0), data_(new T[capacity_]) {}
+    
+    ~Stack() {
+        delete[] data_;
+    }
+
+    void push(const T& val) {
+        if (size_ == capacity_) grow();
+        data_[size_] = val;
+        ++size_;
+    }
+
+    T& top() {
+        return data_[size_ - 1];
+    }
+
+    const T& top() const {
+        return data_[size_ - 1];
+    }
+
+    void pop() {
+        if (size_ > 0) 
+            --size_;
+    }
+
+    bool isEmpty() {
+        return size_ == 0;
+    }
+
+private:
+    int capacity_;
+    int size_;
+    T* data_;
+    
+    void grow() {
+        T* oldData = data_;
+        capacity_ *= 2;
+        data_ = new T[capacity_];
+        for (int i = 0; i < size_; ++i) {
+            data_[i] = oldData[i];
+        }
+        delete oldData;
+    }
+};</pre></code-box>
+
+            <p>
+                Note that we've implemented two versions of <code>.top()</code>, a <code>const</code> and a non-<code>const</code> 
+                version. This way, <code>.top()</code> still works for a <code>const Stack</code>. (Of course, a <code>const Stack</code> 
+                wouldn't make much sense. But you might want a <code>const</code> reference to a <code>Stack</code>.)
+            </p>
+
+            <p>
+                Aside: This version is closed to how the standard library implementation of <code>stack</code> works than our 
+                linked list version was, but it's still a bit of an oversimplification. 
+            </p>
+
+            <h2><code>std::stack</code></h2>
+
+            <p>
+                The standard library's stack type is <code>std::stack</code>. You can read the documentation 
+                <a href="https://en.cppreference.com/cpp/container/stack" target="_blank">here</a>.
+            </p>
+
+            <h2>LeetCode Exercise</h2>
+
+            <p>
+                Try using <code>std::stack</code> to solve the following:
+            </p>
+
+            <ul>
+                <li>
+                    <a href="https://leetcode.com/problems/valid-parentheses/" target="_blank">
+                        20. Valid Parentheses
+                    </a>
+                </li>
+            </ul>
+
+            <h2>Queues</h2>
+
+            <p>
+                Queues are similar to stacks, but instead of being LIFO, they are FIFO (first in, first out). Similar to 
+                stacks, the core operations are:
+            </p>
+
+            <ul>
+                <li>
+                    <code>.push(value)</code>: Add a value to the end of the queue.
+                </li>
+                <li>
+                    <code>.front()</code>: Return the front (first-added) value (without removing it).
+                </li>
+                <li>
+                    <code>.pop()</code>: Remove the front value from the stack (without returning it).
+                </li>
+                <li>
+                    <code>.empty()</code>: Return <code>true</code> or <code>false</code> depending whether the 
+                    queue is empty.
+                </li>
+            </ul>
+
+            <p>
+                Trying to implement a queue using arrays would be messy, since deleting from the 0-indexed side 
+                of the array is time-consuming. (Or if you tried to use the 0-indexed side as the back of the queue, 
+                inserting would also be time-consuming.) A linked list would probably be better (though again, that's 
+                not what's typically used in practice.)
+            </p>
+
+            <p>
+                As you might expect, the standard library has a <code>std::stack</code> type, which you can read 
+                about <a href="https://cplusplus.com/reference/queue/queue/" target="_blank">here</a>.
+            </p>
+
+            <h2>LeetCode Exercise</h2>
+
+            <p>
+                Try using <code>std::queue</code> to solve the following:
+            </p>
+
+            <ul>
+                <li>
+                    <a href="https://leetcode.com/problems/number-of-recent-calls/" target="_blank">
+                        933. Number of Recent Calls
+                    </a>
+                </li>
+            </ul>
+
+
+
+
+        </div> <!-- /.content -->
+        <script type="text/javascript" src="../codeblock.js"></script>
+    </body>
+</html>

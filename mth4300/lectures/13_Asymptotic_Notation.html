@@ -658,6 +658,19 @@ int binarySearch(int target, const std::vector&lt;int>& v) {
                 bound is optimal.
             </p>
 
+            <p>
+                One last piece of notation that we'll need to state the following theorem is big-$\Omega$ notation. This 
+                is the opposite of big-$O$ notation; where big-$O$ notation gives an upper bound, big-$\Omega$ notation gives 
+                a lower bound. (I.e., it says "the algorithm takes at least this much time.") Formally, $f(N) = \Omega(g(N))$ 
+                means that there exists some $C>0$ such that $f(N) > Cg(N)$ for all sufficiently large $N$.
+            </p>
+
+            <p>
+                Of course, big-$\Theta$ notation will generally not be our final answer in evaluating an algorithm: we usually 
+                want to know how fast an algorithm is, not how fast it isn't. But it can be useful to know when an algorithm 
+                isn't fast (if only so we can avoid it).
+            </p>
+
             <h2>The Master Theorem</h2>
 
             <p>
@@ -669,7 +682,67 @@ int binarySearch(int target, const std::vector&lt;int>& v) {
                 the original problem. Thus, we have $T(N) = aT(N/b) + f(N)$. The <i>master theorem</i> tells us how to determine 
                 the time complexity of such an algorithm.
             </p>
+
+            <p>
+                <b>Theorem:</b> Let $a \geq 1$ and $b>1$ be constants, let $f(N)$ be a function, and let $T(N)$ be defined on the 
+                nonnegative integers by the recurrence $T(N) = aT(N/b) + f(N)$. (We interpret $T(N/b)$ by rounding $N/b$ up or down to 
+                an integer.) Then:
+            </p>
+            <ul>
+                <li>
+                    If $f(N) = O(N^{\log_b a - \epsilon})$ for some $\epsilon > 0$, then $T(N) = \Theta(N^{\log_b a})$.
+                </li>
+                <li>
+                    If $f(N) = \Theta(N^{\log_b a})$, then $T(N) = \Theta(N^{\log_b a} \log N)$.
+                </li>
+                <li>
+                    If $f(N) = \Omega(N^{\log_b a + \epsilon})$ for some $\epsilon > 0$, and there exists a constant $c<1$ such that 
+                    $af(N/b) \leq cf(N)$ for all sufficiently large $N$, then $T(N) = \Theta(f(N))$.
+                </li>
+            </ul>
+
+            <p>
+                (In practice, you can usually ignore the regularity condition $af(N/b) \leq cf(N)$ in the third case; it will 
+                almost always be satisfied for any $f$ arising in practice.)
+            </p>
+
+            <p>
+                To understand the idea behind this theorem, start by ignoring the $f(N)$. If it were free to recombine our 
+                subproblems, we would have simply $T(N) = aT(N/b)$, which is satisfied by $T(N) = CN^{\log_b a}$. If $f$ is 
+                small, then we will still have $T(N) \approx CN^{\log_b a}$, which is the first case in the theorem.
+            </p>
+
+            <p>
+                On the other hand, if the cost to recombine the subproblems is meaningfully large, that may show up in our 
+                final answer. If $f$ is comparable to our "expected" $T$, then taking $f$ into account doesn't make $T$ 
+                too much bigger: the second case only costs an extra factor of $\log N$ compared to the first case. On 
+                the other hand, if $f$ costs even more than solving the subproblems, then the cost of the algorithm 
+                is dominated by $f$.
+            </p>
+
+            <h2>Examples of the Master Theorem</h2>
+
+            <p>
+                We saw above that for binary search, $T(N) = T(N/2) + \Theta(1)$. Thus $a=1$ and $b=2$, so the critical exponent is 
+                $\log_2 1 = 0$. In this case, $f(N) = O(N^0)$, so we're in the second case, which tells us that 
+                $T(N) = \Theta(N^0 \log N) = \Theta(\log N)$, as we saw above. 
+            </p>
+
+            <p>
+                You may be familiar with <i>merge sort</i>, a sorting algorithm that works by splitting the list in half,
+                sorting each half, and then merging them back together. This gives us the recurrence $T(N) = 2T(N/2) + \Theta(N)$, 
+                which leads to the critical exponent $\log_2 2 = 1$. Thus we are again in the second case, which proves that 
+                merge sort is $\Theta(N \log N)$.
+            </p>
             
+            <h2>LeetCode Exercise</h2>
+
+            <ul>
+                <a href="https://leetcode.com/problems/two-sum/" target="_blank">1. Two Sum</a>: It's very easy to write a $O(N^2)$
+                algorithm to solve this problem. Can you write an algorithm that has worst-case time complexity $O(N\log N)$? (It's 
+                also possible to write a solution that has average-case time complexity $O(N)$ using a concept we haven't covered 
+                yet, though its worst-case time complexity will be $O(N^2)$.)
+            </ul>
 
         </div> <!-- /.content -->
         <script type="text/javascript" src="../codeblock.js"></script>
