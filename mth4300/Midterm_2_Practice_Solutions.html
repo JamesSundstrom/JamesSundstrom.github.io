@@ -1,0 +1,609 @@
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Midterm 2 Practice Solutions</title>
+        <link rel="stylesheet" href="./style.css">
+    </head>
+    <body>
+        <div class="top-bar"><a href="./mth4300.html">🏠 Back to Math 4300 homepage</a>
+        </div>
+        <div class="content">
+            <h1>Midterm 2 Practice Solutions</h1>
+
+            <script>
+                const problemFile = "./Midterm_2_Practice.html"
+            </script>
+
+
+            <soln-h2></soln-h2>
+
+            <p>
+                What does the following code print?
+            </p>
+
+            <code-box data-codeId="Problem1"><pre>#include &lt;iostream&gt;
+
+class Point {
+public:
+    Point(double x, double y) : x_(x), y_(y) {}
+    ~Point() {
+        std::cout << "Deleting (" << x_ << ", " << y_ << ")" << std::endl;
+    }
+private:
+    double x_;
+    double y_;
+};
+
+class ColoredPoint : public Point {
+public:
+    ColoredPoint(double x, double y, std::string color) : 
+        Point(x, y), color_(color) {}
+    ~ColoredPoint() {
+        std::cout << "Deleting " << color_ << std::endl;
+    }
+private:
+    std::string color_;
+};
+
+int main() {
+    ColoredPoint p(2, 3, "Red");
+    return 0;
+}</pre></code-box>
+
+            <p><b>Answer:</b></p>
+            <p><code><pre>Deleting Red 
+Deleting (2, 3)</pre></code></p>
+
+            <p> 
+                When the program finishes, <code>p</code> goes out of scope and is automatically deleted. First, the destructor of the 
+                derived class <code>ColoredPoint</code> is called. After that, the destructor of the base class <code>Point</code> 
+                is called.
+            </p>
+
+            <soln-h2></soln-h2>
+
+            <p>What exactly does the below code print?</p>
+
+            <code-box data-codeId="NoisyIntProblem"><pre>#include &lt;iostream>
+
+class NoisyInt {
+private:
+    int* val_;
+public:
+    NoisyInt(int x) : val_(new int(x)) {
+        std::cout << "new " << *val_ << std::endl;
+    }
+    NoisyInt(const NoisyInt& o) : val_(new int(*o.val_)) {
+        std::cout << "copy " << *val_ << std::endl;
+    }
+    NoisyInt& operator=(const NoisyInt& o) {
+        if (this == &o) return *this;
+        *val_ = *o.val_;
+        std::cout << "assign " << *val_ << std::endl;
+        return *this;
+    }
+    ~NoisyInt() {
+        std::cout << "delete " << *val_ << std::endl;
+        delete val_;
+    }
+    void setValue(int n) {
+        std::cout << "set " << *val_ << std::endl;
+        *val_ = n; 
+    }
+    int getValue() const { 
+        std::cout << "get " << *val_ << std::endl;
+        return *val_; 
+    }
+};
+
+int main() {
+    NoisyInt a(1);
+    NoisyInt b(2);
+    NoisyInt c = a;
+    b = a;
+    c.setValue(3);
+    std::cout << a.getValue() << std::endl;
+    std::cout << c.getValue() << std::endl;
+    return 0;
+}</pre></code-box>
+
+            <p>
+                <b>Solution:</b> 
+            </p>
+
+            <p><code><pre>new 1
+new 2
+copy 1
+assign 1
+set 1
+get 1
+1
+get 3
+3
+delete 3
+delete 1
+delete 1</pre></code></p>
+
+            
+            <soln-h2></soln-h2>
+
+            <p>
+                Define a class <code>HighScoreList</code> that will keep track of the top <i>n</i> scores in a game. Scores will be 
+                <code>int</code>s, and only positive scores are allowed to be posted on the high score list. The list will track 
+                only the scores themselves; you don't need to attach names to the scores. Your class should include the following:
+            </p>
+
+            <ul>
+                <li>
+                    A constructor that takes one argument, an <code>int size</code>, and creates an empty high score list with a 
+                    maximum size of <code>size</code>. (I.e., one there are <code>size</code> scores stored, any new high score 
+                    must push out an existing high score.)
+                </li>
+                <li>
+                    A method <code>addScore</code>, that takes one argument (an <code>int score</code>), and updates the high 
+                    score list appropriately. (This may mean doing nothing, if the list is already full and the new score is 
+                    lower than the lowest existing score.)
+                </li>
+                <li>
+                    Overload the subscript operator so that if <code>scores</code> is a <code>HighScoreList</code>, then 
+                    <code>scores[i]</code> returns the high score at index <code>i</code>. (That is, <code>scores[0]</code> 
+                    is the highest score, <code>scores[1]</code> is the second-highest, and so on.) Your method does not 
+                    need to check bounds. Unlike the usual subscript operator, this one should <b>not</b> return a reference 
+                    because we do not want it to be used to modify the high score list directly. The only way to modify 
+                    the list should be through the <code>addScore</code> method.
+                </li>
+                <li>
+                    Overload the <code><<</code>operator to print all the high scores in a numbered list, one on each line.
+                    (See below for an example.)
+                </li>
+            </ul>
+
+            <p>
+                You should separate your code appropriately into files <code>high_score_list.h</code> and <code>high_score_list.cpp</code>.
+            </p>
+
+            <p>
+                For example, the below code should print
+            </p>
+
+            <p><code><pre>1. 50
+2. 45
+3. 25
+
+25</pre></code></p>
+
+            <code-box data-codeId="HighScoreListSampleCode"><pre>#include &lt;iostream> 
+#include "high_score_list.h"
+
+int main() {
+    HighScoreList scores(3);
+    scores.addScore(50);
+    scores.addScore(25);
+    scores.addScore(5);
+    scores.addScore(45);
+    scores.addScore(20);
+    std::cout << scores << std::endl;    // 1. 50   2. 45   3. 25
+    std::cout << scores[2] << std::endl; // 25
+    return 0;
+}</pre></code-box>
+
+            <p>
+                <b>Solution:</b> The solution is provided below. Note that in this solution, the high score 
+                is pre-populated with dummy scores of 0 when it is constructed. This automatically enforces that 
+                only positive scores can be added to the list, and avoids the need to write separate code 
+                for the cases where the list is or is not full.
+            </p>
+
+            <code-box data-codeId="HighScoreListSolution"><pre>// high_score_list.h
+
+#include &lt;ostream> 
+#include &lt;vector>
+
+class HighScoreList {
+private:
+    int size_;
+    std::vector&lt;int> scores_;
+public:
+    HighScoreList(int size);
+    bool addScore(int score);
+    int operator[](int i) const;
+    friend std::ostream& operator<<(std::ostream& os, HighScoreList scores);
+};
+
+// high_score_list.cpp
+
+#include "high_score_list.h"
+
+HighScoreList::HighScoreList(int size) : size_(size), scores_(size_, 0) {}
+
+bool HighScoreList::addScore(int score) {
+        int i;
+        for (i = 0; i < size_; ++i) {
+            if (scores_[i] < score) break;
+        }
+        if (i == size_) return false;
+        for (int j = size_ - 2; j >= i; --j) {
+            scores_[j+1] = scores_[j];
+        }
+        scores_[i] = score;
+        return true;
+    }
+
+int HighScoreList::operator[](int i) const {return scores_[i];}
+
+std::ostream& operator<<(std::ostream& os, HighScoreList scores) {
+    for (int i = 0; i < scores.size_; ++i) {
+        if (scores[i] > 0) {
+            os << i+1 << ". " << scores[i] << std::endl;
+        } else break;
+    }
+    return os;
+}</pre></code-box>
+
+
+            <soln-h2></soln-h2>
+
+            <p>
+                Code for a class <code>Point</code> is provided below. (It doesn't do much, but you can imagine that it 
+                has other methods that were excluded here for simplicity.) Add the necessary methods to make it comply 
+                with the Rule of Five.
+            </p>
+
+            <code-box data-codeId="PointProblemGivenCode"><pre>class Point {
+private: 
+    int dimension_;
+    double* coords_;
+public:
+    Point(int d) : dimension_(d), coords_(new double[d]{}) {}
+    double& operator[](int i) {return coords_[i];}
+};</pre></code-box>
+
+            <p>
+                <b>Solution:</b> The code is provided below. The original code is copied for your convenience, in case 
+                you want to experiment with the code. But if you get a problem like this on a test, you should <b>not</b> 
+                waste your time copying the original code; just write out the part that you're adding, and draw an arrow 
+                to show me where in the original code you're adding it.
+            </p>
+
+            <code-box data-codeId="PointProblemSolution"><pre>// This is part of the solution
+#include &lt;algorithm> // For std::copy
+
+class Point {
+private: 
+    int dimension_;
+    double* coords_;
+public:
+    Point(int d) : dimension_(d), coords_(new double[d]{}) {}
+    double& operator[](int i) {return coords_[i];}
+    
+    // Solution:
+    
+    // Destructor
+    ~Point() {delete[] coords_;}
+    
+    // Copy constructor
+    Point(const Point& other) : 
+        dimension_(other.dimension_), 
+        coords_(new double[dimension_]) {
+        std::copy(other.coords_, other.coords_ + dimension_, coords_);
+    }
+    
+    // Copy assignment
+    Point& operator=(const Point& other) {
+        if (this == &other) {return *this;}
+        delete[] coords_;
+        dimension_ = other.dimension_;
+        coords_ = new double[dimension_];
+        std::copy(other.coords_, other.coords_ + dimension_, coords_);
+        return *this;
+    }
+    
+    // Move constructor
+    Point(Point&& other) noexcept : 
+        dimension_(other.dimension_), 
+        coords_(other.coords_) {
+        other.dimension_ = 0; 
+        other.coords_ = nullptr;
+    }
+    
+    // Move assignment 
+    Point& operator=(Point&& other) noexcept {
+        if (this == &other) return *this;
+        delete[] coords_;
+        dimension_ = other.dimension_;
+        coords_ = other.coords_;
+        other.dimension_ = 0;
+        other.coords_ = nullptr;
+        return *this;
+    }
+};</pre></code-box>
+
+
+            <soln-h2></soln-h2>
+
+            <p>
+                The below code contains two bugs.
+            </p>
+
+            <code-box data-codeId="AnimalExampleBuggyCode"><pre>#include &lt;iostream>
+#include &lt;string>
+
+class Animal {
+private:
+    std::string name_;
+public:
+    Animal(const std::string& name) : name_(name) {}
+    void speak() const {std::cout << "Animal noises" << std::endl;}
+};
+
+class Dog : public Animal {
+public:
+    Dog(const std::string& name) : Animal(name) {}
+    void speak() const {std::cout << "Woof!" << std::endl;}
+};
+
+class Parrot : public Animal {
+public:
+    Parrot(const std::string& name) : Animal(name) {}
+    void speak() const {std::cout << "I'm " << name_ << "!" << std::endl;}
+};
+
+int main() {
+    Dog rover("Rover");
+    Parrot polly("Polly");
+    Animal* animals[2] = {&rover, &polly};
+    for (const Animal* animal : animals)
+        animal->speak();
+}</pre></code-box>
+
+            <p>
+                (a) There is a bug that will cause this code to fail to compile. How would you fix it? 
+                (Hint: It's related to the <code>speak()</code> method for <code>Parrot</code>.)
+            </p>
+
+            <p>
+                <b>Solution:</b> The problem is that the <code>speak()</code> method for <code>Parrot</code> 
+                uses the <code>name_</code> attribute from <code>Animal</code>, but that attribute was declared 
+                as <code>private</code>, so it's not accessible to derived classes. The fix is to change 
+                <code>Animal</code> so that <code>name_</code> is declared as <code>protected_</code>. (Note: 
+                for full credit, you must make it <code>protected</code>, not <code>public</code>. A bug fix 
+                should always change as little as possible from the original code, and making an attribute 
+                <code>public</code> is a significant change that should not be made without good reason.)
+            </p>
+
+            <p>
+                (b) The above code is supposed to print <code>Woof!</code> followed by <code>I'm Polly!</code>. 
+                But that's not what it actually prints. State what it actually prints, and explain how to 
+                fix the bug so that it prints what it should.
+            </p>
+
+            <p>
+                <b>Solution:</b> As written, this code prints <code>Animal noises</code> twice. The problem is 
+                that the <code>speak()</code> method for <code>Animal</code> was not declared as <code>virtual</code>. 
+                When we call <code>speak()</code> via a pointer to <code>Animal</code>, it uses <code>Animal</code>'s 
+                <code>speak()</code> rather than the method for the derived class. (On the other hand, if we called 
+                <code>polly.speak()</code> directly, it would print <code>I'm Polly!</code> -- make sure you 
+                understand why.)
+            </p>
+
+            <p>
+                The code with both bugs fixed is provided below:
+            </p>
+
+            <code-box data-codeId="AnimalCodeFixed"><pre>#include &lt;iostream>
+#include &lt;string>
+
+class Animal {
+protected:
+    std::string name_;
+public:
+    Animal(const std::string& name) : name_(name) {}
+    virtual void speak() const {std::cout << "Animal noises" << std::endl;}
+};
+
+class Dog : public Animal {
+public:
+    Dog(const std::string& name) : Animal(name) {}
+    void speak() const override {std::cout << "Woof!" << std::endl;}
+};
+
+class Parrot : public Animal {
+public:
+    Parrot(const std::string& name) : Animal(name) {}
+    void speak() const override {std::cout << "I'm " << name_ << "!" << std::endl;}
+};
+
+int main() {
+    Dog rover("Rover");
+    Parrot polly("Polly");
+    Animal* animals[2] = {&rover, &polly};
+    for (const Animal* animal : animals)
+        animal->speak();
+}</pre></code-box>
+
+
+            <soln-h2></soln-h2>
+            
+            <p>
+                Define a class <code>Auction</code>. Each <code>Auction</code> should have attributes:
+            </p>
+            <ul>
+                <li><code>highest_bidder</code>, a string representing the current highest bidder;</li>
+                <li><code>highest_bid</code>, an <code>int></code> representing the current highest bid;</li>
+                <li><code>open</code>, a <code>bool</code> which is <code>true</code> if the auction is 
+                    currently accepting further bids, and <code>false</code> if not.</li>
+            </ul>
+            <p>
+                The class should have a constructor that takes no arguments, sets the <code>highest_bidder</code> 
+                attribute to an empty string, the <code>highest_bid</code> attribute to <code>0</code>, and the 
+                <code>open</code> attribute to <code>true</code>. The class should also have the following methods:
+            </p>
+            <ul>
+                <li>
+                    A method <code>bid()</code> that takes two arguments representing a new bid, a 
+                    string <code>name</code> with the name of the bidder and an <code>int bid</code> with 
+                    the value of the bid. If <code>bid</code> is greater than the current highest bid and the 
+                    auction is open, then the attributes should be updated appropriately; otherwise, do nothing.
+                </li>
+                <li>
+                    A method <code>close()</code> that takes no arguments and sets to <code>open</code> attribute 
+                    to <code>false</code>.
+                </li>
+            </ul>
+
+            <p>
+                Next, define a class <code>BuyNowAuction</code> that inherits from <code>Auction</code> and allows a 
+                bidder to buy the item immediately by paying a sufficiently high price. The constructor should accept 
+                an additional argument <code>price</code> and set a corresponding attribute <code>buy_now_price</code>. 
+                The <code>bid</code> method should work exactly the same as above, except that it should also close the 
+                auction if <code>bid</code> is greater than or equal to <code>buy_now_price</code>. For full credit, you 
+                must take full advantage of inheritance to minimize the amount of repeated code.
+            </p>
+
+            <p>
+                <b>Solution:</b> The solution is below. Note the use of <code>Auction::bid</code> within the 
+                definition of <code>BuyNowAuction::bid</code>. I didn't mention in class that this is an option, 
+                so I wouldn't penalize you if you rewrote the code from <code>Auction::bid</code> here instead of 
+                calling <code>Auction::bid</code>, but it's a nice trick to know. (Also note that if you were to 
+                rewrite the code here, you would need to make all attributes of <code>Auction</code> 
+                <code>protected</code> rather than private.)
+            </p>
+
+            <code-box data-codeId="auctionSolution"><pre>#include &lt;string>
+
+class Auction {
+private:
+    bool open{true};
+    std::string highest_bidder{""};
+protected:
+    int highest_bid{0};
+public:
+    virtual void bid(const std::string& name, int bid) {
+        if (bid <= highest_bid || !open) return;
+        highest_bid = bid;
+        highest_bidder = name;
+    }
+    void close() {open = false;}
+};
+
+class BuyNowAuction : public Auction {
+private:
+    int buy_now_price;
+public:
+    BuyNowAuction(int price) : Auction(), buy_now_price(price) {}
+    void bid(const std::string& name, int bid) {
+        Auction::bid(name, bid);
+        if (highest_bid >= buy_now_price) close();
+    }
+};</pre></code-box>
+
+            <soln-h2></soln-h2>
+
+            <p>
+                Define a function template <code>secondHighest</code> that accepts as argument a <code>const</code> 
+                reference to a <code>std::vector</code> (of any type that implements the <code><</code> operator), and 
+                returns the value of the second-highest entry in the vector. (If the highest value appears twice, then 
+                it also counts as the second-highest value.)
+            </p>
+
+
+            <p>
+                <b>Solution:</b>
+            </p>
+
+            <code-box data-codeId="secondHighestSolution"><pre>template &lt;typename T>
+T secondHighest(const std::vector&lt;T>& v) {
+    T hi, hi2;
+    if (v[0] < v[1]) {hi = v[1]; hi2 = v[0];}
+    else {hi = v[0]; hi2 = v[1];}
+    for (int i = 2; i < v.size(); ++i) {
+        T val = v[i];
+        if (val > hi) {
+            hi2 = hi;
+            hi = val;
+        } else if (val > hi2) {
+            hi2 = val;
+        }
+    }
+    return hi2;
+}</pre></code-box>
+
+
+            <soln-h2></soln-h2>
+
+            <p>
+                Define a class <code>Vector</code> that represents a 2-dimensional vector (in the sense of linear algebra). 
+                That is, each <code>Vector</code> contains an x-coordinate and a y-coordinate (as <code>double</code>s). 
+                Vectors can be added componentwise (i.e., (2, 3) + (-1, 4) = (1, 7)) and can be multiplied componentwise 
+                by numbers (i.e., 5 * (2, 3) = (10, 15)). Note that this multiplication is always written with the number 
+                on the left, so (2, 3) * 5 does not need to be defined.
+            </p>
+
+            <p>
+                The constructor should take two <code>double</code>s as arguments, representing the x- and y-coordinates, 
+                and construct a <code>Vector</code> accordingly.
+            </p>
+
+            <p>
+                Overload the operators <code>+</code>, <code>*</code>, <code>+=</code>, and <code>*=</code> as described 
+                above, so that two vectors can be added or a vector can be multiplied by a number (on the left). Also 
+                overload the <code><<</code> operator to print the vector, in the format "(x, y)". 
+            </p>
+
+            <p>
+                For example, the below code should print <code>(11, 16) (5, 7) (27, 39)</code>.
+            </p>
+
+            <code-box data-codeId="VectorSampleCode"><pre>#include &lt;iostream>
+int main() {
+    Vector v(2, 3);
+    Vector w(5, 7);
+    v *= 3; // v = (6, 9)
+    v += w; // v = (11, 16)
+    Vector u = 2 * v + w; // u = (28, 41)
+    std::cout << v << ' ' << w << ' ' << u << std::endl;
+    return 0;
+}</pre></code-box>
+
+
+            <p><b>Solution:</b></p>
+
+            <code-box data-codeId="VectorSolution"><pre>#include &lt;ostream>
+
+class Vector {
+private:
+    double x_;
+    double y_;
+public: 
+    Vector(double x, double y) : x_{x}, y_{y} {};
+    Vector& operator+=(const Vector& other) {
+        x_ += other.x_;
+        y_ += other.y_;
+        return *this;
+    }
+    friend Vector operator+(Vector v, const Vector& w) {
+        v += w;
+        return v;
+    }
+    Vector& operator*=(double c) {
+        x_ *= c;
+        y_ *= c;
+        return *this;
+    }
+    friend Vector operator*(double c, Vector v) {
+        v *= c;
+        return v;
+    }
+    friend std::ostream& operator<<(std::ostream& os, const Vector& v) {
+        os << '(' << v.x_ << ", " << v.y_ << ')';
+        return os;
+    }
+};</pre></code-box>
+
+
+        </div> <!-- /.content -->
+        <script type="text/javascript" src="codeblock.js"></script>
+        <script type="text/javascript" src="practice.js"></script>
+    </body>
+</html>

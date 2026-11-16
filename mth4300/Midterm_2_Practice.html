@@ -1,0 +1,382 @@
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Midterm 2 Practice</title>
+        <link rel="stylesheet" href="./style.css">
+    </head>
+    <body>
+        <div class="top-bar"><a href="./mth4300.html">🏠 Back to Math 4300 homepage</a>
+        </div>
+        <div class="content">
+            <h1>Midterm 2 Practice Problems</h1>
+
+            <script>
+                const solutionFile = "./Midterm_2_Practice_Solutions.html";
+            </script>
+
+
+            <h2>LeetCode Exercises</h2>
+
+            <p>Easy:</p>
+            <ul>
+                <li>
+                    <a href="https://leetcode.com/problems/design-parking-system/" target="_blank">1603. Design Parking System</a>
+                </li>
+                <li>
+                    <a href="https://leetcode.com/problems/design-neighbor-sum-service/" target="_blank">
+                        3242. Design Neighbor Sum Service
+                    </a> 
+                </li>
+                <li>
+                    <a href="https://leetcode.com/problems/design-an-ordered-stream/" target="_blank">
+                        1656. Design an Ordered Stream
+                    </a> 
+                </li>
+            </ul>
+            <p>Medium:</p>
+            <ul>
+                <li>
+                    <a href="https://leetcode.com/problems/design-twitter/" target="_blank">
+                        355. Design Twitter
+                    </a>
+                </li>
+            </ul>
+            
+            <prob-h2></prob-h2>
+
+            <p>
+                What does the following code print?
+            </p>
+
+            <code-box data-codeId="Problem1"><pre>#include &lt;iostream&gt;
+
+class Point {
+public:
+    Point(double x, double y) : x_(x), y_(y) {}
+    ~Point() {
+        std::cout << "Deleting (" << x_ << ", " << y_ << ")" << std::endl;
+    }
+private:
+    double x_;
+    double y_;
+};
+
+class ColoredPoint : public Point {
+public:
+    ColoredPoint(double x, double y, std::string color) : 
+        Point(x, y), color_(color) {}
+    ~ColoredPoint() {
+        std::cout << "Deleting " << color_ << std::endl;
+    }
+private:
+    std::string color_;
+};
+
+int main() {
+    ColoredPoint(2, 3, "Red");
+    return 0;
+}</pre></code-box>
+
+            <prob-h2></prob-h2>
+
+            <p>What exactly does the below code print?</p>
+
+            <code-box data-codeId="NoisyIntProblem"><pre>#include &lt;iostream>
+
+class NoisyInt {
+private:
+    int* val_;
+public:
+    NoisyInt(int x) : val_(new int(x)) {
+        std::cout << "new " << *val_ << std::endl;
+    }
+    NoisyInt(const NoisyInt& o) : val_(new int(*o.val_)) {
+        std::cout << "copy " << *val_ << std::endl;
+    }
+    NoisyInt& operator=(const NoisyInt& o) {
+        if (this == &o) return *this;
+        *val_ = *o.val_;
+        std::cout << "assign " << *val_ << std::endl;
+        return *this;
+    }
+    ~NoisyInt() {
+        std::cout << "delete " << *val_ << std::endl;
+        delete val_;
+    }
+    void setValue(int n) {
+        std::cout << "set " << *val_ << std::endl;
+        *val_ = n; 
+    }
+    int getValue() const { 
+        std::cout << "get " << *val_ << std::endl;
+        return *val_; 
+    }
+};
+
+int main() {
+    NoisyInt a(1);
+    NoisyInt b(2);
+    NoisyInt c = a;
+    b = a;
+    c.setValue(3);
+    std::cout << a.getValue() << std::endl;
+    std::cout << c.getValue() << std::endl;
+    return 0;
+}</pre></code-box>
+
+            <prob-h2></prob-h2>
+
+            <p>
+                Define a class <code>HighScoreList</code> that will keep track of the top <i>n</i> scores in a game. Scores will be 
+                <code>int</code>s, and only positive scores are allowed to be posted on the high score list. The list will track 
+                only the scores themselves; you don't need to attach names to the scores. Your class should include the following:
+            </p>
+
+            <ul>
+                <li>
+                    A constructor that takes one argument, an <code>int size</code>, and creates an empty high score list with a 
+                    maximum size of <code>size</code>. (I.e., one there are <code>size</code> scores stored, any new high score 
+                    must push out an existing high score.)
+                </li>
+                <li>
+                    A method <code>addScore</code>, that takes one argument (an <code>int score</code>), and updates the high 
+                    score list appropriately. (This may mean doing nothing, if the list is already full and the new score is 
+                    lower than the lowest existing score.)
+                </li>
+                <li>
+                    Overload the subscript operator so that if <code>scores</code> is a <code>HighScoreList</code>, then 
+                    <code>scores[i]</code> returns the high score at index <code>i</code>. (That is, <code>scores[0]</code> 
+                    is the highest score, <code>scores[1]</code> is the second-highest, and so on.) Your method does not 
+                    need to check bounds. Unlike the usual subscript operator, this one should <b>not</b> return a reference 
+                    because we do not want it to be used to modify the high score list directly. The only way to modify 
+                    the list should be through the <code>addScore</code> method.
+                </li>
+                <li>
+                    Overload the <code><<</code>operator to print all the high scores in a numbered list, one on each line.
+                    (See below for an example.)
+                </li>
+            </ul>
+
+            <p>
+                You should separate your code appropriately into files <code>high_score_list.h</code> and <code>high_score_list.cpp</code>.
+            </p>
+
+            <p>
+                For example, the below code should print
+            </p>
+
+            <p><code><pre>1. 50
+2. 45
+3. 25
+
+25</pre></code></p>
+
+            <code-box data-codeId="HighScoreListSampleCode"><pre>#include &lt;iostream> 
+#include "high_score_list.h"
+
+int main() {
+    HighScoreList scores(3);
+    scores.addScore(50);
+    scores.addScore(25);
+    scores.addScore(5);
+    scores.addScore(45);
+    scores.addScore(20);
+    std::cout << scores << std::endl;    // 1. 50   2. 45   3. 25
+    std::cout << scores[2] << std::endl; // 25
+    return 0;
+}</pre></code-box>
+
+            <prob-h2></prob-h2>
+
+            <p>
+                Code for a class <code>Point</code> is provided below. (It doesn't do much, but you can imagine that it 
+                has other methods that were excluded here for simplicity.) Add the necessary methods to make it comply 
+                with the Rule of Five.
+            </p>
+
+            <code-box data-codeId="PointProblemGivenCode"><pre>class Point {
+private: 
+    int dimension_;
+    double* coords_;
+public:
+    Point(int d) : dimension_(d), coords_(new double[d]{}) {}
+    double& operator[](int i) {return coords_[i];}
+};</pre></code-box>
+
+
+            <prob-h2></prob-h2>
+
+            <p>
+                The below code contains two bugs.
+            </p>
+
+            <code-box data-codeId="AnimalExampleBuggyCode"><pre>#include &lt;iostream>
+#include &lt;string>
+
+class Animal {
+private:
+    std::string name_;
+public:
+    Animal(const std::string& name) : name_(name) {}
+    void speak() const {std::cout << "Animal noises" << std::endl;}
+};
+
+class Dog : public Animal {
+public:
+    Dog(const std::string& name) : Animal(name) {}
+    void speak() const {std::cout << "Woof!" << std::endl;}
+};
+
+class Parrot : public Animal {
+public:
+    Parrot(const std::string& name) : Animal(name) {}
+    void speak() const {std::cout << "I'm " << name_ << "!" << std::endl;}
+};
+
+int main() {
+    Dog rover("Rover");
+    Parrot polly("Polly");
+    Animal* animals[2] = {&rover, &polly};
+    for (const Animal* animal : animals)
+        animal->speak();
+}</pre></code-box>
+
+            <p>
+                (a) There is a bug that will cause this code to fail to compile. How would you fix it? 
+                (Hint: It's related to the <code>speak()</code> method for <code>Parrot</code>.)
+            </p>
+            <p>
+                (b) The above code is supposed to print <code>Woof!</code> followed by <code>I'm Polly!</code>. 
+                But that's not what it actually prints. State what it actually prints, and explain how to 
+                fix the bug so that it prints what it should.
+            </p>
+
+
+            <prob-h2></prob-h2>
+
+            <p>
+                Define a class <code>Auction</code>. Each <code>Auction</code> should have attributes:
+            </p>
+            <ul>
+                <li><code>highest_bidder</code>, a string representing the current highest bidder;</li>
+                <li><code>highest_bid</code>, an <code>int></code> representing the current highest bid;</li>
+                <li><code>open</code>, a <code>bool</code> which is <code>true</code> if the auction is 
+                    currently accepting further bids, and <code>false</code> if not.</li>
+            </ul>
+            <p>
+                The class should have a constructor that takes no arguments, sets the <code>highest_bidder</code> 
+                attribute to an empty string, the <code>highest_bid</code> attribute to <code>0</code>, and the 
+                <code>open</code> attribute to <code>true</code>. The class should also have the following methods:
+            </p>
+            <ul>
+                <li>
+                    A method <code>bid()</code> that takes two arguments representing a new bid, a 
+                    string <code>name</code> with the name of the bidder and an <code>int bid</code> with 
+                    the value of the bid. If <code>bid</code> is greater than the current highest bid and the 
+                    auction is open, then the attributes should be updated appropriately; otherwise, do nothing.
+                </li>
+                <li>
+                    A method <code>close()</code> that takes no arguments and sets to <code>open</code> attribute 
+                    to <code>false</code>.
+                </li>
+            </ul>
+
+            <p>
+                Next, define a class <code>BuyNowAuction</code> that inherits from <code>Auction</code> and allows a 
+                bidder to buy the item immediately by paying a sufficiently high price. The constructor should accept 
+                an additional argument <code>price</code> and set a corresponding attribute <code>buy_now_price</code>. 
+                The <code>bid</code> method should work exactly the same as above, except that it should also close the 
+                auction if <code>bid</code> is greater than or equal to <code>buy_now_price</code>. For full credit, you 
+                must take full advantage of inheritance to minimize the amount of repeated code.
+            </p>
+
+
+            <prob-h2></prob-h2>
+
+            <p>
+                Define a function template <code>secondHighest</code> that accepts as argument a <code>const</code> 
+                reference to a <code>std::vector</code> (of any type that implements the <code><</code> operator), and 
+                returns the value of the second-highest entry in the vector. (If the highest value appears twice, then 
+                it also counts as the second-highest value.)
+            </p>
+
+            <prob-h2></prob-h2>
+
+            <p>
+                Define a class template <code>Range</code> that works with any type <code>T</code> that can be compared 
+                using <code><=</code>. The class should define a range by allowing the user to provide values of type 
+                <code>T</code>, and keeping track of the minimum and maximum. After that, the <code>Range</code> object 
+                represents the range [min, max], i.e., it consists of all values that lie between the minimum and 
+                maximum provided values (inclusive).
+            </p>
+
+            <p>
+                The class should have a method <code>expand</code> that takes an argument of type <code>T</code> and 
+                updates the min/max values, if necessary. It should also have a method <code>contains</code> that 
+                takes an argument of type <code>T</code> and returns a <code>bool</code> reflecting whether the 
+                provided value is in the range.
+            </p>
+
+            <p>
+                For example, the below code should print <code>010</code>. The range <code>rng</code> is 
+                [<code>"bat"</code>, <code>"dog"</code>], which does not contain <code>"alligator"</code> but 
+                does contain <code>"bear"</code>. The range <code>empty</code> is empty, so it does not contain 
+                anything.
+            </p>
+
+            <code-box data-codeId="rangeExampleCode"><pre>#include &lt;iostream>
+#include &lt;string>
+int main() {
+    Range&lt;std::string> rng;
+    rng.expand("cat");
+    rng.expand("dog");
+    rng.expand("bat");
+    std::cout << rng.contains("alligator") << rng.contains("bear");
+    Range&lt;double> empty;
+    std::cout << empty.contains(0.0) << std::endl;
+}</pre></code-box>
+
+
+            <prob-h2></prob-h2>
+
+            <p>
+                Define a class <code>Vector</code> that represents a 2-dimensional vector (in the sense of linear algebra). 
+                That is, each <code>Vector</code> contains an x-coordinate and a y-coordinate (as <code>double</code>s). 
+                Vectors can be added componentwise (i.e., (2, 3) + (-1, 4) = (1, 7)) and can be multiplied componentwise 
+                by numbers (i.e., 5 * (2, 3) = (10, 15)). Note that this multiplication is always written with the number 
+                on the left, so (2, 3) * 5 does not need to be defined.
+            </p>
+
+            <p>
+                The constructor should take two <code>double</code>s as arguments, representing the x- and y-coordinates, 
+                and construct a <code>Vector</code> accordingly.
+            </p>
+
+            <p>
+                Overload the operators <code>+</code>, <code>*</code>, <code>+=</code>, and <code>*=</code> as described 
+                above, so that two vectors can be added or a vector can be multiplied by a number (on the left). Also 
+                overload the <code><<</code> operator to print the vector, in the format "(x, y)". 
+            </p>
+
+            <p>
+                For example, the below code should print <code>(11, 16) (5, 7) (27, 39)</code>.
+            </p>
+
+            <code-box data-codeId="VectorSampleCode"><pre>#include &lt;iostream>
+int main() {
+    Vector v(2, 3);
+    Vector w(5, 7);
+    v *= 3; // v = (6, 9)
+    v += w; // v = (11, 16)
+    Vector u = 2 * v + w; // u = (28, 41)
+    std::cout << v << ' ' << w << ' ' << u << std::endl;
+    return 0;
+}</pre></code-box>
+
+
+        </div> <!-- /.content -->
+        <script type="text/javascript" src="codeblock.js"></script>
+        <script type="text/javascript" src="practice.js"></script>
+    </body>
+</html>
