@@ -1,0 +1,255 @@
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Lecture 14: Linked Lists, Stacks, and Queues</title>
+        <link rel="stylesheet" href="../style.css">
+    </head>
+    <body>
+        <script>
+            window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']]
+            }
+            };
+        </script>
+        <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+        <div class="top-bar"><a href="../mth4300.html">🏠 Back to Math 4300 homepage</a>
+        </div>
+        <div class="content">
+            <h1>Lecture 15: Hashing</h1>
+
+            <h2>Dictionaries</h2>
+
+            <p>
+                You already know the concept of a dictionary from Python, and we've mentioned it before. A dictionary 
+                stores keys, and a value associated to each key. In Lecture 12, I gave you an exercise to implement a 
+                dictionary in a very crude way, by storing all the keys in one vector and all the values in another 
+                vector. This is a terrible way to implement a dictionary! If the dictionary has $N$ keys, then 
+                looking up whether a key is in the dictionary is a $O(N)$ operation: in the worst case scenario (the 
+                key isn't present), we need to check every single key in the dictionary. Obviously, that's not what we 
+                want. How can we do better?
+            </p>
+
+            <h2>Hash Tables</h2>
+
+            <p>
+                A <i>hash function</i> converts a given key value into a non-negative integer. A hash table consists of 
+                several numbered "buckets." When it receives a new key, it calculates the hash of the key, and stores the 
+                key-value pair in the corresponding bucket. When it's asked to look up a key, it calculates the hash of 
+                the key, and checks whether the corresponding bucket contains the desired key.
+            </p>
+
+            <p>
+                The <i>size</i> of a hash table refers to the number of keys that it contains.
+                The <i>capacity</i> of a hash table refers to the number of buckets it contains. Naturally, we want the 
+                hash function to return values in the interval [0, capacity-1], so that every bucket is usable. For 
+                example, here's a simple hash function that you could use to hash an <code>int</code>:
+            </p>
+
+            <code-box data-codeId="intHashExample"><pre>#include &lt;cmath>
+
+int hash(int key, int capacity) {
+    return std::abs(key) % capacity;
+}</pre></code-box>
+
+            <p>
+                Note that we use the absolute value to avoid getting negative hash codes, since the sign of <code>a % b</code> 
+                is determined by the sign of <code>a</code> in C++. 
+            </p>
+
+            <p>
+                For another key type like <code>std::string</code>, the hash function would be more complicated, but the idea 
+                is the same. We convert the string to a number, and store it in the corresponding bucket.
+            </p>
+
+            <p>
+                Now, inserting/deleting/looking up keys seem like $O(1)$ operations; all we need to do is calculate the hash 
+                and check the corresponding bucket. But actually, that's not quite true:
+            </p>
+
+            <h2>Collisions</h2>
+
+            <p>
+                There's one problem with the analysis above: what if two keys both belong in the same bucket? (This situation 
+                is called a <i>collision</i>.)
+            </p>
+
+            <p>
+                The first "solution" to this problem is to try to avoid having two keys with the same hash for as long as 
+                possible. We can do this by using a hash function that is equally likely to choose any of the buckets, to 
+                minimize the probability that it chooses the same bucket twice. For example, with our simple <code>%</code>-based 
+                hash function for <code>int</code> above, we can try to minimize this probability by choosing a prime number 
+                for our capacity. To see why that helps, suppose that we tried to use our hash table in a situation where, for 
+                some reason, all of the keys are even. If the capacity were also even, then every key would end up in an 
+                even-numbered bucket, and half of our buckets (the odd-numbered buckets) would be unused. Using a prime number 
+                minimizes the chance of an issue like this arising.
+            </p>
+
+            <p>
+                If you were going to implement a hash function for a more complicated type, such as a <code>std::string</code>, 
+                you would want to think about how to design it so that strings are evenly-distributed among buckets. (Indeed, 
+                in the real world you would probably do the same for <code>int</code>: instead of needing to use a prime-number 
+                capacity, it would probably be better to choose a more random-seeming hash function instead. Many practical 
+                implementations of hash tables use powers of two as the capacity.)
+            </p>
+
+            <p>
+                Another answer to the problem of collisions is to re-create the hash table with a larger capacity, hoping that the 
+                elements that were colliding end up in different buckets after we have more buckets. But this is a time-consuming 
+                operation, since we need to re-hash every key to move it into the correct bucket in the new, larger hash table, 
+                so that can't be our default solution for every collision. We can remake the hash table occasionally and 
+                maintain $O(1)$ amortized performance as long as we don't do it too often, but we'll need another solution that 
+                allows us to handle collisions gracefully.
+            </p>
+
+            <p>
+                There are actually two possible solutions to this problem, which we'll see now: 
+            </p>
+
+            <h2>Chaining</h2>
+
+            <p>
+                The first solution is the obvious one: simply allow multiple keys to share a bucket. This is commonly done 
+                by making each "bucket" a linked list. As long as none of the linked lists get too long, all of our operations 
+                will still be $O(1)$. (We may need to do a linear search through a list, which is theoretically $O(N)$, but if 
+                we choose a large enough capacity and a hash function that successfully distributes keys into different buckets, 
+                no individual list will ever contain too many nodes. Instead of searching the entire table, we only need to 
+                search one bucket.)
+            </p>
+
+            <p>
+                If one bucket starts to get too large, then we can re-create the hash table with more buckets to (hopefully) 
+                spread those keys into different buckets. But the idea is that we won't need to do that too often.
+            </p>
+
+            <h2>Load Factor</h2>
+
+            <p>
+                The <i>load factor</i> for a hash table is $\alpha = \text{size} / \text{capacity}$. When $\alpha$ is much 
+                less than 1, the chains (assuming we used chaining to handle collisions) are short and performance is good. 
+                When $\alpha$ gets larger, performance reverts to $O(N)$. As a rule, if you're using chaining to handle 
+                collisions, it's suggested to double the capacity (which requires rehashing all the existing keys) when 
+                $\alpha \approx 0.75$. (With open addressing, which we'll discuss next, a slightly lower cutoff is 
+                suggested.)
+            </p>
+
+            <h2>Open Addressing</h2>
+
+            <p>
+                There's another possible solution, if you don't want each bucket to be a linked list. 
+                You can use <i>open addressing</i>, where each bucket (i.e., address) only contains 
+                one key, and in the event of a collision, the new key simply goes to the next open bucket.
+                For example, if you're trying to insert a new key in bucket $h$ and there's already a 
+                different key there, then you try to insert your new key in bucket $h+1$. If that doesn't 
+                work, move on to bucket $h+2$, and so on (wrapping around to 0 once you reach the capacity) 
+                until you find an empty bucket. 
+            </p>
+
+            <p>
+                If you're trying to look up a key, then you look in the bucket where it belongs; if it's 
+                there, you found it, and if the bucket is empty, then you know it's not in the hash table. 
+                However, if there's a different key in the bucket, then the key you're looking for might 
+                still be in the table, just in a different bucket. Thus, you need to check the next bucket. 
+                Again, if you find the key, you're done, and if the bucket is empty, you're also done. If 
+                there's a different key in this bucket also, then you need to move on to the next bucket, 
+                and so on, until you find a bucket that's either empty or contains the key you want.
+            </p>
+
+            <p>
+                One benefit of open addressing is that all your data is stored in a single array, rather than a 
+                bunch of separate linked lists, which may help your code run faster in practice. A downside 
+                (if you're not increasing capacity) is that the hash table simply stops working once every 
+                bucket is full, whereas with chaining there's no limit to the size (other than performance). 
+            </p>
+
+            <p>
+                A less-obvious downside of open addressing is that you need to be careful with deletion. 
+                Consider a situation in which key A goes in bucket 1, key B goes in bucket 2, key C belongs 
+                in bucket 1 (but ends up in bucket 3 because of open addressing), and then key B is deleted. 
+                If you try to look up key C in this table, you'll first check bucket 1, move on the bucket 2 
+                and see that it's empty, and incorrectly conclude that C is not in the table. To avoid this 
+                mistake, you need to include a <i>tombstone</i> when you delete a key, to distinguish a bucket 
+                that never contained a key from a bucket that used to contain a key.
+            </p>
+
+            <h2>Implementation</h2>
+
+            <p>
+                Here's a simple implementation (without the ability to change the capacity) of a hash table with 
+                <code>int</code>-valued keys. Obviously, it would not be too difficult to make this work with 
+                keys of other types, we would just need to have a hash function for those types.
+            </p>
+
+            <code-box data-codeId="hashTableViaChainingImplementation"><pre>#include &lt;list>
+#include &lt;array>
+#include &lt;cmath>   // for std::abs
+#include &lt;utility> // for std::pair
+#include &lt;algorithm> // For std::find_if
+
+int hash(int key, int capacity) {
+    return std::abs(key) % capacity;
+}
+
+template &lt;typename T>
+class Dictionary {
+private:
+    static constexpr size_t capacity = 31;
+    std::array&lt;std::list&lt;std::pair&lt;int, T>>, 31> buckets_;
+public:
+    void insert(int key, T value) {
+        auto& bucket = buckets_[hash(key, capacity)];
+        auto it = std::find_if(bucket.begin(), bucket.end(), 
+            [key](std::pair&lt;int, T> p) {return p.first == key;});
+        if (it == bucket.end())
+            bucket.push_back({key, value});
+        else
+            it->second = value;
+    }
+    T* find(int key) {
+        auto& bucket = buckets_[hash(key, capacity)];
+        auto it = std::find_if(bucket.begin(), bucket.end(),
+            [key](std::pair&lt;int, T> p) {return p.first == key;});
+        if (it == bucket.end()) return nullptr;
+        return &it->second;
+    }
+    void remove(int key) {
+        auto& bucket = buckets_[hash(key, capacity)];
+        auto it = std::find_if(bucket.begin(), bucket.end(),
+            [key](std::pair&lt;int, T> p) {return p.first == key;});
+        if (it != bucket.end())
+            bucket.erase(it);
+    }
+};</pre></code-box>
+
+
+        <h2>Library Types</h2>
+
+        <p>
+            In C++, the type for a dictionary is <code>std::unordered_map</code> (defined in the <code>std::unordered_map</code> 
+            header). You can read about it <a href="https://en.cppreference.com/cpp/container/unordered_map" target="_blank">here</a>.
+        </p>
+
+        <p>
+            You may or may not also know from Python the <i>set</i> type, which matches the concept of a mathematical set: it simply 
+            records which elements are in or not in the set. This can also be implemented as a hash table, exactly as we did with 
+            dictionaries; the only difference is that we don't have values to store. 
+        </p>
+
+        <p>
+            The corresponding type in C++ is <code>std::unordered_set</code> (from the <code>unordered_set</code> header).
+        </p>
+
+        <h2>LeetCode Exercise</h2>
+
+        <ul>
+            <a href="https://leetcode.com/problems/two-sum/" target="_blank">1. Two Sum</a>: We saw earlier that you can write 
+            a $O(N \log N)$ algorithm for this by sorting the list. Can you write an algorithm that is (barring extremely 
+            bad luck) $O(N)$ using <code>std::unordered_set</code>?
+        </ul>
+
+
+        </div> <!-- /.content -->
+        <script type="text/javascript" src="../codeblock.js"></script>
+    </body>
+</html>
