@@ -380,6 +380,83 @@ int main() {
 }</pre></code-box>
 
 
+            <prob-h2></prob-h2>
+
+            <p>
+                Consider again the (intentionally oversimplified) code for <code>Point</code> from Problem 4:
+            </p>
+
+            <code-box data-codeId="PointExampleRepeated"><pre>class Point {
+private: 
+    int dimension_;
+    double* coords_;
+public:
+    Point(int d) : dimension_(d), coords_(new double[d]{}) {}
+    double& operator[](int i) {return coords_[i];}
+};</pre></code-box>
+
+            <p>
+                One problem with it is that we cannot use the subscript operator on a <code>const Point</code>. 
+                Modify the code above so that the subscript operator can be used on a <code>const Point</code> to 
+                look up the coordinates, but we can still use code like <code>p[1] = 5</code> to modify the 
+                coordinates of a non-constant <code>Point p</code>.
+            </p>
+
+            <prob-h2></prob-h2>
+
+            <p>
+                Consider again the <code>Point</code> class from the previous example:
+            </p>
+
+            <code-box data-codeId="PointExampleRepeatedAgain"><pre>class Point {
+private: 
+    int dimension_;
+    double* coords_;
+public:
+    Point(int d) : dimension_(d), coords_(new double[d]{}) {}
+    double& operator[](int i) {return coords_[i];}
+};</pre></code-box>
+
+            <p>
+                Override the stream insertion operator <code><<</code> so that it can be used to print 
+                a Point in the usual format (e.g., "(3, 1, 4)").
+            </p>
+
+            
+            <prob-h2></prob-h2>
+
+            <p>
+                Your company wants to have an abstract base class <code>Employee</code> to represent employees, where each 
+                employee is instantiated as an instance of some derived class representing their specific position.
+            </p>
+
+            <p>
+                Every <code>Employee</code> should have three <code>std::string</code> attributes: <code>firstName</code>,
+                <code>lastName</code>, and <code>department</code>. Every <code>Employee</code> must also have a method 
+                <code>.nametag()</code> that returns a <code>std::string</code> suitable for printing on their nametag; 
+                the definition of "suitable" will depend on the employee's position.
+            </p>
+
+            <p>
+                You will also define two derived classes: <code>Salesperson</code> and <code>Constructor</code>.
+            </p>
+
+            <p>
+                The <code>Salesperson</code> class should have a constructor which takes two <code>std::string</code> 
+                arguments <code>first</code> and <code>last</code> (the employee's name), and constructs a salesperson 
+                with that name in the <code>"Sales"</code> department. The nametag for a salesperson should read 
+                <code>"Hi, I'm &lt;firstName>"</code>. 
+            </p>
+
+            <p>
+                The <code>Executive</code> class should have a constructor which takes three <code>std::string</code> 
+                arguments <code>first</code>, <code>last</code>, and <code>dept</code> (same as for a generic 
+                <code>Employee</code>). The nametag for executive should read 
+                <code>"&lt;firstName> &lt;lastName>, &lt;department>"</code>. 
+            </p>
+
+
+
         </div> <!-- /.content -->
         <script type="text/javascript" src="codeblock.js"></script>
         <script type="text/javascript" src="practice.js"></script>

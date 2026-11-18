@@ -535,6 +535,69 @@ T secondHighest(const std::vector&lt;T>& v) {
             <soln-h2></soln-h2>
 
             <p>
+                Define a class template <code>Range</code> that works with any type <code>T</code> that can be compared 
+                using <code><=</code>. The class should define a range by allowing the user to provide values of type 
+                <code>T</code>, and keeping track of the minimum and maximum. After that, the <code>Range</code> object 
+                represents the range [min, max], i.e., it consists of all values that lie between the minimum and 
+                maximum provided values (inclusive).
+            </p>
+
+            <p>
+                The class should have a method <code>expand</code> that takes an argument of type <code>T</code> and 
+                updates the min/max values, if necessary. It should also have a method <code>contains</code> that 
+                takes an argument of type <code>T</code> and returns a <code>bool</code> reflecting whether the 
+                provided value is in the range.
+            </p>
+
+            <p>
+                For example, the below code should print <code>010</code>. The range <code>rng</code> is 
+                [<code>"bat"</code>, <code>"dog"</code>], which does not contain <code>"alligator"</code> but 
+                does contain <code>"bear"</code>. The range <code>empty</code> is empty, so it does not contain 
+                anything.
+            </p>
+
+            <code-box data-codeId="rangeExampleCode"><pre>#include &lt;iostream>
+#include &lt;string>
+int main() {
+    Range&lt;std::string> rng;
+    rng.expand("cat");
+    rng.expand("dog");
+    rng.expand("bat");
+    std::cout << rng.contains("alligator") << rng.contains("bear");
+    Range&lt;double> empty;
+    std::cout << empty.contains(0.0) << std::endl;
+}</pre></code-box>
+
+            <p>
+                <b>Solution:</b>
+            </p>
+
+            <code-box data-codeId="RangeSolution"><pre>template &lt;typename T>
+class Range {
+private:
+    bool isEmpty = true;
+    T min{};
+    T max{};
+public:
+    void expand(const T& val) {
+        if (isEmpty) {
+            isEmpty = false;
+            min = val;
+            max = val;
+        }
+        if (val < min) min = val;
+        if (val > max) max = val;
+    }
+    bool contains(const T& val) const {
+        return (!isEmpty) && min <= val && val <= max;
+    }
+};</pre></code-box>
+
+
+
+            <soln-h2></soln-h2>
+
+            <p>
                 Define a class <code>Vector</code> that represents a 2-dimensional vector (in the sense of linear algebra). 
                 That is, each <code>Vector</code> contains an x-coordinate and a y-coordinate (as <code>double</code>s). 
                 Vectors can be added componentwise (i.e., (2, 3) + (-1, 4) = (1, 7)) and can be multiplied componentwise 
@@ -602,6 +665,169 @@ public:
         return os;
     }
 };</pre></code-box>
+
+
+            <soln-h2></soln-h2>
+
+            <p>
+                Consider again the (intentionally oversimplified) code for <code>Point</code> from Problem 4:
+            </p>
+
+            <code-box data-codeId="PointExampleRepeated"><pre>class Point {
+private: 
+    int dimension_;
+    double* coords_;
+public:
+    Point(int d) : dimension_(d), coords_(new double[d]{}) {}
+    double& operator[](int i) {return coords_[i];}
+};</pre></code-box>
+
+            <p>
+                One problem with it is that we cannot use the subscript operator on a <code>const Point</code>. 
+                Modify the code above so that the subscript operator can be used on a <code>const Point</code> to 
+                look up the coordinates, but we can still use code like <code>p[1] = 5</code> to modify the 
+                coordinates of a non-constant <code>Point p</code>.
+            </p>
+
+            <p>
+                <b>Solution:</b> We need two version of <code>operator[]</code>, a <code>const</code> version 
+                and a non-<code>const</code> version. (In general, you should always have two version of 
+                <code>operator[]</code> for exactly this reason, unless you intentionally want to prevent 
+                assignment via <code>p[1] = 5</code>.)
+            </p>
+
+            <code-box data-codeId="PointExampleRepeatedSolution"><pre>class Point {
+private: 
+    int dimension_;
+    double* coords_;
+public:
+    Point(int d) : dimension_(d), coords_(new double[d]{}) {}
+    double& operator[](int i) {return coords_[i];}
+    const double& operator[](int i) const {return coords_[i];}
+};</pre></code-box>
+
+
+            <soln-h2></soln-h2>
+
+            <p>
+                Consider again the <code>Point</code> class from the previous example:
+            </p>
+
+            <code-box data-codeId="PointExampleRepeatedAgain"><pre>class Point {
+private: 
+    int dimension_;
+    double* coords_;
+public:
+    Point(int d) : dimension_(d), coords_(new double[d]{}) {}
+    double& operator[](int i) {return coords_[i];}
+};</pre></code-box>
+
+            <p>
+                Override the stream insertion operator <code><<</code> so that it can be used to print 
+                a Point in the usual format (e.g., "(3, 1, 4)").
+            </p>
+
+            <p>
+                <b>Solution:</b>
+            </p>
+
+            <code-box data-codeId="PointStreamInsertionSolution"><pre>#include &lt;ostream>
+                
+class Point {
+private: 
+    int dimension_;
+    double* coords_;
+public:
+    Point(int d) : dimension_(d), coords_(new double[d]{}) {}
+    double& operator[](int i) {return coords_[i];}
+    friend std::ostream& operator<<(std::ostream& os, const Point& p) {
+        os << '(';
+        for (int i = 0; i < p.dimension_ - 1; ++i)
+            os << p.coords_[i] << ", ";
+        os << p.coords_[p.dimension_ - 1] << ')';
+        return os;
+    }
+};</pre></code-box>
+
+
+            <soln-h2></soln-h2>
+
+            <p>
+                Your company wants to have an abstract base class <code>Employee</code> to represent employees, where each 
+                employee is instantiated as an instance of some derived class representing their specific position.
+            </p>
+
+            <p>
+                Every <code>Employee</code> should have three <code>std::string</code> attributes: <code>firstName</code>,
+                <code>lastName</code>, and <code>department</code>. Every <code>Employee</code> must also have a method 
+                <code>.nametag()</code> that returns a <code>std::string</code> suitable for printing on their nametag; 
+                the definition of "suitable" will depend on the employee's position.
+            </p>
+
+            <p>
+                You will also define two derived classes: <code>Salesperson</code> and <code>Constructor</code>.
+            </p>
+
+            <p>
+                The <code>Salesperson</code> class should have a constructor which takes two <code>std::string</code> 
+                arguments <code>first</code> and <code>last</code> (the employee's name), and constructs a salesperson 
+                with that name in the <code>"Sales"</code> department. The nametag for a salesperson should read 
+                <code>"Hi, I'm &lt;firstName>"</code>. 
+            </p>
+
+            <p>
+                The <code>Executive</code> class should have a constructor which takes three <code>std::string</code> 
+                arguments <code>first</code>, <code>last</code>, and <code>dept</code> (same as for a generic 
+                <code>Employee</code>). The nametag for executive should read 
+                <code>"&lt;firstName> &lt;lastName>, &lt;department>"</code>. 
+            </p>
+
+            <p>
+                <b>Solution:</b> Note that we declare <code>nametag()</code> as a pure virtual method in 
+                <code>Employee</code> to ensure that every concrete instance of an employee must have a 
+                <code>nametag()</code> method.
+            </p>
+
+            <code-box data-codeId="EmployeeNametagSolution"><pre>#include &lt;string>
+
+class Employee {
+protected:
+    std::string firstName;
+    std::string lastName;
+    std::string department;
+public:
+    Employee(std::string first, std::string last, std::string dept) 
+        : firstName{first}, lastName{last}, department{dept} {}
+    virtual std::string nametag() const = 0;
+};
+
+class Salesperson : public Employee {
+public:
+    Salesperson(std::string first, std::string last) : Employee(first, last, "Sales") {}
+    std::string nametag() const override {
+        return "Hi, I'm " + firstName + '!';
+    }
+};
+
+class Executive : public Employee {
+public:
+    Executive(std::string first, std::string last, std::string department) : Employee(first, last, department) {}
+    std::string nametag() const override {
+        return firstName + ' ' + lastName + ", " + department;
+    }
+};
+
+// Not part of the problem, but provided for testing:
+#include &lt;vector>
+#include &lt;iostream>
+int main() {
+    Executive alice("Alice", "Smith", "Marketing");
+    Salesperson bob("Bob", "Johnson");
+    std::vector&lt;Employee*> employees{&alice, &bob};
+    for (const auto& employee : employees)
+        std::cout << employee->nametag() << std::endl;
+}</pre></code-box>
+
 
 
         </div> <!-- /.content -->
