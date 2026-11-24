@@ -50,11 +50,12 @@
                 binary tree that stores <code>int</code> data:
             </p>
 
-            <code-box data-codeId="binaryTreeNodeStruct"><pre>struct Node {
-    int value;
+            <code-box data-codeId="binaryTreeNodeStruct"><pre>template &lt;typename T>
+struct Node {
     Node* left;
+    T value;
     Node* right;
-    Node(int v) : value(v), left(nullptr), right(nullptr) {}
+    Node(const T& v) : left{nullptr}, value{v}, right{nullptr} {}
 };</pre></code-box>
 
             <h2>Examples</h2>
@@ -177,8 +178,77 @@
                 data from that node into the now-empty node. (Make sure you understand why this maintains the sorting!)
             </p>
 
+            <p>
+                Here's some working code for a simple BST. (For simplicity, the Rule of Five methods other than the destructor 
+                are omitted.) Make sure you understand how it works. Note that most of the BST functions are delegated to 
+                functions which take a single node as argument, so that they can be called recursively.
+            </p>
 
-            <h2>Library classes</h2>
+            <code-box data-codeId="workingBST"><pre>template &lt;typename T>
+class BinarySearchTree {
+public:
+    BinarySearchTree()  : root_{nullptr} {}
+    ~BinarySearchTree() { destroy(root_); }
+    void insert(const T& value) { root_ = insert(root_, value); }
+    bool contains(const T& value)   const { return contains(root_, value); }
+    void remove(const T& value) { root_ = remove(root_, value); }
+    std::vector&lt;T> inorder() const { std::vector&lt;T> v; return inorder(root_, v); }
+private:
+    struct Node {
+        Node* left;
+        T value;
+        Node* right;
+        Node(const T& v) : left{nullptr}, value{v}, right{nullptr} {}
+    };
+
+    Node* root_;
+
+    void destroy(Node* node) {
+        if (!node) return;
+        destroy(node->left);
+        destroy(node->right);
+        delete node;
+    }
+
+    Node* insert(Node* node, const T& value) {
+        if (!node) return new Node(value);
+        if      (value < node->value) node->left  = insert(node->left,  value);
+        else if (value > node->value) node->right = insert(node->right, value);
+        return node; // Don't add duplicate node
+    }
+
+    bool contains(Node* node, const T& value) const {
+        if (!node) return false;
+        if (value == node->value) return true;
+        if (value < node->value) return find(node->left,  value);
+        return contains(node->right, value);
+    }
+
+    Node* remove(Node* node, const T& value) {
+        if (!node) return nullptr;
+        if      (value < node->value) node->left  = remove(node->left,  value);
+        else if (value > node->value) node->right = remove(node->right, value);
+        else {
+            if (!node->left)  { Node* temp = node->right; delete node; return temp; }
+            if (!node->right) { Node* temp = node->left;  delete node; return temp; }
+            Node* next = node->right;
+            while (next->left) next = next->left;
+            node->value = next->value;
+            node->right = remove(node->right, next->value);
+        }
+        return node;
+    }
+
+    std::vector&lt;T>& inorder(Node* node, std::vector&lt;T>& v) const {
+        if (!node) return v;
+        inorder(node->left, v);
+        v.push_back(node->value);
+        inorder(node->right, v);
+        return v;
+    }
+};</pre></code-box>
+
+            <h2>Library classes using trees</h2>
 
             <p>
                 In C++, <code>std::set</code>s (which is defined in the <code>&lt;set></code>&lt; header) stores unique 
@@ -192,12 +262,136 @@
                 Both <code>std::set</code> and <code>std::map</code> use red-black trees to ensure good performance.
             </p>
 
-            <h2>Exercise</h2>
+
+            <h2>Priority Queues</h2>
 
             <p>
-                Implement a working BST.
+                Another application of trees is a <i>priority queue</i>. In a priority queue, much like a normal queue, 
+                you can only access the "next" element. But in a priority queue, the next element is determined by 
+                which element has the highest priority, rather than which one was inserted first. 
             </p>
 
+            <p>
+                For this lecture, we'll keep things simple and assume that the highest-priority data is simply the 
+                highest value stored in the queue. If you wanted to be able to determine the priority of a piece of 
+                data separately from its value, you could simply store key-value pairs in the priority queue, where 
+                the key determines the priority of the corresponding value.
+            </p>
+
+            <p>
+                A priority queue can be implemented using a binary tree where every node is greater than both of its 
+                children. Specifically, it's implemented using a <i>binary max heap</i>, which means that it is filled 
+                top-to-bottom and left-to-right, so that each level is filled before starting the next level. 
+            </p>
+
+            <p>
+                A neat trick about creating a binary max heap is that you don't need to bother with all the nodes and 
+                pointers that we normally use for trees: a binary max heap can be represented by a single array. 
+                Specifically, the array corresponds to what we would get by reading the tree top-to-bottom and left-to-right, 
+                so that index 0 is the root, then indices 1 and 2 correspond to the first level, and so on. You can check 
+                that with this ordering, the parent of node <code>i</code> is <code>(i - 1) / 2</code>, the left child is 
+                <code>2*i + 1</code>, and the right child is <code>2*i + 2</code>.
+            </p>
+
+            <p>
+                Here's a working implementation of a priority queue:
+            </p>
+
+            <code-box data-codeId="PriorityQueueImplementation"><pre>#include &lt;utility> // For std::swap
+
+template &lt;typename T>
+class PriorityQueue {
+public:
+    PriorityQueue() : size_{0}, capacity_{15}, data_{new T[capacity_]} {
+        data_ = new T[capacity_];
+    }
+    ~PriorityQueue() { delete[] data_; }
+    void push(const T& value) {
+        if (size_ == capacity_) grow();
+        data_[size_++] = value;
+        sift_up(size_ - 1);
+    }
+    void pop() {
+        if (size_ == 0) return;
+        data_[0] = data_[--size_];
+        sift_down(0);
+    }
+    const T& top() const { return data_[0]; }
+    bool empty() const { return size_ == 0; }
+    int  size()  const { return size_; }
+private:
+    int size_;
+    int capacity_;
+    T*  data_;
+
+    void sift_up(int i) {
+        while (i > 0) {
+            int parent = (i - 1) / 2;
+            if (data_[i] <= data_[parent]) return;
+            std::swap(data_[i], data_[parent]);
+            i = parent;
+        }
+    }
+
+    void sift_down(int i) {
+        while (true) {
+            int largest = i;
+            int left    = 2 * i + 1;
+            int right   = 2 * i + 2;
+            if (left  < size_ && data_[left]  > data_[largest]) largest = left;
+            if (right < size_ && data_[right] > data_[largest]) largest = right;
+            if (largest == i) return;
+            std::swap(data_[i], data_[largest]);
+            i = largest;
+        }
+    }
+
+    void grow() {
+        capacity_ = 2 * capacity_ + 1;
+        T* newData = new T[capacity_];
+        for (int i = 0; i < size_; i++) newData[i] = data_[i];
+        delete[] data_;
+        data_ = newData;
+    }
+};</pre></code-box>
+
+            <h2><code>std::priority_queue</code></h2>
+
+            <p>
+                The <code>std::priority_queue</code> type is defined in the <code>queue</code> header. See 
+                <a href="https://en.cppreference.com/cpp/container/priority_queue" target="_blank">here</a> 
+                for more information. Note that it allows you to provide a compare function to determine the 
+                priority order.
+            </p>
+
+            <h2>LeetCode Exercises</h2>
+
+            <p>The following exercises can be solved using a priority queue:</p>
+
+            <p>Easy:</p>
+
+            <ul>
+                <li>
+                    <a href="https://leetcode.com/problems/last-stone-weight/description/" target="_blank">
+                        1046. Last Stone Weight
+                    </a>
+                </li>
+            </ul>
+
+            <p>Medium:</p>
+            
+            <ul>
+                <li>
+                    <a href="https://leetcode.com/problems/kth-largest-element-in-an-array/" target="_blank">
+                        215. Kth Largest Element in an Array
+                    </a>
+                </li>
+                <li>
+                    <a href="https://leetcode.com/problems/k-closest-points-to-origin/" target="_blank">
+                        973. K Closest Points to Origin
+                    </a>
+                </li>
+            </ul>
 
 
         </div> <!-- /.content -->
