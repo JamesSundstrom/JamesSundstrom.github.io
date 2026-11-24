@@ -281,7 +281,9 @@ private:
             <p>
                 A priority queue can be implemented using a binary tree where every node is greater than both of its 
                 children. Specifically, it's implemented using a <i>binary max heap</i>, which means that it is filled 
-                top-to-bottom and left-to-right, so that each level is filled before starting the next level. 
+                top-to-bottom and left-to-right, so that each level is filled before starting the next level. This 
+                property ensures that the tree stays balanced, so that <code>insert()</code> and <code>pop()</code> 
+                are both $O(\log N)$. (Of course, <code>top()</code> is $O(1)$.)
             </p>
 
             <p>
