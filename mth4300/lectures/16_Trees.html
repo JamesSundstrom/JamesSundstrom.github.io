@@ -1,0 +1,206 @@
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Lecture 16: Trees</title>
+        <link rel="stylesheet" href="../style.css">
+    </head>
+    <body>
+        <script>
+            window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']]
+            }
+            };
+        </script>
+        <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+        <div class="top-bar"><a href="../mth4300.html">🏠 Back to Math 4300 homepage</a>
+        </div>
+        <div class="content">
+            <h1>Lecture 16: Trees</h1>
+
+            <p>
+                A <i>tree</i> is a collection of nodes connected by directed edges, with no cycles. (A 
+                cycle means that you can get to the same node by following two different paths; in a tree, 
+                that can't happen.) The node where an edge originates is called the <i>parent</i> 
+                node, and the node it points to is called the <i>child</i> node. Every node in a tree must 
+                have exactly one parent, except for the <i>root</i> node, which has none. A node with 
+                no children is called a <i>leaf</i>.
+            </p>
+
+            <p>
+                The <i>depth</i> of a node refers to the number of edges needed to get from the root 
+                to the node. The <i>height</i> a tree is the maximum depth of a node. A <i>subtree</i> 
+                consists of a node together with all of its descendants. (It can be proven that a 
+                subtree is always a tree.) A <i>binary tree</i> is a tree in which each node has at 
+                most two children, commonly referred to as <i>left</i> and <i>right</i>.
+            </p>
+
+            <p>
+                For example, a binary tree might look like this (image taken from Wikipedia):
+            </p>
+
+            <center><img src="binary_tree_wikipedia.png" style="max-width: 50%;" alt="An example of a binary tree"></center>
+
+
+            <p>
+                As with linked lists, you can create a binary tree simply by defining a <code>Node</code> 
+                class; for simple applications, you don't need a separate <code>Tree</code> class because 
+                you can identify the tree with its root. For example, here's an implementation of a 
+                binary tree that stores <code>int</code> data:
+            </p>
+
+            <code-box data-codeId="binaryTreeNodeStruct"><pre>struct Node {
+    int value;
+    Node* left;
+    Node* right;
+    Node(int v) : value(v), left(nullptr), right(nullptr) {}
+};</pre></code-box>
+
+            <h2>Examples</h2>
+
+            <p>
+                Many things naturally have a tree structure. 
+            </p>
+            <p>
+
+                For example, a mathematical expression has a 
+                tree structure: a single expression is made up of subexpressions, which naturally form a 
+                tree. (If we only use binary operations, then this will be a binary tree.)
+            </p>
+            <p>
+                User interfaces also naturally have a tree structure. The entire interface may consist of 
+                several components, each of which may themselves contain multiple components, and so on.
+            </p>
+
+            <h2>Traversing a tree</h2>
+
+            <p>
+                If we're going to store data in a tree, then we need to be able to recover all of the data  
+                later; that means that we need to be able to visit every node in the tree. There are two 
+                main ways of doing that: <i>breadth-first search</i> and <i>depth-first search</i>. 
+            </p>
+            <p>
+                Breadth-first search (BFS) means that you first read the data from the parent, then all the data 
+                at depth 1, then all the data at depth 2, and so on. This means that you must read every 
+                node at depth $n$ before reading any of their children at depth $n+1$, so you must keep 
+                track of those children for later. This can be accomplished using a queue: each time you 
+                read a node, add its children to the queue. (Make sure you can see why this results in a 
+                breadth-first search!)
+            </p>
+            <p>
+                Depth-first search (DFS) means that you first read all the way down one path to a leaf before 
+                backtracking to a different path. If we assume for the sake of simplicity that we are 
+                dealing with a binary tree, then there are three different ways to implement this. Note that 
+                all three methods can be implemented recursively; whatever overall strategy we've chosen, we 
+                use the same strategy to read the data in <code>left</code> and in <code>right</code>.
+            </p>
+            <ul>
+                <li>
+                    First read <code>left</code>, then the root node, then <code>right</code>. This is called 
+                    <i>in-order</i> traversal. If the data in your tree is sorted so that data to the left is always 
+                    less than data to the right (a situation we'll discuss later), then <i>in-order</i> traversal 
+                    produces a sorted list.
+                </li>
+                <li>
+                    First read the root node, then <code>left</code>, then <code>right</code>. This is called 
+                    <code>preorder</code> traversal. It is convenient when trying to copy a tree, since you first 
+                    copy a node and then copy its children.
+                </li>
+                <li>
+                    First read <code>left</code>, then <code>right</code>, then the root node. This is called 
+                    <i>postorder</i> traversal. This is what you would use if you were evaluating a mathematical 
+                    expression stored as a tree: you need to evaluate the subexpressions first before you can 
+                    combine them together. It's also what you would use to delete a tree, so that you delete 
+                    all the children before deleting the parent node.
+                </li>
+            </ul>
+
+            <h2>Exercises</h2>
+
+            <p>
+                Implement all four ways of traversing a tree. (We won't spend class time doing all four, 
+                but you can try the rest on your own.)
+            </p>
+
+            <h2>Binary Search Trees</h2>
+
+            <p>
+                One of the most important types of tree is a <i>Binary Search Tree</i> (BST). In a BST, 
+                every piece of data in <code>left</code> is less than the data in the parent node, and 
+                every piece of data in <code>right</code> is greater than the data in the parent node. 
+                As mentioned above, this ensures that when you perform in-order traversal, you get the 
+                data in sorted order. 
+            </p>
+
+            <p>
+                With our crude <code>Node</code> class above, the user manually assigns the
+                <code>left</code>/<code>right</code> pointers when inserting a new piece of data. For a 
+                BST, each new piece of data needs to be inserted in a particular place, so we don't 
+                expect users of our code to do that manually. Instead, the BST provides an <code>insert()</code> 
+                method that automatically finds the correct place to insert the data.
+            </p>
+
+            <p>
+                Besides keeping your data sorted, another major advantage of a BST is that it makes it faster 
+                to check whether a particular value is stored in the tree. Assuming the value you're looking 
+                for isn't stored in the root node, you need only check one of <code>left</code> and <code>right</code>, 
+                depending whether the desired value is less than or greater than the value in the root. Thus you need only 
+                search along one path; if you reach a leaf and you still haven't found the value, then you know it's not 
+                in the tree. Therefore <code>find()</code> in a BST is $O(h)$, where $h$ is the height of the tree.
+            </p>
+
+            <p>
+                If the tree has $N$ pieces of data and it's reasonably balanced, then $h \approx \log_2 N$, so 
+                <code>find()</code> will be a $O(\log N)$ operation. (This should be unsurprising -- it's 
+                essentially binary search.) Unfortunately, it's possible for a BST to become unbalanced. For example, 
+                if the data is already sorted when it's inserted, then each new node will be the right child of the 
+                previous node, and we essentially get a linked list rather than a tree. In this case, $h \approx N$, so 
+                <code>find()</code> becomes a $O(N)$ operation. 
+            </p>
+
+            <p>
+                In order to avoid that situation, we would like our BST to be self-balancing. A <i>red-black tree</i> 
+                is a self-balancing BST. You may find it interesting to look up how it works, but we won't worry 
+                about that now. 
+            </p>
+
+            <p>
+                Finally, removing a piece of data from a BST can be a little bit tricky. If the data is in a leaf, then 
+                it's easy: you can delete the leaf without disturbing other data. If the data is in a node with one child, 
+                that's not too hard either: when the node is deleted, its child becomes the child of the original node's parent. 
+                But if the data to be deleted is in a node with two children, deleting the node is trickier: where would those 
+                two children go? But there's a nice trick to solve this problem: instead of deleting the node, we find a different 
+                node that can be deleted easily, and whose data can be safely moved into the now-empty node. Specifically, the 
+                <i>in-order successor</i> is the leftmost node of the right subtree, which is the smallest value greater than 
+                the node being removed. We can easily delete that node, because it has at most one child, and then move the 
+                data from that node into the now-empty node. (Make sure you understand why this maintains the sorting!)
+            </p>
+
+
+            <h2>Library classes</h2>
+
+            <p>
+                In C++, <code>std::set</code>s (which is defined in the <code>&lt;set></code>&lt; header) stores unique 
+                elements in sorted order. (Recall that if you don't care about sorting, you can use <code>std::unordered_set</code>, 
+                which uses a hash table.) Similarly, if you want each key to have an associated value, you can use 
+                <code>std::map</code> (which is defined in the <code>&lt;map></code>&lt; header), just as we used 
+                <code>std::unordered_map</code> when we didn't care about ordering. 
+            </p>
+
+            <p>
+                Both <code>std::set</code> and <code>std::map</code> use red-black trees to ensure good performance.
+            </p>
+
+            <h2>Exercise</h2>
+
+            <p>
+                Implement a working BST.
+            </p>
+
+
+
+        </div> <!-- /.content -->
+        <script type="text/javascript" src="../codeblock.js"></script>
+    </body>
+</html>
